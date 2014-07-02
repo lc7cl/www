@@ -2,6 +2,7 @@
 #include <linux/module.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
+#include <linux/ip.h>
 
 static struct nf_hook_ops nfho;
 
@@ -9,7 +10,7 @@ static struct nf_hook_ops nfho;
 unsigned int hook_fn(unsigned int hooknum,
 		struct sk_buff *skb,
 		const struct net_device *in,
-		const struct net_device *out
+		const struct net_device *out,
 		int (*okfn)(struct sk_buff *))
 {
 
