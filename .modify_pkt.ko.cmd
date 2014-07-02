@@ -1,0 +1,1 @@
+cmd_/home/lee/code/www/modify_pkt.ko := ld -r -m elf_x86_64 -T /usr/src/linux-3.12.21-gentoo-r1/scripts/module-common.lds --build-id  -o /home/lee/code/www/modify_pkt.ko /home/lee/code/www/modify_pkt.o /home/lee/code/www/modify_pkt.mod.o
