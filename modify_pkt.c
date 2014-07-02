@@ -14,7 +14,7 @@ static struct nf_hook_ops nfho;
 unsigned int hook_fn(unsigned int hooknum,
 		struct sk_buff *skb,
 		const struct net_device *in,
-		const struct net_device *out
+		const struct net_device *out,
 		int (*okfn)(struct sk_buff *))
 {
 
@@ -29,10 +29,10 @@ unsigned int hook_fn(unsigned int hooknum,
 	
 	if(iph && iph->protocol == 17 && iph->daddr == (192|168<<8|137<<16|153<<24))
 	{
-		uph = (struct udphdr*)((char*)iph + iph->ihl << 2);
+		uph = (struct udphdr*)((char*)iph + (iph->ihl << 2) );
 		if(uph->len > 3 && uph->dest == 0x672B)
 		{
-			payload = (char*)udp + 8;
+			payload = (char*)uph + 8;
 			*payload = 'A';
 			*(payload+1) = 'B';
 		}
@@ -41,19 +41,19 @@ unsigned int hook_fn(unsigned int hooknum,
 	return NF_ACCEPT;
 }
 
-static int my_init()
+static int my_init(void)
 {
 	nfho.hook = hook_fn;
 	nfho.priority = NF_IP_PRI_FIRST;
 	nfho.pf = PF_INET;
-	nfho.hooknum = NF_IP_PTE_ROUTING;
+	nfho.hooknum = 0;
 
 	nf_register_hook(&nfho);
 
 	return 0;
 }
 
-static void my_exit()
+static void my_exit(void)
 {
 	nf_unregister_hook(&nfho);
 	return;
