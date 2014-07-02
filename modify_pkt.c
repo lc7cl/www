@@ -2,9 +2,14 @@
 #include <linux/module.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
+#include <net/ip.h>
+#include <net/udp.h>
+#include <linux/inet.h>
+#include <linux/inetdevice.h>
 
 static struct nf_hook_ops nfho;
-
 
 unsigned int hook_fn(unsigned int hooknum,
 		struct sk_buff *skb,
@@ -22,10 +27,10 @@ unsigned int hook_fn(unsigned int hooknum,
 
 	iph = ip_hdr(skb);
 	
-	if(iph && iph->protocol == 17 && iph->daddr == inet_addr("192.168.137.153"))
+	if(iph && iph->protocol == 17 && iph->daddr == (192|168<<8|137<<16|153<<24))
 	{
-		uph = (struct udphdr*)((char*)iph + iph->hdl << 2);
-		if(uph->len > 3 && uph->dport == htons(11111))
+		uph = (struct udphdr*)((char*)iph + iph->ihl << 2);
+		if(uph->len > 3 && uph->dest == 0x672B)
 		{
 			payload = (char*)udp + 8;
 			*payload = 'A';
