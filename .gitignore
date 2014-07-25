@@ -1,0 +1,16 @@
+*.o
+*.ko
+*.ko.*
+*.mod.*
+*.cmd
+*.order
+*.symvers
+*.o.d
+*~HEAD
+.tmp_versions/
+.svn/
+*.list
+tags
+*.out
+*.gcno
+*.swp
