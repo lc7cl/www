@@ -4,12 +4,20 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include "cmd.h"
 #include "uio.h"
 #include "edns.h"
 
 #define EDNS_PROC "/proc/sys/net/ipv4/kcns_server/edns"
 
 static int edns_fd;
+
+static command_t edns_cmd = {
+    .cmd = "edns",
+    .handler = edns_cmd_handle,
+    .next = NULL,
+    .prev = NULL,
+};
 
 static int ip_str_to_int(char *ip, int len, unsigned int *val)
 {
@@ -43,6 +51,8 @@ static int ip_str_to_int(char *ip, int len, unsigned int *val)
     if (p == e)
     {
         v += d << ( 8);
+		if (d > 255)
+               return 1;
     }
 
     *val = v;
@@ -146,4 +156,55 @@ int edns_setting(int action, char *ip, int len)
         printf("IP format invalid!\n");
     }
     return 1;
+}
+
+static int cmd_edns(int argc, const char** argv)
+{
+
+    int flag, i;
+    char *filename;
+    const char *pargv;
+    char *pc;
+
+    command_opt_t cmd_opts[] = {
+        MK_OPT_BOOL('a', "add", "add edns ip", &flag),
+        MK_OPT_BOOL('d', "delete", "delete edns ip", &flag),
+        MK_OPT_BOOL('s', "search", "search edns ip", &flag),
+        MK_OPT_FILENAME('f', "file", "add/delete edns ip in file", &filename),    
+        MK_OPT_MAX(),
+    };
+
+    if (argc <= 2)
+        command_help(&edns_cmd);
+
+    for (i = 1; i < argc; i++)
+    {
+        pargv = argv[i];
+
+        pc = pargv;
+        while (*pc != '\0')
+        {
+            if (*pc == '-')
+            {
+                /*short name*/
+                if (*(pc+1) != '\0' && (*(pc+1) != '-'))
+                {
+                    for 
+                }
+            }
+        }
+
+    }
+
+
+}
+
+int edns_command_register()
+{
+    return command_register(&edns_cmd);
+}
+
+int edns_command_unregister()
+{
+    return command_register(&edns_cmd);
 }

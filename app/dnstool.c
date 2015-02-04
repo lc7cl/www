@@ -13,6 +13,9 @@ int main(int argc, char ** argv)
     int action = 0;
     char *ip_str = NULL;
     char *file = NULL;
+
+
+    edns_command_register();
     
     if(open_uio())
         return -1;
@@ -65,5 +68,8 @@ int main(int argc, char ** argv)
 
     edns_close();
     close_uio();
+
+    edns_command_unregister();
+
     return 0;
 }

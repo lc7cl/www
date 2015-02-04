@@ -1,6 +1,6 @@
 
 CFLAGS:= -g
-objs:=uio.o edns.o dnstool.o
+objs:=uio.o edns.o dnstool.o cmd.o
 output := $(objs) dnstool
 
 default:dnstool
