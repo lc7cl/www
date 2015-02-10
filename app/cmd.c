@@ -40,6 +40,10 @@ int parse_short_opt(opt_ctx_t *ctx, command_opt_t *options)
     return -1;
 }
 
+int option_match(char *opt, char* long_name)
+{
+}
+
 int parse_long_opt(opt_ctx_t *ctx, command_opt_t *options)
 {
     command_opt_t *opt;
