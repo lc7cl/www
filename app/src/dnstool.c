@@ -3,47 +3,65 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "common.h"
 #include "uio.h"
 #include "edns.h"
 #include "dnstool.h"
 
 int main(int argc, char ** argv)
 {
-    int c;
+    int c, ret = 0;
     int action = 0;
-    char *ip_str = NULL;
-    char *file = NULL;
+    char *ip_str = NULL, *in = NULL, *out = NULL;
+	edns_context_t ctx;
+	FILE *f = NULL;
 
+	edns_command_register();
 
-    edns_command_register();
-
-#if 0
-    if(open_uio())
-        return -1;
-    if (edns_init())
+#if 1
+    if (open_uio())
         return -1;
 #endif
-
+	INIT_EDNS_CTX(ctx);
     opterr = 0;
-    while ((c = getopt(argc, argv, "ads:f:")) != -1)
+    while ((c = getopt(argc, argv, "hads:f:o:")) != -1)
         switch (c)
         {
         case 'a':
-            action = ACTION_ADD;
+            ctx.action = ACTION_ADD;
             break;
         case 's':
-            action = ACTION_SEARCH;
+            ctx.action = ACTION_SEARCH;
             break;
         case 'd':
-            action = ACTION_DEL;
+            ctx.action = ACTION_DEL;
             break;
         case 'f':
             if (optarg)
             {
-                file = strdup(optarg);
+	            f = fopen(optarg, "r");
+				if (f == NULL)
+		        {
+		            kerror("invalid file %s\n", optarg);
+		            goto out;
+		        }
+                ctx.input = f;
             }
-            printf("%s\n", optarg);
             break;
+		case 'o':			
+            if (optarg)
+            {
+                f = fopen(optarg, "a+");
+				if (f == NULL)
+		        {
+		            kerror("invalid file %s\n", optarg);
+		            goto out;
+		        }
+                ctx.output = f;
+            }
+			break;
+		case 'h':
+			break;
         case '?':
             break;
         default:
@@ -51,41 +69,32 @@ int main(int argc, char ** argv)
             ;
         }
 
-    if (optind >= argc)
-        return -1;
+	if (optind < argc)
+	{
+	    size_t str_len = 16 * (argc - optind);
+		char *ip_str;
+		ctx.ip = malloc(str_len);
+		if (!ctx.ip)
+			goto out;			
 
-    ip_str = argv[optind];
-    printf("%s\n", ip_str);
-    
-    if (file)
-    {
-#define LINENUM 1024
-        int fd;
-        char buf[LINENUM];
-
-        memset(buf, 0, sizeof(buf));
-        fd = open(file, O_RD);
-        if (fd < 0)
-            return -1;
-
-        while (readln(fd, buf, LINENUM))
-        {
-
-        }
-        close(fd);    
-    } 
-    else
-    {
-        edns_setting(action, ip_str, strlen(ip_str));
-        if (ip_str)
-            free(ip_str);
-    }
-#if 0
-    edns_close();
+		while (optind < argc && str_len) 
+		{
+			strncat(ctx.ip,argv[optind],str_len);			
+			str_len -= strlen(argv[optind]);
+			if (optind != argc)
+			{
+				strncat(ctx.ip, "", str_len);
+				str_len--;
+			}
+			optind++;
+		}
+	}
+	edns_setting(&ctx);
+out:
+	DESTROY_EDNS_CTX(ctx);
+#if 1
     close_uio();
 #endif
-
     edns_command_unregister();
-
     return 0;
 }

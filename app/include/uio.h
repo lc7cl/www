@@ -19,5 +19,6 @@ struct download_head
 extern int open_uio();
 extern void close_uio();
 extern int write_uio(int flag, char *data, size_t len);
+extern int read_uio(char* out, int size);
 
 #endif
