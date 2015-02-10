@@ -25,7 +25,7 @@ int main(int argc, char ** argv)
 #endif
 
     opterr = 0;
-    while ((c = getopt(argc, argv, "a:d:s:f:")) != -1)
+    while ((c = getopt(argc, argv, "ads:f:")) != -1)
         switch (c)
         {
         case 'a':
@@ -59,7 +59,20 @@ int main(int argc, char ** argv)
     
     if (file)
     {
-    
+#define LINENUM 1024
+        int fd;
+        char buf[LINENUM];
+
+        memset(buf, 0, sizeof(buf));
+        fd = open(file, O_RD);
+        if (fd < 0)
+            return -1;
+
+        while (readln(fd, buf, LINENUM))
+        {
+
+        }
+        close(fd);    
     } 
     else
     {
