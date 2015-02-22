@@ -1,3 +1,9 @@
+ifneq ($(KERNELRELEASE),)
+
+obj-m := test_memcmp.o
+obj-m += test.o
+
+else
 
 
 MAKE = make
@@ -12,4 +18,7 @@ default:
 clean:
 	$(Q)$(MAKE) -C $(KERNEL_DIR) M=$(SRC_DIR) clean
 
+
 .PHONY:clean
+
+endif

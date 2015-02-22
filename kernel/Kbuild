@@ -1,4 +1,0 @@
-
-obj-m := mycode.o 
-mycode-y := ip_proxy.o myroute.o 
-
