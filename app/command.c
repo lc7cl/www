@@ -44,11 +44,11 @@ int option_match(char *opt, char* long_name)
 {
 }
 
-int parse_long_opt(opt_ctx_t *ctx, command_opt_t *options)
+int parse_long_opt(option_ctx_t *ctx, option_t *options)
 {
-    command_opt_t *opt;
+    option_t *opt;
 
-    for (opt = options; opt->type != CMD_OPT_MAX; opt++)
+    for (opt = options; opt->type != OPTION_END; opt++)
     {
         if (!opt->long_name)
             continue;
@@ -60,9 +60,9 @@ int parse_long_opt(opt_ctx_t *ctx, command_opt_t *options)
     return -1;
 }
 
-int parse_options(int argc, const char ** argv, command_opt_t options)
+int parse_options(int argc, const char ** argv, option_t *options)
 {
-    opt_ctx_t ctx;
+    option_ctx_t ctx;
 
     ctx->opt = NULL;
     ctx->argc = argc - 1;

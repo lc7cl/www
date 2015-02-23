@@ -4,20 +4,13 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "cmd.h"
+#include "command.h"
 #include "uio.h"
 #include "edns.h"
 
 #define EDNS_PROC "/proc/sys/net/ipv4/kcns_server/edns"
 
 static int edns_fd;
-
-static command_t edns_cmd = {
-    .cmd = "edns",
-    .handler = edns_cmd_handle,
-    .next = NULL,
-    .prev = NULL,
-};
 
 static int ip_str_to_int(char *ip, int len, unsigned int *val)
 {
@@ -158,7 +151,7 @@ int edns_setting(int action, char *ip, int len)
     return 1;
 }
 
-static int cmd_edns(int argc, const char** argv)
+static int command_edns(int argc, const char** argv)
 {
 
     int flag, i;
@@ -166,16 +159,13 @@ static int cmd_edns(int argc, const char** argv)
     const char *pargv;
     char *pc;
 
-    command_opt_t cmd_opts[] = {
-        MK_OPT_BOOL('a', "add", "add edns ip", &flag),
-        MK_OPT_BOOL('d', "delete", "delete edns ip", &flag),
-        MK_OPT_BOOL('s', "search", "search edns ip", &flag),
-        MK_OPT_FILENAME('f', "file", "add/delete edns ip in file", &filename),    
-        MK_OPT_MAX(),
+    option_t cmd_opts[] = {
+        MK_OPTION_BOOL('a', "add", &flag, "add edns ip"),
+        MK_OPTION_BOOL('d', "delete", &flag, "delete edns ip"),
+        MK_OPTION_BOOL('s', "search", &flag, "search edns ip"),
+        MK_OPTION_FILENAME('f', "file", &filename, "add/delete edns ip in file"),    
+        MK_OPTION_MAX(),
     };
-
-    if (argc <= 2)
-        command_help(&edns_cmd);
 
     for (i = 1; i < argc; i++)
     {
@@ -189,15 +179,23 @@ static int cmd_edns(int argc, const char** argv)
                 /*short name*/
                 if (*(pc+1) != '\0' && (*(pc+1) != '-'))
                 {
-                    for 
+                    //for 
                 }
             }
         }
 
     }
 
+    return 0;
 
 }
+
+static command_t edns_cmd = {
+    .name = "edns",
+    .handler = command_edns,
+    .next = NULL,
+    .prev = NULL,
+};
 
 int edns_command_register()
 {

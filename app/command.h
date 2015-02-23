@@ -5,7 +5,7 @@ typedef int (*handler_t)(int, const char**);
 
 enum option_type
 {
-    OPTION_STRING,
+    OPTION_STRING = 1,
     OPTION_INTEGER,
     OPTION_FILENAME,
     OPTION_BOOL,
@@ -29,12 +29,12 @@ typedef struct option
     int defval;
 } option_t;
 
-typedef option_ctx
+typedef struct option_ctx
 {
     int argc;
     const char **argv, **out;
     int type;
-}
+} option_ctx_t;
 
 #define MK_OPTION_STRING(sn, ln, val, h) {OPTION_STRING, sn, ln, val, h}
 #define MK_OPTION_INTEGER(sn, ln, val, h) {OPTION_INTEGER, sn, ln, val, h}
