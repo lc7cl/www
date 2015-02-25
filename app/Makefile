@@ -1,19 +1,28 @@
+INCDIR := include
+SRCDIR := src
+OBJDIR := obj
+BINDIR := bin
+CFLAGS:= -g -I$(INCDIR)
 
-CFLAGS:= -g
-objs:=uio.o edns.o dnstool.o command.o
-output := $(objs) dnstool
+objs:= $(OBJDIR)/uio.o $(OBJDIR)/edns.o $(OBJDIR)/dnstool.o $(OBJDIR)/command.o
+bin := $(BINDIR)/dnstool
+output := $(objs) $(bin)
+#VPATH := include:src
+vpath %.c $(SRCDIR)
+vpath %.h $(INCDIR)
 
-default:dnstool
+default:$(bin)
 
-dnstool:$(objs)
+$(bin):$(objs)
 	gcc -o $@ $(objs)
 
-uio.o:uio.c uio.h edns.h
-	gcc -c $(CFLAGS) $^
-edns.o:edns.c uio.h edns.h
-	gcc -c $(CFLAGS) $^
-dnstool.o:dnstool.c dnstool.h uio.h edns.h
-	gcc -c $(CFLAGS) $^
+$(objs):
+#uio.o:uio.c uio.h edns.h
+#	gcc -c $(CFLAGS) $< 
+#edns.o:edns.c uio.h edns.h
+#	gcc -c $(CFLAGS) $<
+#dnstool.o:dnstool.c dnstool.h uio.h edns.h
+#	gcc -c $(CFLAGS) $<
 	
 clean:
 	@rm -rf $(wildcard $(output))
