@@ -157,15 +157,17 @@ static int command_edns(int argc, const char** argv)
     int flag, i;
     char *filename;
     const char *pargv;
-    char *pc;
+    const char *pc;
 
     option_t cmd_opts[] = {
         MK_OPTION_BOOL('a', "add", &flag, "add edns ip"),
         MK_OPTION_BOOL('d', "delete", &flag, "delete edns ip"),
         MK_OPTION_BOOL('s', "search", &flag, "search edns ip"),
         MK_OPTION_FILENAME('f', "file", &filename, "add/delete edns ip in file"),    
-        MK_OPTION_MAX(),
+        MK_OPTION_END(),
     };
+
+    parse_options(argc, argv, cmd_opts);
 
     for (i = 1; i < argc; i++)
     {
@@ -187,7 +189,6 @@ static int command_edns(int argc, const char** argv)
     }
 
     return 0;
-
 }
 
 static command_t edns_cmd = {

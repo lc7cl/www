@@ -1,8 +1,6 @@
 #ifndef _COMMAND_H
 #define _COMMADD_H
 
-typedef int (*handler_t)(int, const char**);
-
 enum option_type
 {
     OPTION_STRING = 1,
@@ -15,15 +13,15 @@ enum option_type
 typedef struct command
 {
     const char *name;
-    handler_t *handler;
+    int (*handler)(int, const char**);
     struct command *next, *prev;
 } command_t;
 
 typedef struct option
 {
     int type;
-    int shortname;
-    const char* longname;
+    int short_name;
+    const char* long_name;
     void *value;
     const char* helper;
     int defval;
@@ -46,6 +44,6 @@ int command_register(command_t*);
 int command_unregister(command_t*);
 command_t * get_command(const char*);
 void command_help(command_t*);
-int parse_option_short(option_ctx_t*, option_t);
+int parse_options(int argc, const char ** argv, option_t *options);
 
 #endif

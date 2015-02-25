@@ -1,22 +1,59 @@
+/*
+*                           _ooOoo_
+*                          o8888888o
+*                          88" . "88
+*                          (| ^_^ |)
+*                          O\  =  /O
+*                       ____/`---'\____
+*                     .'  \\|     |//  `.
+*                    /  \\|||  :  |||//  \
+*                   /  _||||| -:- |||||-  \
+*                   |   | \\\  -  /// |   |
+*                   | \_|  ''\---/''  |   |
+*                   \  .-\__  `-`  ___/-. /
+*                 ___`. .'  /--.--  `. . ___ 
+*               ."" '<  `.___\_<|>_/___.'  >'"".
+*             | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+*             \  \ `-.   \_ __\ /__ _/   .-` /  /
+*       ========`-.____`-.___\_____/___.-`____.-'======== 
+*                            `=---='
+*       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+*            FoZu Bless       No Bug       No Crash
+*
+* Author: lee - lee@www.com
+*
+* Last modified: 2015-02-24 00:04
+*
+* Filename: command.c
+*
+* Description: 
+*
+*/
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "command.h"
 
 static command_t *commands;
 
-static int get_value(option_ctx_t *ctx, option_t *options, int opt_type)
+static int option_match(char *opt, char* long_name)
+{
+    return 0;
+}
+
+static int get_value(option_ctx_t *ctx, option_t *option, int opt_type)
 {
     switch (opt_type)
     {
     case OPTION_FILENAME:
-        *ctx->value = strdup(ctx->argv);
+        option->value = strdup(ctx->argv[0]);
         break;
     case OPTION_BOOL:
-        *ctx->value = opt->defval;
+        *(int*)option->value = option->defval;
         break;
     case OPTION_INTEGER:
-        *ctx->value = atoi(ctx->argv);
+        *(int*)option->value = atoi(ctx->argv[0]);
         break;
     default:
         return -1;
@@ -24,35 +61,29 @@ static int get_value(option_ctx_t *ctx, option_t *options, int opt_type)
     return 0;
 }
 
-int parse_option_short(option_ctx_t *ctx, option_t *options)
+static int parse_nodash_opt(option_ctx_t *ctx, option_t *options)
+{
+    return 0;
+}
+
+static int parse_short_opt(option_ctx_t *ctx, option_t *options)
 {
     option_t *opt;
 
     opt = options;
-    for (opt = options; opt->type != OPTION_MAX; opt++)
+    for (opt = options; opt->type != OPTION_END; opt++)
     {
-        if (*ctx->opt == opt->short_name)
-        {
-            ctx->opt = ctx->opt[1] ? ctx->opt + 1 : NULL;
-            return get_value(ctx, opt, opt->type);
-        }
     }
     return -1;
 }
 
-int option_match(char *opt, char* long_name)
-{
-}
-
-int parse_long_opt(option_ctx_t *ctx, option_t *options)
+static int parse_long_opt(option_ctx_t *ctx, option_t *options)
 {
     option_t *opt;
 
     for (opt = options; opt->type != OPTION_END; opt++)
     {
         if (!opt->long_name)
-            continue;
-        if (strcmp(ctx->opt, opt->long_name))
             continue;
 
         return get_value(ctx, opt, opt->type);
@@ -64,31 +95,29 @@ int parse_options(int argc, const char ** argv, option_t *options)
 {
     option_ctx_t ctx;
 
-    ctx->opt = NULL;
-    ctx->argc = argc - 1;
-    ctx->argv = argv + 1;
-    ctx->out = argv;
+    ctx.argc = argc - 1;
+    ctx.argv = argv + 1;
+    ctx.out = argv;
 
-    for (; ctx->argc; ctx->argc--, ctx->argv++)
+    for (; ctx.argc; ctx.argc--, ctx.argv++)
     {
-        const char* arg = ctx->argv[0];
+        const char* arg = ctx.argv[0];
 
         if (arg[0] != '-' || !arg[1])
         {
-            parse_nodash_opt(ctx, options);
+            parse_nodash_opt(&ctx, options);
             continue;
         }
 
         if (arg[1] != '-')
         {
-            ctx->opt = arg + 1;
-            parse_short_opt(ctx, options);
+            parse_short_opt(&ctx, options);
             continue;
         }
 
         if (!arg[2])
         {
-            parse_long_opt(ctx, options);
+            parse_long_opt(&ctx, options);
         }
     }
 
