@@ -4,7 +4,7 @@ OBJDIR := obj
 BINDIR := bin
 CFLAGS:= -g -I$(INCDIR)
 
-objs:= $(OBJDIR)/uio.o $(OBJDIR)/edns.o $(OBJDIR)/dnstool.o $(OBJDIR)/command.o
+objs:= $(OBJDIR)/uio.o $(OBJDIR)/edns.o $(OBJDIR)/command.o $(OBJDIR)/dnstool.o 
 bin := $(BINDIR)/dnstool
 output := $(objs) $(bin)
 #VPATH := include:src
@@ -16,7 +16,8 @@ default:$(bin)
 $(bin):$(objs)
 	gcc -o $@ $(objs)
 
-$(objs):
+$(objs):$(addprefix $(SRCDIR)/,$(patsubst %.o,%.c,$(notdir $(objs))))
+	gcc -c $(CFLAGS) $< -o $@
 #uio.o:uio.c uio.h edns.h
 #	gcc -c $(CFLAGS) $< 
 #edns.o:edns.c uio.h edns.h
