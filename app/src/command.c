@@ -42,12 +42,29 @@ static int option_match(char *opt, char* long_name)
     return 0;
 }
 
+static int get_arg(option_ctx_t *ctx, const option_t *option, const char **arg)
+{
+    if (ctx->opt)
+    {
+        *arg = ctx->opt;
+        ctx->opt = NULL;
+    }
+    else if (ctx->argc > 1)
+    {
+        ctx->argc--;
+        *arg = *++ctx->argv;
+    }
+    return 0;
+}
+
 static int get_value(option_ctx_t *ctx, option_t *option, int opt_type)
 {
+    char *arg = NULL;
     switch (opt_type)
     {
     case OPTION_FILENAME:
-        option->value = strdup(ctx->argv[0]);
+        get_arg(ctx, option, &arg);
+        option->value = strdup(ctx->arg);
         break;
     case OPTION_BOOL:
         *(int*)option->value = option->defval;
@@ -73,6 +90,11 @@ static int parse_short_opt(option_ctx_t *ctx, option_t *options)
     opt = options;
     for (opt = options; opt->type != OPTION_END; opt++)
     {
+        if (opt->short_name == *ctx->opt) 
+        {
+            ctx->opt = ctx->opt[1] ? ctx->opt + 1 : NULL;
+            return get_value(ctx, opt);
+        }
     }
     return -1;
 }
@@ -111,7 +133,11 @@ int parse_options(int argc, const char ** argv, option_t *options)
 
         if (arg[1] != '-')
         {
-            parse_short_opt(&ctx, options);
+            ctx->opt = arg + 1;
+            while (ctx->opt)
+            {
+                parse_short_opt(&ctx, options);
+            }
             continue;
         }
 

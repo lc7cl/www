@@ -31,6 +31,7 @@ typedef struct option_ctx
 {
     int argc;
     const char **argv, **out;
+    const char *opt;
     int type;
 } option_ctx_t;
 
