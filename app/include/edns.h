@@ -7,7 +7,7 @@
 
 extern int edns_init();
 extern void edns_close();
-extern int edns_setting(int action, char *ip, int count);
+extern int edns_setting(int action, char *ip, size_t length);
 int edns_command_register();
 int edns_command_unregister();
 

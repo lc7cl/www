@@ -16,11 +16,13 @@ int main(int argc, char ** argv)
 
 
     edns_command_register();
-    
+
+#if 0
     if(open_uio())
         return -1;
     if (edns_init())
         return -1;
+#endif
 
     opterr = 0;
     while ((c = getopt(argc, argv, "a:d:s:f:")) != -1)
@@ -28,18 +30,12 @@ int main(int argc, char ** argv)
         {
         case 'a':
             action = ACTION_ADD;
-            ip_str = malloc(128);
-            snprintf(ip_str, 128, "%s", optarg);
             break;
         case 's':
             action = ACTION_SEARCH;
-            ip_str = malloc(128);
-            snprintf(ip_str, 128, "%s", optarg);
             break;
         case 'd':
             action = ACTION_DEL;
-			ip_str = malloc(128);
-            snprintf(ip_str, 128, "%s", optarg);
             break;
         case 'f':
             if (optarg)
@@ -54,6 +50,12 @@ int main(int argc, char ** argv)
             
             ;
         }
+
+    if (optind >= argc)
+        return -1;
+
+    ip_str = argv[optind];
+    printf("%s\n", ip_str);
     
     if (file)
     {
@@ -65,9 +67,10 @@ int main(int argc, char ** argv)
         if (ip_str)
             free(ip_str);
     }
-
+#if 0
     edns_close();
     close_uio();
+#endif
 
     edns_command_unregister();
 

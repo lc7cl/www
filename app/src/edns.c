@@ -120,7 +120,7 @@ void edns_close()
     close_edns_proc(edns_fd);
 }
 
-int edns_setting(int action, char *ip, int len)
+int edns_setting(int action, char *ip, size_t len)
 {
     int flag;
     unsigned int i;

@@ -57,14 +57,17 @@ static int get_arg(option_ctx_t *ctx, const option_t *option, const char **arg)
     return 0;
 }
 
-static int get_value(option_ctx_t *ctx, option_t *option, int opt_type)
+static int get_value(option_ctx_t *ctx, option_t *option)
 {
     char *arg = NULL;
-    switch (opt_type)
+    switch (option->type)
     {
     case OPTION_FILENAME:
-        get_arg(ctx, option, &arg);
-        option->value = strdup(ctx->arg);
+        get_arg(ctx, option, (const char**)&arg);
+        if (arg)
+            option->value = strdup(arg);
+        else
+            return -1;
         break;
     case OPTION_BOOL:
         *(int*)option->value = option->defval;
@@ -108,7 +111,7 @@ static int parse_long_opt(option_ctx_t *ctx, option_t *options)
         if (!opt->long_name)
             continue;
 
-        return get_value(ctx, opt, opt->type);
+        return get_value(ctx, opt);
     }
     return -1;
 }
@@ -133,8 +136,8 @@ int parse_options(int argc, const char ** argv, option_t *options)
 
         if (arg[1] != '-')
         {
-            ctx->opt = arg + 1;
-            while (ctx->opt)
+            ctx.opt = arg + 1;
+            while (ctx.opt)
             {
                 parse_short_opt(&ctx, options);
             }
