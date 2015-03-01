@@ -14,11 +14,10 @@ int main(int argc, char ** argv)
     char *ip_str = NULL;
     char *file = NULL;
 
-
     edns_command_register();
 
-#if 0
-    if(open_uio())
+#if 1
+    if (open_uio())
         return -1;
     if (edns_init())
         return -1;
@@ -50,37 +49,34 @@ int main(int argc, char ** argv)
             
             ;
         }
-
-    if (optind >= argc)
-        return -1;
-
-    ip_str = argv[optind];
-    printf("%s\n", ip_str);
     
     if (file)
     {
 #define LINENUM 1024
-        int fd;
-        char buf[LINENUM];
+        FILE *f;
+        char buf[LINENUM], *p;
 
         memset(buf, 0, sizeof(buf));
-        fd = open(file, O_RD);
-        if (fd < 0)
+        f = fopen(file, "r");
+        if (f == NULL)
             return -1;
 
-        while (readln(fd, buf, LINENUM))
+        while (p = fgets(buf, sizeof(buf), f))
         {
-
+            edns_setting(action, p, strlen(p));
         }
-        close(fd);    
+        fclose(f);    
     } 
     else
     {
-        edns_setting(action, ip_str, strlen(ip_str));
-        if (ip_str)
-            free(ip_str);
+        while (optind < argc) 
+        {
+            ip_str = argv[optind];
+            edns_setting(action, ip_str, strlen(ip_str));
+            optind++;
+        }
     }
-#if 0
+#if 1
     edns_close();
     close_uio();
 #endif

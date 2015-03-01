@@ -3,6 +3,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
 #include "command.h"
 #include "uio.h"
@@ -124,7 +125,7 @@ int edns_setting(int action, char *ip, size_t len)
 {
     int flag;
     unsigned int i;
-    char *buf;
+    char *buf, *pch, *p;
     int val;
 
     if (action == ACTION_ADD)
@@ -135,18 +136,28 @@ int edns_setting(int action, char *ip, size_t len)
         flag = FLAG_SEARCH;
     else
         return 1;
-
-    if (!ip_str_to_int(ip, len, &i))
+    
+    buf = malloc(sizeof(struct download_head) + 128);
+    pch = strtok(ip, "  \n");
+    while (pch != NULL)
     {
-        buf = malloc(sizeof(struct download_head) + sizeof(i));
-        buf = buf + sizeof(struct download_head);
-        memcpy(buf, &i, sizeof(i));
-        write_uio(flag, buf, sizeof(i));
-        return write_edns_proc(edns_fd, 1);
-    }
-    else
-    {
-        printf("IP format invalid!\n");
+        printf("%s\n", pch);
+        i = inet_network(pch);
+        if (i != -1)
+        {
+            memset(buf, 0, sizeof(struct download_head) + 128);
+            p = buf + sizeof(struct download_head);
+            memcpy(p, &i, sizeof(i));
+#if 1
+            write_uio(flag, buf, sizeof(i));
+            write_edns_proc(edns_fd, 1);
+#endif
+        }
+        else
+        {
+            printf("IP format invalid!\n");
+        }
+        pch = strtok(NULL, "  \n");
     }
     return 1;
 }
