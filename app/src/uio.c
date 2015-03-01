@@ -103,6 +103,12 @@ int write_uio(int flag, char *data, size_t len)
 {
     struct download_head *dhead;
 
+    if (map_addr == NULL)
+    {
+        printf("mmap address error!\n");
+        return 1;
+    }
+
     if (data == NULL || len == 0)
         return 1;
 

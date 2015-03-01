@@ -123,7 +123,7 @@ void edns_close()
 
 int edns_setting(int action, char *ip, size_t len)
 {
-    int flag;
+    int flag, ret;
     unsigned int i;
     char *buf, *pch, *p;
     int val;
@@ -149,13 +149,25 @@ int edns_setting(int action, char *ip, size_t len)
             p = buf + sizeof(struct download_head);
             memcpy(p, &i, sizeof(i));
 #if 1
-            write_uio(flag, buf, sizeof(i));
-            write_edns_proc(edns_fd, 1);
+            ret = write_uio(flag, buf, sizeof(i));
+            if (ret)
+            {
+                if (buf)
+                    free(buf);
+                return ret;
+            }
+            ret = write_edns_proc(edns_fd, 1);
+            if (ret)
+            {
+                if (buf)
+                    free(buf);
+                return ret;
+            }
 #endif
         }
         else
         {
-            printf("IP format invalid!\n");
+            printf("invalid ip %s\n", pch);
         }
         pch = strtok(NULL, "  \n");
     }

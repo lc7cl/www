@@ -59,7 +59,10 @@ int main(int argc, char ** argv)
         memset(buf, 0, sizeof(buf));
         f = fopen(file, "r");
         if (f == NULL)
+        {
+            printf("invalid file %s\n", file);
             return -1;
+        }
 
         while (p = fgets(buf, sizeof(buf), f))
         {
