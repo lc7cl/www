@@ -8,6 +8,17 @@
 #include "edns.h"
 #include "dnstool.h"
 
+static const char* help = "-a  add ip supported edns from command or file\n"
+                    "-d  delete ip\n"
+                    "-s  query ip\n"
+                    "-f [file] add/delete/query ip from file\n"
+                    "-o [file] output query result to file\n"
+                    "-h usage\n"
+                    "exxample:\n"
+                    "1  ./dnstool -a 1.1.1.1\n"
+                    "2  ./dnstool -af ip.list\n"
+                    "3  ./dnstool -sf ip.list -o result.txt\n";
+
 int main(int argc, char ** argv)
 {
     int c, ret = 0;
@@ -61,6 +72,7 @@ int main(int argc, char ** argv)
             }
 			break;
 		case 'h':
+            printf("%s", help);
 			break;
         case '?':
             break;
