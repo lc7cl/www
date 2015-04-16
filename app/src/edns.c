@@ -44,7 +44,7 @@ int edns_setting(edns_context_t *ctx)
 	            p = buf + sizeof(struct download_head);
 	            memcpy(p, &i, sizeof(i));
 #if 1
-	            ret = write_uio(flag, buf, sizeof(i));
+	            ret = write_uio(flag, p, sizeof(i));
 	            if (ret)
 	            {
 	                if (buf)
