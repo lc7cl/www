@@ -10,7 +10,7 @@
 typedef struct edns_context
 {
 	int action;
-	const char *ip;
+	char *ip;
 	FILE *input;
 	FILE *output;
 } edns_context_t;
