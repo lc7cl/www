@@ -12,7 +12,7 @@
 
 int edns_setting(edns_context_t *ctx)
 {
-    int flag, ret;
+    int flag, ret, res = 0;;
     unsigned int i;
     char *buf, *pch, *p;
     int val;
@@ -51,6 +51,14 @@ int edns_setting(edns_context_t *ctx)
 	                    free(buf);
 	                return ret;
 	            }
+				if (ctx->action == ACTION_SEARCH && ctx->output)
+				{
+					read_uio((char *)&ret, sizeof(ret));
+					if (res == 1)
+					{
+						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, res);
+					}
+				}
 #endif
 	        }
 	        else
@@ -60,7 +68,52 @@ int edns_setting(edns_context_t *ctx)
 	        pch = strtok(NULL, "  \n");
 	    }
 	}
-    return 1;
+
+	if (ctx->input)
+	{
+	#define LINESIZE 1024
+		char *p;
+		char line_buf[LINESIZE];
+
+		memset(line_buf, 0, LINESIZE);
+		while (fgets(line_buf, LINESIZE, ctx->input))
+		{
+			pch = strtok(line_buf, "  \n");
+		    while (pch != NULL)
+		    {
+		        printf("%s\n", pch);
+		        i = inet_network(pch);
+		        if (i != -1)
+		        {
+		            memset(buf, 0, sizeof(struct download_head) + 128);
+		            p = buf + sizeof(struct download_head);
+		            memcpy(p, &i, sizeof(i));
+		            ret = write_uio(flag, p, sizeof(i));
+		            if (ret)
+		            {
+		                if (buf)
+		                    free(buf);
+		                return ret;
+		            }
+					if (ctx->action == ACTION_SEARCH && ctx->output)
+					{
+						read_uio((char *)&ret, sizeof(ret));
+						if (res == 1)
+						{
+							fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, res);
+						}
+					}
+		        }
+		        else
+		        {
+		            printf("invalid ip %s\n", pch);
+		        }
+		        pch = strtok(NULL, "  \n");
+		    }
+		}
+	}
+	
+    return 0;
 }
 
 static int command_edns(int argc, const char** argv)

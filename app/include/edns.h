@@ -22,7 +22,10 @@ typedef struct edns_context
 		if (ctx.input)                \
 			fclose(ctx.input);        \
 		if (ctx.output)				  \
+		{							  \
+			fflush(ctx.output);       \
 			fclose(ctx.output);		  \
+		}                             \
 	} while (0)
 extern int edns_init();
 extern void edns_close();

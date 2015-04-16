@@ -51,13 +51,13 @@ int main(int argc, char ** argv)
 		case 'o':			
             if (optarg)
             {
-                f = fopen(optarg, "r");
+                f = fopen(optarg, "rwa+");
 				if (f == NULL)
 		        {
 		            kerror("invalid file %s\n", optarg);
 		            goto out;
 		        }
-                ctx.input = f;
+                ctx.output = f;
             }
 			break;
 		case 'h':
