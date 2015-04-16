@@ -1,6 +1,6 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-#define kerror(fmt, ...) printf(fmt, ##argv)
+#define kerror(fmt, args...) printf(fmt, ##args)
 
 #endif
