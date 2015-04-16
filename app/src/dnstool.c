@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 
+#include "common.h"
 #include "uio.h"
 #include "edns.h"
 #include "dnstool.h"
