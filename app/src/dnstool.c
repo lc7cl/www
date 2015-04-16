@@ -41,7 +41,7 @@ int main(int argc, char ** argv)
 	            f = fopen(optarg, "r");
 				if (f == NULL)
 		        {
-		            kerror("invalid file %s\n", file);
+		            kerror("invalid file %s\n", optarg);
 		            goto out;
 		        }
                 ctx.input = f;
@@ -53,7 +53,7 @@ int main(int argc, char ** argv)
                 f = fopen(optarg, "r");
 				if (f == NULL)
 		        {
-		            kerror("invalid file %s\n", file);
+		            kerror("invalid file %s\n", optarg);
 		            goto out;
 		        }
                 ctx.input = f;
