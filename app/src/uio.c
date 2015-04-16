@@ -13,7 +13,7 @@
 #define UIO_MAP_ADDR "/sys/devices/platform/kcns_update_uio/uio/uio0/maps/map0/addr"
 #define UIO_CTRL "/proc/sys/net/ipv4/kcns_server/uio_ctrl"
 
-#define uio_error(fmt, ...) printf("uio_error:""fmt, ...");
+#define uio_error(fmt, args...) printf("uio_error:""fmt", ##args);
 
 static struct uio_config
 {
