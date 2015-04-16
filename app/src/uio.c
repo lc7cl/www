@@ -151,8 +151,6 @@ int write_uio(int flag, char *data, size_t len)
 int read_uio(char* out, int size)
 {
 	int i = 0;
-
-	memset(buff, 0, 22);
 	while (read(uio_cfg.ctl_fd, &i, sizeof(i)))
 	{
 		if (i == 2)
