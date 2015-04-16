@@ -19,8 +19,6 @@ int main(int argc, char ** argv)
 #if 1
     if (open_uio())
         return -1;
-    if (edns_init())
-        return -1;
 #endif
 
     opterr = 0;
@@ -80,7 +78,6 @@ int main(int argc, char ** argv)
         }
     }
 #if 1
-    edns_close();
     close_uio();
 #endif
 
