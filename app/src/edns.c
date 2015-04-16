@@ -5,60 +5,61 @@
 #include <errno.h>
 #include <arpa/inet.h>
 
+#include "common.h"
 #include "command.h"
 #include "uio.h"
 #include "edns.h"
 
-int edns_setting(int action, char *ip, size_t len)
+int edns_setting(edns_context_t *ctx)
 {
     int flag, ret;
     unsigned int i;
     char *buf, *pch, *p;
     int val;
 
-    if (action == ACTION_ADD)
+	if (!ctx)
+		return -1;
+
+    if (ctx->action == ACTION_ADD)
         flag = FLAG_ADD;
-    else if (action == ACTION_DEL)
+    else if (ctx->action == ACTION_DEL)
         flag = FLAG_DEL;
-    else if (action == ACTION_SEARCH)
+    else if (ctx->action == ACTION_SEARCH)
         flag = FLAG_SEARCH;
     else
         return 1;
     
     buf = malloc(sizeof(struct download_head) + 128);
-    pch = strtok(ip, "  \n");
-    while (pch != NULL)
-    {
-        printf("%s\n", pch);
-        i = inet_network(pch);
-        if (i != -1)
-        {
-            memset(buf, 0, sizeof(struct download_head) + 128);
-            p = buf + sizeof(struct download_head);
-            memcpy(p, &i, sizeof(i));
+
+	if (ctx->ip)
+	{
+	    pch = strtok(ctx->ip, "  \n");
+	    while (pch != NULL)
+	    {
+	        printf("%s\n", pch);
+	        i = inet_network(pch);
+	        if (i != -1)
+	        {
+	            memset(buf, 0, sizeof(struct download_head) + 128);
+	            p = buf + sizeof(struct download_head);
+	            memcpy(p, &i, sizeof(i));
 #if 1
-            ret = write_uio(flag, buf, sizeof(i));
-            if (ret)
-            {
-                if (buf)
-                    free(buf);
-                return ret;
-            }
-            ret = write_edns_proc(edns_fd, 1);
-            if (ret)
-            {
-                if (buf)
-                    free(buf);
-                return ret;
-            }
+	            ret = write_uio(flag, buf, sizeof(i));
+	            if (ret)
+	            {
+	                if (buf)
+	                    free(buf);
+	                return ret;
+	            }
 #endif
-        }
-        else
-        {
-            printf("invalid ip %s\n", pch);
-        }
-        pch = strtok(NULL, "  \n");
-    }
+	        }
+	        else
+	        {
+	            printf("invalid ip %s\n", pch);
+	        }
+	        pch = strtok(NULL, "  \n");
+	    }
+	}
     return 1;
 }
 

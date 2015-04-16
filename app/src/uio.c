@@ -141,8 +141,8 @@ int write_uio(int flag, char *data, size_t len)
     dhead->length = len + sizeof(struct download_head);
     memcpy(uio_cfg.map_addr, (char *)dhead , dhead->length);
 	
-	size = snprintf(buff, 21, "%d", i);
-    size = write(fd, buff, size);
+	size = snprintf(buff, 21, "%d", 1);
+    size = write(uio_cfg.ctl_fd, buff, size);
     if (size <= 0)
 		uio_error("failt write uio\n");
     return 0;
