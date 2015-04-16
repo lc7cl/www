@@ -15,15 +15,15 @@ typedef struct edns_context
 	FILE *output;
 } edns_context_t;
 
-#define INIT_EDNS_CTX(ctx) do {memset(&ctx, 0, sizeof(edns_context_t))} while (0)
+#define INIT_EDNS_CTX(ctx) do { memset(&ctx, 0, sizeof(edns_context_t)); } while (0)
 #define DESTROY_EDNS_CTX(ctx) do {\
-	if (ctx.ip)                   \
-		free(ctx.ip);             \
-	if (ctx.input)                \
-		fclose(ctx.input);        \
-	if (ctx.output)				  \
-		fclose(ctx.output);		  \
-} while (0)
+		if (ctx.ip)                   \
+			free(ctx.ip);             \
+		if (ctx.input)                \
+			fclose(ctx.input);        \
+		if (ctx.output)				  \
+			fclose(ctx.output);		  \
+	} while (0)
 extern int edns_init();
 extern void edns_close();
 extern int edns_setting(edns_context_t *ctx);
