@@ -51,7 +51,7 @@ int main(int argc, char ** argv)
 		case 'o':			
             if (optarg)
             {
-                f = fopen(optarg, "rwa+");
+                f = fopen(optarg, "a+");
 				if (f == NULL)
 		        {
 		            kerror("invalid file %s\n", optarg);
