@@ -54,9 +54,13 @@ int edns_setting(edns_context_t *ctx)
 				if (ctx->action == ACTION_SEARCH && ctx->output)
 				{
 					read_uio((char *)&ret, sizeof(ret));
-					if (res == 1)
+					if (res == 2)
 					{
-						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, res);
+						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, 1);
+					} 
+					else if (res == 3)
+					{
+						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, 0);
 					}
 				}
 #endif

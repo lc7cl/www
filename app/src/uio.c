@@ -153,7 +153,7 @@ int read_uio(char* out, int size)
 	int i = 0;
 	while (read(uio_cfg.ctl_fd, &i, sizeof(i)))
 	{
-		if (i == 2)
+		if (i == 2 || i == 3)
 		{
 			memcpy(out, uio_cfg.map_addr, size > uio_cfg.size ? uio_cfg.size : size);
 			break;
