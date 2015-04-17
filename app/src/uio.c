@@ -172,6 +172,7 @@ int read_uio(char* out, int size)
 			memcpy(out, uio_cfg.map_addr, size > uio_cfg.size ? uio_cfg.size : size);
 			break;
 		}	
+		lseek(uio_cfg.res_fd, 0, SEEK_SET);
 	}
 
 	return 0;
