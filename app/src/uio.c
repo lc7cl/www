@@ -167,9 +167,11 @@ int read_uio(char* out, int size)
 	int i = 0;
 	while (read(uio_cfg.res_fd, &i, sizeof(i)))
 	{
-		if (i == 2 || i == 3)
+		if (atoi(&i) == 2 || atoi(&i) == 3)
 		{
-			memcpy(out, uio_cfg.map_addr, size > uio_cfg.size ? uio_cfg.size : size);
+			//memcpy(out, uio_cfg.map_addr, size > uio_cfg.size ? uio_cfg.size : size);
+			memcpy(out, &i, sizeof(i));
+			lseek(uio_cfg.res_fd, 0, SEEK_SET);
 			break;
 		}	
 		lseek(uio_cfg.res_fd, 0, SEEK_SET);
