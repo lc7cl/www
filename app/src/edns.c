@@ -36,7 +36,6 @@ int edns_setting(edns_context_t *ctx)
 	    pch = strtok(ctx->ip, "  \n");
 	    while (pch != NULL)
 	    {
-	        printf("%s\n", pch);
 	        i = inet_network(pch);
 	        if (i != -1)
 	        {
