@@ -12,6 +12,7 @@
 #define UIO_MAP_OFFSET "/sys/devices/platform/kcns_update_uio/uio/uio0/maps/map0/offset"
 #define UIO_MAP_ADDR "/sys/devices/platform/kcns_update_uio/uio/uio0/maps/map0/addr"
 #define UIO_CTRL "/proc/sys/net/ipv4/kcns_server/uio_ctrl"
+#define UIO_RESULT "/proc/sys/net/ipv4/kcns_server/uio_result"
 
 #define uio_error(fmt, args...) printf("uio_error:"fmt, ##args);
 
@@ -22,6 +23,7 @@ static struct uio_config
     int size;
 	int uio_fd;
 	int ctl_fd;
+	int res_fd;
 	char* map_addr;
 } uio_cfg;
        
@@ -95,8 +97,7 @@ int open_uio()
         return -1;
     }
 
-	fd = open(UIO_CTRL, O_RDWR);
-	
+	fd = open(UIO_CTRL, O_RDWR);	
     if (fd > -1)
     {
 	    uio_cfg.ctl_fd = fd;    
@@ -104,6 +105,17 @@ int open_uio()
 	else
 	{
 		uio_error("fail open %s\n", UIO_CTRL);
+		return -1;
+	}
+
+	fd = open(UIO_RESULT, O_RDWR);	
+    if (fd > -1)
+    {
+	    uio_cfg.res_fd = fd;    
+    }
+	else
+	{
+		uio_error("fail open %s\n", UIO_RESULT);
 		return -1;
 	}
     return 0;
@@ -117,6 +129,8 @@ void close_uio()
         close(uio_cfg.uio_fd);
 	if (uio_cfg.ctl_fd > -1)
 		close(uio_cfg.ctl_fd);
+	if (uio_cfg.res_fd > -1)
+		close(uio_cfg.res_fd);
 }
 
 int write_uio(int flag, char *data, size_t len)
@@ -151,7 +165,7 @@ int write_uio(int flag, char *data, size_t len)
 int read_uio(char* out, int size)
 {
 	int i = 0;
-	while (read(uio_cfg.ctl_fd, &i, sizeof(i)))
+	while (read(uio_cfg.res_fd, &i, sizeof(i)))
 	{
 		if (i == 2 || i == 3)
 		{
