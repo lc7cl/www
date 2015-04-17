@@ -95,7 +95,7 @@ int edns_setting(edns_context_t *ctx)
 					if (ctx->action == ACTION_SEARCH && ctx->output)
 					{
 						read_uio((char *)&res, sizeof(res));
-						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, res);
+						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, atoi((char*)&res));
 					}
 		        }
 		        else
