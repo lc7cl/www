@@ -24,7 +24,7 @@ int main(int argc, char ** argv)
 #endif
 	INIT_EDNS_CTX(ctx);
     opterr = 0;
-    while ((c = getopt(argc, argv, "hads:f:o:")) != -1)
+    while ((c = getopt(argc, argv, "hadsf:o:")) != -1)
         switch (c)
         {
         case 'a':
