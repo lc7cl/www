@@ -78,7 +78,6 @@ int edns_setting(edns_context_t *ctx)
 			pch = strtok(line_buf, "  \n");
 		    while (pch != NULL)
 		    {
-		        printf("%s\n", pch);
 		        i = inet_network(pch);
 		        if (i != -1)
 		        {
