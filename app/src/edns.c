@@ -50,10 +50,12 @@ int edns_setting(edns_context_t *ctx)
 	                    free(buf);
 	                return ret;
 	            }
-				if (ctx->action == ACTION_SEARCH && ctx->output)
+				if (ctx->action == ACTION_SEARCH)
 				{
 					read_uio((char *)&res, sizeof(res));
-					fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, atoi((char*)&res));
+					printf("IP:%s RESULT:%d\n", pch, atoi((char*)&res));
+					if (ctx->output)
+						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, atoi((char*)&res));					
 				}
 #endif
 	        }
@@ -90,10 +92,12 @@ int edns_setting(edns_context_t *ctx)
 		                    free(buf);
 		                return ret;
 		            }
-					if (ctx->action == ACTION_SEARCH && ctx->output)
+					if (ctx->action == ACTION_SEARCH)
 					{
-						read_uio((char *)&res, sizeof(res));
-						fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, atoi((char*)&res));
+						read_uio((char *)&res, sizeof(res));						
+						printf("IP:%s RESULT:%d\n", pch, atoi((char*)&res));
+						if (ctx->output)
+							fprintf(ctx->output, "IP:%s RESULT:%d\n", pch, atoi((char*)&res));						
 					}
 		        }
 		        else
