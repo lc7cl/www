@@ -18,6 +18,7 @@ static void sighandler(int signo)
 
 int main()
 {
+#if 0
     struct sigaction sa;
     struct itimerval timer;
 
@@ -39,6 +40,13 @@ int main()
     }
 
     while (!test_exit){};
+#else
+    int i = 0;
+    while (i++ < 5);
+    {
+        printf("s\n");
+    }
+#endif
 
     return 0;
 }
