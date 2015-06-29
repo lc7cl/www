@@ -3,7 +3,9 @@ ifeq ($(RTE_SDK),)
 	$(error "Must define RTE_SDK")
 endif
 
-RTE_TARGET ?= x86_64-native-linuxapp-gcc
+ifeq ($(RTE_TARGET),)
+	$(error "Must define RTE_SDK")
+endif
 
 include $(RTE_SDK)/mk/rte.vars.mk
 

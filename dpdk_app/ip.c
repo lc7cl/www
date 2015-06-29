@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     for (portid = 0; portid < nb_ports; portid++) {
 
         qconf = &lcore_queue_conf[rx_lcore_id];
-        while (rte_lcore_is_enable(rx_lcore_id) || 
+        while (rte_lcore_is_enabled(rx_lcore_id) || 
                 qconf->n_rx_queue == nb_rx_queue_per_core) {
 
             rx_lcore_id++;
@@ -143,10 +143,6 @@ int main(int argc, char **argv)
         if (rte_eal_wait_lcore(lcore_id) < 0)
             return -1;
     }
-
-
-
-
 
     return 0;
 }
