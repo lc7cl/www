@@ -13,6 +13,7 @@ CFLAGS+= -g
 APP=test
 
 #SRCS-y:=test.c
-SRCS-y:=ip.c
+#SRCS-y:=ip.c
+SRCS-y:=packet.c
 
 include $(RTE_SDK)/mk/rte.extapp.mk
