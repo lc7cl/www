@@ -5,8 +5,9 @@
 #include <rte_ether.h>
 #include <rte_ethdev.h>
 #include <rte_lcore.h>
+#include <rte_cycles.h>
 
-#define RTE_LOGTYPE_PACKET RTE_LCORE_USER1+1
+#define RTE_LOGTYPE_PACKET RTE_LOGTYPE_USER1+1
 #define MAX_PKT_BURST 32
 #define MAX_RX_QUEUE_PER_CORE 16
 #define MBUF_TABLE_SIZE (2 * MAX_PKT_BURST)
