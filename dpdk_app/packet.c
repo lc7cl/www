@@ -17,6 +17,7 @@ static unsigned nb_rx_queue_per_core = 1;
 
 struct rx_queue {
     uint8_t portid;
+	uint8_t queue_id;
 };
 
 struct mbuf_table {
@@ -28,7 +29,10 @@ struct lcore_queue_conf {
     uint16_t n_rx_queue;
     uint16_t tx_queue_id[RTE_MAX_ETHPORTS];
     struct rx_queue rx_queue_list[MAX_RX_QUEUE_PER_CORE];
+	struct mbuf_table rx_mbufs;
+	uint8_t cur_rx_pkt_pos;
     struct mbuf_table tx_mbufs[RTE_MAX_ETHPORTS];
+	FILE *out;
 } __rte_cache_aligned;
 
 struct lcore_queue_conf lcore_queue_conf[RTE_MAX_LCORE];
@@ -49,6 +53,7 @@ static void packet_main_loop(void)
     int i, nb_rx;
     uint64_t cur_tsc, portid;
     struct rx_queue *rxq;
+	struct rte_mbuf *pkt;
 
     lcore_id = rte_lcore_id();
     qconf = &lcore_queue_conf[lcore_id];
@@ -66,8 +71,16 @@ static void packet_main_loop(void)
             rxq = &qconf->rx_queue_list[i];
             portid = rxq->portid;
 
+			qconf->cur_rx_pkt_pos = 0;	
+			qconf->rx_mbufs.len = rte_eth_rx_burst(
+				portid, rxq->queue_id, 
+				qconf->rx_mbufs.ma_table, MAX_PKT_BURST);
+			if (qconf->rx_mbufs.len) {
+				pkt = qconf->rx_mbufs.ma_table[qconf->cur_rx_pkt_pos++];
+				if (qconf->out)
+					rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
+			}
         }
-
     }
 
 }
@@ -85,6 +98,7 @@ int main(int argc, char** argv)
     const uint16_t rx_rings = 1 , tx_rings = 1;
     struct lcore_queue_conf *qconf;
     struct rx_queue *rxq;
+	char filename[64];
 
     ret = rte_eal_init(argc, argv);
     if (ret < 0)
@@ -122,6 +136,7 @@ int main(int argc, char** argv)
 
         rxq = &qconf->rx_queue_list[qconf->n_rx_queue];
         rxq->portid = pid;
+		rxq->queue_id = 0;
         qconf->n_rx_queue++;
 
         ret = rte_eth_tx_queue_setup(pid, 1, nb_txd, socket, NULL);
@@ -135,6 +150,11 @@ int main(int argc, char** argv)
         ret = rte_eth_dev_start(pid);
         if (ret < 0)
             rte_exit(EXIT_FAILURE, "rte_eth_dev_start err=%d port=%u\n", ret, pid);
+
+		snprintf(filename, 63, "../dump_file_%d", rx_lcore_id);
+		qconf->out = fopen("filename", "w");
+		if (qconf->out == NULL)
+			RTE_LOG(INFO, PACKET, "dump file %s init error %u has nothing to do\n", filename);
     }
 
     rte_eal_mp_remote_launch(packet_launch_one_lcore, NULL, CALL_MASTER);
