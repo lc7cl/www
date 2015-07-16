@@ -154,7 +154,7 @@ int main(int argc, char** argv)
 		snprintf(filename, 63, "../dump_file_%d", rx_lcore_id);
 		qconf->out = fopen("filename", "w");
 		if (qconf->out == NULL)
-			RTE_LOG(INFO, PACKET, "dump file %s init error %u has nothing to do\n", filename);
+			RTE_LOG(INFO, PACKET, "dump file %s init error has nothing to do\n", filename);
     }
 
     rte_eal_mp_remote_launch(packet_launch_one_lcore, NULL, CALL_MASTER);
