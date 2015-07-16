@@ -40,6 +40,7 @@ struct lcore_queue_conf lcore_queue_conf[RTE_MAX_LCORE];
 static const struct rte_eth_conf default_rte_eth_conf = {
     .rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN,
                 .mq_mode = ETH_MQ_RX_RSS},
+    .txmode = { .mq_mode = ETH_MQ_TX_NONE },
 };
 
 static struct rte_mempool * pkt_mbuf_pool = NULL;
