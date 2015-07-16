@@ -140,11 +140,11 @@ int main(int argc, char** argv)
 		rxq->queue_id = 0;
         qconf->n_rx_queue++;
 
-        ret = rte_eth_tx_queue_setup(pid, 1, nb_txd, socket, NULL);
+        ret = rte_eth_tx_queue_setup(pid, 0, nb_txd, socket, NULL);
         if (ret < 0)
             rte_exit(EXIT_FAILURE, "txq on port %d setup error\n", pid);
 
-        ret = rte_eth_rx_queue_setup(pid, 1, nb_rxd, socket, NULL, pkt_mbuf_pool);
+        ret = rte_eth_rx_queue_setup(pid, 0, nb_rxd, socket, NULL, pkt_mbuf_pool);
         if (ret < 0)
             rte_exit(EXIT_FAILURE, "rxq on port %d setup error\n", pid);
 
