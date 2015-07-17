@@ -61,13 +61,18 @@ static int
 build_packet(struct rte_mbuf *mbuf)
 {
 #define PKT_SIZE 64
-	static ether_addr src_addr = {.addr_bytes = {0x00, 0x0c, 0x29, 0xef, 0x84, 0xe3}};
-	static ether_addr dst_addr = {.addr_bytes = {0x00, 0x50, 0x56, 0xc0, 0x00, 0x08}};
+	static struct ether_addr src_addr;
+	static struct ether_addr dst_addr;
 	struct ether_hdr *eth_hdr;
 	struct ipv4_hdr *ip_hdr;
 	struct udp_hdr  *udp_hdr;
 	char *data;
 	int i;
+
+    rte_memcpy(src_addr.addr_bytes, "000c29ef84e3", ETHER_ADDR_LEN);
+    rte_memcpy(dst_addr.addr_bytes, "005056c00008", ETHER_ADDR_LEN);
+    //src_addr.addr_bytes = { 0, 12, 41, 239, 132, 227 };
+    //dst_addr.addr_bytes = { 0, 80, 86, 198, 0, 8 };
 
 	eth_hdr = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
 	eth_hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
@@ -84,8 +89,8 @@ build_packet(struct rte_mbuf *mbuf)
 	ip_hdr->packet_id	= 0;
 	ip_hdr->total_length = rte_cpu_to_be_16(PKT_SIZE - sizeof(*eth_hdr));
 	ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
-	ip_hdr->src_addr = rte_cpu_to_be_32(IPV4(192,168,1,1));
-	ip_hdr->dst_addr = rte_cpu_to_be_32(IPV4(192,168,1,100));
+	ip_hdr->src_addr = rte_cpu_to_be_32(IPv4(192,168,179,100));
+	ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(192,168,179,1));
 
 	udp_hdr = (struct udp_hdr  *)(ip_hdr + 1);
 	memset(udp_hdr, 0, sizeof(*udp_hdr));
@@ -129,6 +134,7 @@ packet_main_loop(void)
     while (1) {
         cur_tsc = rte_rdtsc();
 
+        /*
         for (i = 0; i < qconf->n_rx_queue; i++) {
             rxq = &qconf->rx_queue_list[i];
             portid = rxq->portid;
@@ -144,14 +150,18 @@ packet_main_loop(void)
 					rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
 			}
         }
-
+        */
 		for (i = 0; i < RTE_MAX_ETHPORTS; i++) {
 			if (qconf->tx_mbufs[i].len == 0)
 				continue;
 
+            pkt = qconf->tx_mbufs[i].ma_table[0];
+            rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
 			qconf->tx_mbufs[i].len = rte_eth_tx_burst(
 				i, qconf->tx_queue_id[i], 
-				qconf->tx_mbufs[i].ma_table, MAX_PKT_BURST);		
+				qconf->tx_mbufs[i].ma_table, MAX_PKT_BURST);
+            printf("result:%d\n", qconf->tx_mbufs[i].len);
+            break;
 		}
     }
 }
