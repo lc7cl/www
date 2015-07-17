@@ -208,6 +208,7 @@ main(int argc, char** argv)
 
 		for (i = 0; i < MBUF_TABLE_SIZE; i++) {
 			if (rte_mempool_sc_get(pkt_mbuf_pool, (void*)&qconf->tx_mbufs[pid].ma_table[i]) == 0) {
+				build_packet(&qconf->tx_mbufs[pid].ma_table[i]);
 				qconf->tx_mbufs[pid].len++;
 			}			
 		}
