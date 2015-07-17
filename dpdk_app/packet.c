@@ -161,7 +161,7 @@ packet_main_loop(void)
             pkt = qconf->tx_mbufs[i].ma_table[0];
             rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
 			qconf->tx_mbufs[i].len = rte_eth_tx_burst(
-				i, qconf->tx_queue_id[i], 
+				i, 0, 
 				qconf->tx_mbufs[i].ma_table, MAX_PKT_BURST);
             printf("result:%d\n", qconf->tx_mbufs[i].len);
             break;
@@ -208,17 +208,6 @@ main(int argc, char** argv)
         if (ret != 0)
             rte_exit(EXIT_FAILURE, "port %d configure error\n", pid);
 
-        qconf = &lcore_queue_conf[rx_lcore_id];
-
-		for (i = 0; i < MBUF_TABLE_SIZE; i++) {
-			mbuf = rte_pktmbuf_alloc(pkt_mbuf_pool);
-			if (mbuf != NULL) {
-				build_packet(mbuf);
-				qconf->tx_mbufs[pid].ma_table[i] = mbuf;
-				qconf->tx_mbufs[pid].len++;
-			}			
-		}
-		
         while (rx_lcore_id == rte_get_master_lcore() || 
                 !rte_lcore_is_enabled(rx_lcore_id) || 
                 qconf->n_rx_queue == nb_rx_queue_per_core) {
@@ -227,6 +216,15 @@ main(int argc, char** argv)
                 rte_exit(EXIT_FAILURE, "Not enough cores!\n");
             qconf = &lcore_queue_conf[rx_lcore_id];
         }
+		
+		for (i = 0; i < MBUF_TABLE_SIZE; i++) {
+			mbuf = rte_pktmbuf_alloc(pkt_mbuf_pool);
+			if (mbuf != NULL) {
+				build_packet(mbuf);
+				qconf->tx_mbufs[pid].ma_table[i] = mbuf;
+				qconf->tx_mbufs[pid].len++;
+			}			
+		}
 
         socket = (int) rte_lcore_to_socket_id(rx_lcore_id);
         if (socket == SOCKET_ID_ANY)
