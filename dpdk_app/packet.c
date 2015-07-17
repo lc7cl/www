@@ -80,7 +80,7 @@ static void packet_main_loop(void)
 				qconf->rx_mbufs.ma_table, MAX_PKT_BURST);
 			if (qconf->rx_mbufs.len) {
 				pkt = qconf->rx_mbufs.ma_table[qconf->cur_rx_pkt_pos++];
-				netif_rx(qconf->rx_mbufs.ma_table, qconf->rx_mbufs.len);
+				netif_rx(pkt, qconf->rx_mbufs.len);
 				if (qconf->out)
 					rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
 			}
