@@ -6,6 +6,8 @@
 #include <rte_ethdev.h>
 #include <rte_lcore.h>
 #include <rte_cycles.h>
+#include <rte_ip.h>
+#include <rte_udp.h>
 
 #include "netif.h"
 
@@ -191,7 +193,7 @@ main(int argc, char** argv)
         qconf = &lcore_queue_conf[rx_lcore_id];
 
 		for (i = 0; i < MBUF_TABLE_SIZE; i++) {
-			if (rte_mempool_sc_get(pkt_mbuf_pool, &qconf->tx_mbufs[pid].ma_table[i]) == 0) {
+			if (rte_mempool_sc_get(pkt_mbuf_pool, (void*)&qconf->tx_mbufs[pid].ma_table[i]) == 0) {
 				qconf->tx_mbufs[pid].len++;
 			}			
 		}
