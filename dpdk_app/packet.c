@@ -152,10 +152,8 @@ packet_main_loop(void)
 			qconf->tx_mbufs[i].len = rte_eth_tx_burst(
 				i, qconf->tx_queue_id[i], 
 				qconf->tx_mbufs[i].ma_table, MAX_PKT_BURST);		
-			}
-        }
+		}
     }
-
 }
 
 static int 
