@@ -63,7 +63,7 @@ build_packet(struct rte_mbuf *mbuf)
 	char *data;
 	int i;
 
-	eth_hdr = rte_pktmbuf_mtod(pkt, struct ether_hdr *);
+	eth_hdr = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
 	eth_hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	ether_addr_copy(&src_addr, &eth_hdr->s_addr);
 	ether_addr_copy(&dst_addr, &eth_hdr->d_addr);
