@@ -17,6 +17,12 @@
 #define MBUF_TABLE_SIZE (2 * MAX_PKT_BURST)
 #define NB_MBUF 8192
 
+#define IP_DEFTTL  64   /* from RFC 1340. */
+#define IP_VERSION 0x40
+#define IP_HDRLEN  0x05 /* default IP header length == five 32-bits words. */
+#define IP_VHL_DEF (IP_VERSION | IP_HDRLEN)
+
+
 static unsigned nb_rx_queue_per_core = 1;
 
 struct rx_queue {
