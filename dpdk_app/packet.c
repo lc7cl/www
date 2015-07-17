@@ -61,8 +61,8 @@ static int
 build_packet(struct rte_mbuf *mbuf)
 {
 #define PKT_SIZE 64
-	static ether_addr src_addr = {.addr_bytes = {'00', '0c', '29', 'ef', '84', 'e3'}};
-	static ether_addr dst_addr = {.addr_bytes = {'00', '50', '56', 'C0', '00', '08'}};
+	static ether_addr src_addr = {.addr_bytes = {0x00, 0x0c, 0x29, 0xef, 0x84, 0xe3}};
+	static ether_addr dst_addr = {.addr_bytes = {0x00, 0x50, 0x56, 0xc0, 0x00, 0x08}};
 	struct ether_hdr *eth_hdr;
 	struct ipv4_hdr *ip_hdr;
 	struct udp_hdr  *udp_hdr;
