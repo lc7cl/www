@@ -87,7 +87,7 @@ build_packet(struct rte_mbuf *mbuf)
 	ip_hdr->time_to_live	= IP_DEFTTL;
 	ip_hdr->next_proto_id	= IPPROTO_UDP;
 	ip_hdr->packet_id	= 0;
-	ip_hdr->total_length = rte_cpu_to_be_16(PKT_SIZE - sizeof(*eth_hdr));
+	ip_hdr->total_length = rte_cpu_to_be_16(PKT_SIZE + sizeof(*ip_hdr) + sizeof(*udp_hdr));
 	ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 	ip_hdr->src_addr = rte_cpu_to_be_32(IPv4(192,168,179,100));
 	ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(192,168,179,1));
@@ -97,16 +97,19 @@ build_packet(struct rte_mbuf *mbuf)
 	udp_hdr->dst_port = rte_cpu_to_be_16(53);
 	udp_hdr->src_port = rte_cpu_to_be_16(12306);
 	udp_hdr->dgram_cksum = 0;
-	udp_hdr->dgram_len = rte_cpu_to_be_16(PKT_SIZE - 
-							sizeof(*eth_hdr) -
-							sizeof(*ip_hdr));
+	udp_hdr->dgram_len = rte_cpu_to_be_16(PKT_SIZE + sizeof(*udp_hdr));
 
 	data = (char *)(udp_hdr + 1);
 	for (i = 0; i < PKT_SIZE; i++) {
 		*(data++) = 'a';
 	}
-
 	udp_hdr->dgram_cksum = rte_ipv4_udptcp_cksum(ip_hdr, udp_hdr);
+	mbuf->pkt_len = PKT_SIZE + sizeof(*ip_hdr) + sizeof(*udp_hdr) + sizeof(*eth_hdr);
+	mbuf->l2_len = sizeof(*eth_hdr);
+	mbuf->l3_len = sizeof(*ip_hdr);
+	mbuf->data_len = PKT_SIZE + sizeof(*ip_hdr) + sizeof(*udp_hdr) + sizeof(*eth_hdr);
+	mbuf->next = NULL;
+	mbuf->nb_segs = 1;
 #undef PKT_SIZE
 	return 1;
 }
@@ -182,6 +185,7 @@ main(int argc, char** argv)
     struct lcore_queue_conf *qconf;
     struct rx_queue *rxq;
 	char filename[64];
+	struct rte_mbuf *mbuf;
 
     ret = rte_eal_init(argc, argv);
     if (ret < 0)
@@ -207,8 +211,10 @@ main(int argc, char** argv)
         qconf = &lcore_queue_conf[rx_lcore_id];
 
 		for (i = 0; i < MBUF_TABLE_SIZE; i++) {
-			if (rte_mempool_sc_get(pkt_mbuf_pool, (void*)&qconf->tx_mbufs[pid].ma_table[i]) == 0) {
-				build_packet(&qconf->tx_mbufs[pid].ma_table[i]);
+			mbuf = rte_pktmbuf_alloc(pkt_mbuf_pool);
+			if (mbuf != NULL) {
+				build_packet(mbuf);
+				qconf->tx_mbufs[pid].ma_table[i] = mbuf;
 				qconf->tx_mbufs[pid].len++;
 			}			
 		}
