@@ -39,7 +39,7 @@ SYMLINK-y-include += port_queue_map.h
 SYMLINK-y-include += sk.h
 SYMLINK-y-include += tcp.h
 SYMLINK-y-include += udp.h
-SYMLINK-y-include += common.h
+SYMLINK-y-include/common := common/common.h
 
 # this lib needs eal and ring
 

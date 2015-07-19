@@ -77,7 +77,7 @@ static int net_dev_add_v4addr(struct net_device *dev, struct iovec *pstr)
 
 static int net_dev_add_v4addrs(struct net_device *dev, struct iovec *ppstr, int count) 
 {
-	int i, ret;
+	int i, ret = -1;
 
 	for (i = 0; i < count; i++) {
 		ret = dev->ops->add_v4addr(dev, &ppstr[i]);

@@ -9,19 +9,7 @@ endif
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-CFLAGS+= -g
-APP=test
+DIRS-y += lib
+DIRS-y += tests
 
-SRCS-y:=af_inet.c
-SRCS-y+=sk.c
-SRCS-y+=udp.c
-SRCS-y+=tcp.c
-SRCS-y+=arp.c
-SRCS-y+=netdev.c
-SRCS-y+=netif.c
-SRCS-y+=packet.c
-SRCS-y+=hook.c
-SRCS-y+=buffer.c
-SRCS-y+=port_queue_map.c
-
-include $(RTE_SDK)/mk/rte.extapp.mk
+include $(RTE_SDK)/mk/rte.extsubdir.mk
