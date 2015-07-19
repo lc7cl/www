@@ -1,6 +1,10 @@
-include $(RTE_SDK)/mk/rte.vars.mk
+#include $(RTE_SDK)/mk/rte.vars.mk
 
-RTE_OUTPUT = ../dist
+ifeq ($(RTE_OUTPUT),)
+$(error "RTE_OUTPUT undefined")
+endif
+
+$(error $(RTE_OUTPUT))
 
 # library name
 LIB = libnetproto.a

@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 #include <rte_ethdev.h>
-#include "af_inet.h"
+#include <af_inet.h>
 #include <netif.h>
-#include "hook.h"
-#include "port_queue_map.h"
+#include <hook.h>
+#include <port_queue_map.h>
 
 #define NB_MBUF 1024
 #define RTE_LOGTYPE_TEST_IPV4 (RTE_LOGTYPE_TEST+1)
