@@ -94,8 +94,8 @@ build_packet(struct rte_mbuf *mbuf)
 	ether_addr_copy(&src_addr, &eth_hdr->s_addr);
 	ether_addr_copy(&dst_addr, &eth_hdr->d_addr);
 
-	memset(ip_hdr, 0, sizeof(*ip_hdr));
 	ip_hdr = (struct ipv4_hdr *)(eth_hdr + 1);
+	memset(ip_hdr, 0, sizeof(*ip_hdr));
 	ip_hdr->version_ihl = IP_VHL_DEF;
 	ip_hdr->type_of_service	= 0;
 	ip_hdr->fragment_offset	= 0;
@@ -103,11 +103,10 @@ build_packet(struct rte_mbuf *mbuf)
 	ip_hdr->next_proto_id	= IPPROTO_UDP;
 	ip_hdr->packet_id	= 0;
 	ip_hdr->total_length = rte_cpu_to_be_16(PKT_SIZE + sizeof(*ip_hdr) + sizeof(*udp_hdr));
-	ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
+	ip_hdr->hdr_checksum = 0;//rte_ipv4_cksum(ip_hdr);
 	ip_hdr->src_addr = rte_cpu_to_be_32(IPv4(192,168,179,100));
 	ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(192,168,179,1));
 
-#if 0
 	udp_hdr = (struct udp_hdr  *)(ip_hdr + 1);
 	memset(udp_hdr, 0, sizeof(*udp_hdr));
 	udp_hdr->dst_port = rte_cpu_to_be_16(53);
@@ -120,7 +119,7 @@ build_packet(struct rte_mbuf *mbuf)
 		*(data++) = 'a';
 	}
 	udp_hdr->dgram_cksum = rte_ipv4_udptcp_cksum(ip_hdr, udp_hdr);
-#endif
+	ip_hdr->hdr_checksum = rte_ipv4_cksum(ip_hdr);
 	mbuf->pkt_len = PKT_SIZE + sizeof(*ip_hdr) + sizeof(*udp_hdr) + sizeof(*eth_hdr);
 	mbuf->l2_len = sizeof(*eth_hdr);
 	mbuf->l3_len = sizeof(*ip_hdr);
@@ -175,8 +174,8 @@ packet_main_loop(void)
 			if (qconf->tx_mbufs[i].len == 0)
 				continue;
 
-            pkt = qconf->tx_mbufs[i].ma_table[0];
-            rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
+            //pkt = qconf->tx_mbufs[i].ma_table[0];
+            //rte_pktmbuf_dump(qconf->out, pkt, pkt->data_len);
 			qconf->tx_mbufs[i].len = rte_eth_tx_burst(
 				i, 0, 
 				qconf->tx_mbufs[i].ma_table, MAX_PKT_BURST);
@@ -265,7 +264,7 @@ main(int argc, char** argv)
             rte_exit(EXIT_FAILURE, "rte_eth_dev_start err=%d port=%u\n", ret, pid);
 
 		snprintf(filename, 63, "../dump_file_%d", rx_lcore_id);
-		qconf->out = fopen("filename", "w");
+		qconf->out = fopen(filename, "w");
 		if (qconf->out == NULL)
 			RTE_LOG(INFO, PACKET, "dump file %s init error has nothing to do\n", filename);
     }
