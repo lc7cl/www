@@ -7,11 +7,18 @@
 
 #define MAX_PORT_NUM 32
 
-static port_conf_t* portlist[MAX_PORT_NUM];
-static int port_end;
+static struct port* portlist[MAX_PORT_NUM];
+
+int 
+port_init(unsigned port_id)
+{
+	int retval;
+
+	return retval;
+}
 
 int
-port_register(struct port_conf_s *pconf, unsigned port_id)
+port_register(unsigned port_id)
 {
 	int retval = -1;
 
