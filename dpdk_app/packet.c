@@ -69,8 +69,23 @@ build_packet(struct rte_mbuf *mbuf)
 	char *data;
 	int i;
 
-    rte_memcpy(src_addr.addr_bytes, "000c29ef84e3", ETHER_ADDR_LEN);
-    rte_memcpy(dst_addr.addr_bytes, "005056c00008", ETHER_ADDR_LEN);
+	dst_addr.addr_bytes[0] = 0;
+	dst_addr.addr_bytes[1] = 80;
+	dst_addr.addr_bytes[2] = 86;
+	dst_addr.addr_bytes[3] = 192;
+	dst_addr.addr_bytes[4] = 0;
+	dst_addr.addr_bytes[5] = 8;
+	
+	src_addr.addr_bytes[0] = 0;
+	src_addr.addr_bytes[1] = 12;
+	src_addr.addr_bytes[2] = 41;
+	src_addr.addr_bytes[3] = 239;
+	src_addr.addr_bytes[4] = 132;
+	src_addr.addr_bytes[5] = 227;
+	
+
+    //rte_memcpy(src_addr.addr_bytes, "000c29ef84e3", ETHER_ADDR_LEN);
+    //rte_memcpy(dst_addr.addr_bytes, "005056c00008", ETHER_ADDR_LEN);
     //src_addr.addr_bytes = { 0, 12, 41, 239, 132, 227 };
     //dst_addr.addr_bytes = { 0, 80, 86, 198, 0, 8 };
 
