@@ -107,6 +107,7 @@ build_packet(struct rte_mbuf *mbuf)
 	ip_hdr->src_addr = rte_cpu_to_be_32(IPv4(192,168,179,100));
 	ip_hdr->dst_addr = rte_cpu_to_be_32(IPv4(192,168,179,1));
 
+#if 0
 	udp_hdr = (struct udp_hdr  *)(ip_hdr + 1);
 	memset(udp_hdr, 0, sizeof(*udp_hdr));
 	udp_hdr->dst_port = rte_cpu_to_be_16(53);
@@ -119,6 +120,7 @@ build_packet(struct rte_mbuf *mbuf)
 		*(data++) = 'a';
 	}
 	udp_hdr->dgram_cksum = rte_ipv4_udptcp_cksum(ip_hdr, udp_hdr);
+#endif
 	mbuf->pkt_len = PKT_SIZE + sizeof(*ip_hdr) + sizeof(*udp_hdr) + sizeof(*eth_hdr);
 	mbuf->l2_len = sizeof(*eth_hdr);
 	mbuf->l3_len = sizeof(*ip_hdr);
@@ -268,7 +270,7 @@ main(int argc, char** argv)
 			RTE_LOG(INFO, PACKET, "dump file %s init error has nothing to do\n", filename);
     }
 
-    rte_eal_mp_remote_launch(packet_launch_one_lcore, NULL, CALL_MASTER);
+    rte_eal_mp_remote_launch(packet_launch_one_lcore, NULL, SKIP_MASTER);
     RTE_LCORE_FOREACH_SLAVE(lcore_id) {
         if (rte_eal_wait_lcore(lcore_id) < 0)
             return -1;        
