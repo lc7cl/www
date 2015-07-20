@@ -2,6 +2,7 @@
 #include <rte_ether.h>
 #include <rte_ethdev.h>
 
+#include "packet.h"
 #include "netif.h"
 
 #define RTE_LOGTYPE_NETIF RTE_LOGTYPE_USER1+1 

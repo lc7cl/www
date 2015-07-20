@@ -1,3 +1,4 @@
+#include <rte_ether.h>
 
 #include "packet.h"
 #include "ip.h"

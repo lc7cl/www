@@ -1,7 +1,7 @@
 
 #include "packet.h"
 
-LIST_HEAD(ptype_list, packet_type) ptype_base;
+struct ptype_list ptype_base;
 
 int 
 packet_type_add(struct packet_type *pt)
