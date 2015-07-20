@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/queue.h>
 
 #include <rte_ether.h>
 #include <rte_ethdev.h>
@@ -10,6 +11,15 @@
 #include <rte_udp.h>
 
 #include "netif.h"
+#include "packet.h"
+
+static LIST_HEAD(ptype_list, packet_type) ptype_base;
+
+int 
+packet_type_add(struct packet_type *pt)
+{
+	LIST_INSERT_HEAD(&ptype_base, pt, list);
+}
 
 #define RTE_LOGTYPE_PACKET RTE_LOGTYPE_USER1+1
 #define MAX_PKT_BURST 32
