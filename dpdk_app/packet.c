@@ -1,4 +1,4 @@
-
+#include <rte_ether.h>
 #include "packet.h"
 
 struct ptype_list ptype_base;
