@@ -44,7 +44,7 @@ inet_proto_register()
 	return retval;
 }
 
-static void 
+void 
 ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
 {
 	struct ipv4_hdr *iphdr;

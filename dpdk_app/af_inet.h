@@ -10,4 +10,6 @@
 
 int ip_init(void);
 
+void ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt);
+
 #endif
