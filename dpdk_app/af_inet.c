@@ -2,6 +2,7 @@
 
 #include "packet.h"
 #include "ip.h"
+#include "af_inet.h"
 
 static struct net_protocol {
 	uint8_t protocol;
