@@ -11,7 +11,8 @@ static struct rte_hash_parameters uhash_param = {
 	.hash_func = rte_jhash,
 };
 
-void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
+void 
+udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 {
 	struct udp_hdr *udp_hdr;
 	struct sk *s = NULL;
