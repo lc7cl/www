@@ -1,3 +1,5 @@
+#include <rte_hash.h>
+#include <rte_jhash.h>
 
 #include "sk.h"
 #include "udp.h"
@@ -24,7 +26,7 @@ udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 	if (rte_ipv4_udptcp_cksum(ipv4_hdr, udp_hdr) != 0)
 		goto drop;
 
-	rte_hash_lookup_data(uhtable, udp_hdr->dst_port, &s);
+	rte_hash_lookup_data(uhtable, (const void*)&udp_hdr->dst_port, (void **)&s);
 	if (s == NULL)
 		goto drop;
 	s->func(mbuf);

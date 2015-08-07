@@ -1,6 +1,9 @@
 #include <rte_ether.h>
+#include <rte_jhash.h>
 
 #include "packet.h"
+#include "udp.h"
+#include "tcp.h"
 #include "af_inet.h"
 
 static struct net_protocol {
@@ -54,7 +57,7 @@ ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
 		goto drop_mbuf;
 	}
 
-	iphdr = rte_pktmbuf_mtod(mbuf, struct rte_mbuf*);
+	iphdr = (struct ipv4_hdr*) rte_pktmbuf_mtod(mbuf, struct rte_mbuf*);
 	if ((iphdr->version_ihl >> 4 & IPV4_VERSION_MASK) == 4
 		|| (iphdr->version_ihl & IPV4_HDR_IHL_MASK) < 5) {
 		goto drop_mbuf;

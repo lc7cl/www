@@ -1,6 +1,9 @@
 #ifndef _SK_H_
 #define _SK_H_
 
+#include <rte_mbuf.h>
+#include <rte_ring.h>
+
 struct sk {
 	void (*func)(struct rte_mbuf*);
 	struct rte_ring backlog;

@@ -9,6 +9,11 @@ struct net_device dev_array[RTE_MAX_ETHPORTS];
 
 #define DEFAULT_NDEV_NAME "eth%u"
 
+enum {
+    DEV_DETACHED = 0,
+    DEV_ATTACHED
+};
+
 struct net_device_ops default_ndev_ops = {
 	NULL, /*net_dev_add_v4addr*/
 	NULL, /*net_dev_add_v4addrs*/
@@ -16,8 +21,6 @@ struct net_device_ops default_ndev_ops = {
 	NULL, /*net_dev_del_v4addrs*/
 	NULL, /*net_dev_get_primary_v4addr*/
 	NULL, /*net_dev_get_v4addrs*/
-	NULL, /*net_dev_set_eth_addr*/
-	NULL, /*net_dev_get_eth_addr*/
 	NULL, /*net_dev_set_mode*/
 	NULL, /*net_dev_enable*/
 	NULL, /*net_dev_start*/
@@ -35,7 +38,7 @@ struct net_device* net_device_alloc(unsigned portid,
 	size_t name_len;
 	
 	if (portid >= RTE_MAX_ETHPORTS) {
-		rte_log(RTE_LOG_WARNING, NET, "%s %d invalid portid %u!\n"
+		RTE_LOG(WARNING, NET, "%s %d invalid portid %u!\n"
 			, __func__, __LINE__, portid);
 		return NULL;
 	}
@@ -43,14 +46,14 @@ struct net_device* net_device_alloc(unsigned portid,
 	dev = &dev_array[portid];
 	if (dev->dev != NULL) {
 		/*TODO*/
-		rte_log(RTE_LOG_WARNING, NET, "%s %d portid %u is used!\n"
+		RTE_LOG(WARNING, NET, "%s %d portid %u is used!\n"
 			, __func__, __LINE__, portid);
 		return NULL;
 	}
 
 	eth_dev = &rte_eth_devices[portid];
 	if (eth_dev->attached != DEV_ATTACHED) {
-		rte_log(RTE_LOG_WARNING, NET, "%s %d portid %u hasn't attached by any nic!\n", 
+		RTE_LOG(WARNING, NET, "%s %d portid %u hasn't attached by any nic!\n", 
 			__func__, __LINE__, portid);
 		return NULL;
 	}
@@ -60,19 +63,19 @@ struct net_device* net_device_alloc(unsigned portid,
 
 	name_len = strnlen(name, MAX_NIC_NAME_SIZE);
 	if (name_len == 0 || name_len == MAX_NIC_NAME_SIZE) {
-		rte_log(RTE_LOG_WARNING, NET, "%s %d invalid device name!\n", __func__, __LINE__);
+		RTE_LOG(WARNING, NET, "%s %d invalid device name!\n", __func__, __LINE__);
 		return NULL;
 	}
 
 	if (ops == NULL)
 		ops = &default_ndev_ops;
 
-	dev.dev = eth_dev;
-	dev.ops = ops;
-	dev.portid = portid;
-	dev.flag = NET_DEV_F_ENABLE;
+	dev->dev = eth_dev;
+	dev->ops = ops;
+	dev->portid = portid;
+	dev->flag = NET_DEV_F_ENABLE;
 	strncpy(dev->name, name, name_len);
-	dev.v4_addr = NULL;
+	dev->v4_addr = NULL;
 
 	return dev;	
 }
