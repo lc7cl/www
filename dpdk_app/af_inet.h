@@ -1,5 +1,5 @@
-#ifndef _IP_H_
-#define _IP_H_
+#ifndef _AF_INET_H_
+#define _AF_INET_H_
 
 #ifdef __cplusplus
 extern "C" {
