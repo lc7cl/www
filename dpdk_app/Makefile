@@ -12,8 +12,9 @@ include $(RTE_SDK)/mk/rte.vars.mk
 CFLAGS+= -g
 APP=test
 
-SRCS-y:=ip.c
+SRCS-y:=af_inet.c
 SRCS-y+=netif.c
+SRCS-y+=netdev.c
 SRCS-y+=packet.c
 SRCS-y+=main.c
 
