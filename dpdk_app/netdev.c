@@ -230,9 +230,9 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 		if (param == NULL)
 			return -1;
 
-		if (param->ctl_hdr.type == NAME_SET) {			/*set device name*/
+		if (param->ctlhdr.type == NAME_SET) {			/*set device name*/
 			retval = dev->ops->set_name(dev, param->iov);
-		} else if (param->ctl_hdr.type == NAME_GET) {	/*get device name*/
+		} else if (param->ctlhdr.type == NAME_GET) {	/*get device name*/
 			retval = dev->ops->get_name(dev, param->iov);
 			if (!retval) {
 				param->iov_length = 1;
@@ -250,14 +250,24 @@ int net_device_init(const unsigned *portid, int length)
 {
 	struct net_device *retval;
     int i;
+    struct msg_hdr mhdr;
 
 	if (portid == NULL || length == 0)
 		return -1;
+
+    memset(&mhdr, 0, sizeof mhdr);
+    mhdr.iov = msg_hdr_alloc_iovs(1, 64);
+    if (mhdr.iov == NULL)
+        return -1;
+    mhdr.ctlhdr.type = NAME_GET;
 
 	for (i = 0; i < length; i++) {
 		retval = net_device_alloc(portid[i], NULL, NULL);
 		if (retval == NULL)
 			goto error_release_ndev;
+        if (net_dev_ctrl(retval, NDEV_CTRL_T_DEV_NAME, &mhdr) == 0) {
+            RTE_LOG(DEBUG, NET, "init nic %s ok\n", (char*)mhdr.iov[0].iov_base);
+        }
 	}
 	return 0;
 error_release_ndev:
