@@ -6,7 +6,7 @@ extern "C" {
 #endif
 
 #include <rte_log.h>
-#include <linux/uio.h>
+#include <sys/uio.h>
 
 typedef uint32_t be32;
 

@@ -1,10 +1,11 @@
-#include <arps/inet.h>
+#include <arpa/inet.h>
 
 #include <sys/queue.h>
 #include <rte_malloc.h>
 #include <rte_ether.h>
 #include <rte_ethdev.h>
 
+#include "af_inet.h"
 #include "netdev.h"
 
 struct net_device dev_array[RTE_MAX_ETHPORTS];
@@ -58,12 +59,12 @@ static int net_dev_add_v4addr(struct net_device *dev, struct iovec *pstr)
 	}
 	
 	for (p = dev->v4_addr; p; p = p->next) {
-		if (p->addr == v4addr) {
+		if (p->addr.ipv4 == v4addr) {
 			return -1;
 		}			
 	}
 
-	addr = rte_malloc(NULL, sizeof struct ip_addr, 0);
+	addr = rte_malloc(NULL, sizeof *addr, 0);
 	if (addr == NULL)
 		return -1;
 
@@ -177,7 +178,7 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 	if (dev == NULL)
 		return retval;
 	
-	switch (op_type) {
+	switch (ctrl_type) {
 	case NDEV_CTRL_T_INET_ADDR:		
 		if (param == NULL)
 			return -1;
@@ -202,7 +203,8 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 
 int net_device_init(const unsigned *portid, int length)
 {
-	int retval, i;
+	struct net_device *retval;
+    int i;
 
 	if (portid == NULL || length == 0)
 		return -1;
