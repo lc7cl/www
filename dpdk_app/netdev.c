@@ -259,16 +259,21 @@ int net_device_init(const unsigned *portid, int length)
     mhdr.iov = msg_hdr_alloc_iovs(1, 64);
     if (mhdr.iov == NULL)
         return -1;
+    mhdr.iov_length = 1;
     mhdr.ctlhdr.type = NAME_GET;
 
 	for (i = 0; i < length; i++) {
 		retval = net_device_alloc(portid[i], NULL, NULL);
-		if (retval == NULL)
+		if (retval == NULL) {
+            rte_free(mhdr.iov);
 			goto error_release_ndev;
+        }
         if (net_dev_ctrl(retval, NDEV_CTRL_T_DEV_NAME, &mhdr) == 0) {
             RTE_LOG(DEBUG, NET, "init nic %s ok\n", (char*)mhdr.iov[0].iov_base);
         }
 	}
+
+    rte_free(mhdr.iov);
 	return 0;
 error_release_ndev:
 	for (i; i > 0; i--) {

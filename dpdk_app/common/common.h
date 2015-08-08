@@ -24,20 +24,20 @@ typedef struct msg_hdr {
 	int iov_length;
 } msg_hdr_t;
 
-static inline struct iovec* msg_hdr_alloc_iovs(struct msg_hdr *mhdr, int iov_length, int data_len)
+static inline struct iovec* msg_hdr_alloc_iovs(int iov_length, int data_len)
 {
 	int i;
+    struct iovec *iov;
 
-	mhdr->iov = rte_malloc(iov_length * (sizeof(struct iovec) + data_len));
-	if (mhdr->iov) {
-		mhdr->iov_length = iov_length;
-		for (i = 0; i < iov_length) {
-			mhdr->iov[i].iov_len = data_len;
-			mhdr->iov[i].iov_base = (void*)(((char*)mhdr->iov) + 
+	iov = rte_malloc(NULL, iov_length * (sizeof(struct iovec) + data_len), 0);
+	if (iov) {
+		for (i = 0; i < iov_length; i++) {
+			iov[i].iov_len = data_len;
+			iov[i].iov_base = (void*)(((char*)iov) + 
 				i *(sizeof(struct iovec) + data_len));
 		}
 	}		
-	return mhdr->iov;
+	return iov;
 }
 
 #ifdef __cplusplus
