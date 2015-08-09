@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <sys/queue.h>
+
 #include "buffer.h"
 
 enum {
@@ -36,9 +38,9 @@ typedef void (*hook_ok)(struct rte_mbuf *m);
 
 LIST_HEAD(hook_head, hook_ops);
 
-extern struct hook_head hhead[][];
+extern struct hook_head hhead[MAX_PROTO_MAX][MAX_POS_MAX];
 
-static void hook_proccess(struct rte_mbuf *m, uin8_t proto, uint8_t pos, 
+static void hook_proccess(struct rte_mbuf *m, uint8_t proto, uint8_t pos, 
 	hook_ok ok)
 {
 	struct hook_ops *ops;

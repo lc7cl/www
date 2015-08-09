@@ -20,6 +20,8 @@ SRCS-y+=arp.c
 SRCS-y+=netdev.c
 SRCS-y+=netif.c
 SRCS-y+=packet.c
+SRCS-y+=hook.c
+SRCS-y+=buffer.c
 SRCS-y+=main.c
 
 include $(RTE_SDK)/mk/rte.extapp.mk

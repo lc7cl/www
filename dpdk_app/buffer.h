@@ -7,6 +7,8 @@ extern "C" {
 
 #include <rte_mbuf.h>
 
+struct net_device;
+
 enum mbuf_phase {
 	MBUF_P_NONE = 0,
 	MBUF_P_ARP,
@@ -16,38 +18,18 @@ enum mbuf_phase {
 	MBUF_P_MAX = 255
 };
 
-static inline void
-stat_mbuf(struct rte_mbuf *mbuf, uint8_t in, uint8_t drop, uint8_t phase)
-{
-	struct net_device *ndev;
-
-	ndev = net_device_get(mbuf->port);
-	if (ndev->flag & NET_DEV_F_DISABLE == NET_DEV_F_DISABLE)
-		return;
-
-	if (in) {
-		if (drop) {
-			ndev->stat.rx.drop[rte_lcore_id()][phase]++;
-		} else {
-			ndev->stat.rx.recv[rte_lcore_id()][phase]++;
-		}
-	} else {
-		if (drop) {
-			ndev->stat.tx.drop[rte_lcore_id()][phase]++;
-		} else {
-			ndev->stat.tx.xmit[rte_lcore_id()][phase]++;
-		}
-	}	
-}
+#define MBUF_P_MAX 255
 
 #ifdef TRACE_MBUF
-static inline void trace_mbuf(rte_mbuf *mbuf)
+static inline void trace_mbuf(struct rte_mbuf *mbuf)
 {
 	
 }
 #else
-static inline void trace_mbuf(rte_mbuf *mbuf) {}
+static inline void trace_mbuf(struct rte_mbuf *mbuf) {}
 #endif
+
+void stat_mbuf(struct rte_mbuf *mbuf, uint8_t in, uint8_t drop, uint8_t phase);
 
 #define TRACE_DROP_MBUF(m, in, p) do {	\
 	stat_mbuf(m, 1, in, p);				\

@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "common/common.h"
+#include "buffer.h"
 
 #define MAX_NET_DEVICE_COUNT 64
 
