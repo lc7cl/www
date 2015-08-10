@@ -8,6 +8,7 @@
 #define MAX_PORT_NUM 32
 
 static struct port* portlist[MAX_PORT_NUM];
+static rte_rwlock_t lck = RTE_RWLOCK_INITIALIZER;
 
 int 
 port_init(unsigned port_id)
