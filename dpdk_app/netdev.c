@@ -73,9 +73,39 @@ struct net_device* net_device_alloc(unsigned portid,
 	return dev;	
 }
 
+
+/**
+*
+*/
+void net_device_release(unsigned portid)
+{
+
+}
+
+
 /**
 *
 */
 int net_dev_ctrl(struct net_device *dev)
 {
+}
+
+int net_device_init(unsigned *portid, int length)
+{
+	int retval, i;
+
+	if (portid == NULL || length == 0)
+		return -1;
+
+	for (i = 0; i < length; i++) {
+		retval = net_device_alloc(portid[i], NULL, NULL);
+		if (retval == NULL)
+			goto error_release_ndev;
+	}
+	return 0;
+error_release_ndev:
+	for (i; i >= 0; i--) {
+		net_device_release(portid[i]);
+	}
+	return -1;
 }
