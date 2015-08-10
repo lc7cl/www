@@ -37,9 +37,9 @@ struct net_device* net_device_alloc(unsigned portid,
 	struct rte_eth_dev *eth_dev;
 	size_t name_len;
 	
-	if (portid >= RTE_MAX_ETHPORTS) {
-		RTE_LOG(WARNING, NET, "%s %d invalid portid %u!\n"
-			, __func__, __LINE__, portid);
+	if (!rte_eth_dev_is_valid_port(portid)) {
+		RTE_LOG(WARNING, NET, "%s %d invalid portid %u !\n", 
+			__func__, __LINE__, portid);
 		return NULL;
 	}
 
@@ -48,13 +48,6 @@ struct net_device* net_device_alloc(unsigned portid,
 		/*TODO*/
 		RTE_LOG(WARNING, NET, "%s %d portid %u is used!\n"
 			, __func__, __LINE__, portid);
-		return NULL;
-	}
-
-	eth_dev = &rte_eth_devices[portid];
-	if (eth_dev->attached != DEV_ATTACHED) {
-		RTE_LOG(WARNING, NET, "%s %d portid %u hasn't attached by any nic!\n", 
-			__func__, __LINE__, portid);
 		return NULL;
 	}
 
