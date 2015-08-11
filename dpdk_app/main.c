@@ -197,7 +197,7 @@ int
 main(int argc, char** argv)
 {
     int ret, nb_ports, pid, socket, i;
-    unsigned lcore_id, rx_lcore_id = 0;
+    unsigned lcore_id, rx_lcore_id = 0, *pidlist;
     const uint16_t rx_rings = 1 , tx_rings = 1;
     struct lcore_queue_conf *qconf;
     struct rx_queue *rxq;
@@ -219,6 +219,18 @@ main(int argc, char** argv)
     nb_ports = rte_eth_dev_count();
     if (nb_ports == 0)
         rte_exit(EXIT_FAILURE, "No ethernet ports!\n");
+
+	pidlist = malloc(sizeof(*pidlist) * nb_ports);
+	if (pidlist) {
+		ret = net_device_init(pidlist, nb_ports);
+		free(pidlist);
+		if (ret) {
+			RTE_LOG(WARNING, NET, "init net device error!\n");
+		}
+		return -1;
+	} else {
+		return -1;
+	}
 
     for (pid = 0; pid < nb_ports; pid++) {
         ret = rte_eth_dev_configure(pid, rx_rings, tx_rings, &default_rte_eth_conf);

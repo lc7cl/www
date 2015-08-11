@@ -13,32 +13,45 @@ extern "C" {
 #define NET_DEV_F_DISABLE      0x00000002
 #define NET_DEV_F_START        0x00000004
 #define NET_DEV_F_STOP         0x00000008
+#define NET_DEV_F_LOOPBACK     0x00000010
+#define NET_DEV_F_PROMISCUOUS  0x00001000
 
-#define NET_DEV_F_PROMISCUOUS 0x00000100
+enum {
+	NDEV_CTRL_T_INET_ADDR,
+};
+
+enum {
+	INET_ADD_V4ADDR = 0,
+	INET_DEL_V4ADDR
+};
+
+#define IS_LOOPBACK_DEVICE(dev) \
+	(((dev)->flag & NET_DEV_F_LOOPBACK) == NET_DEV_F_LOOPBACK)
 
 #define IPV6_ADDRESS_LENGTH 16
 struct ip_addr {
 	union {
-		uint32_t ipv4;
+		be32 ipv4;
 		uint8_t ipv6[IPV6_ADDRESS_LENGTH];
 	} addr;
+	uint8_t mask;
 	struct ip_addr *next;
 };
 
 struct net_device;
 
 struct net_device_ops {
-	int (*net_dev_add_v4addr)(struct net_device *dev, uint32_t v4addr);
-	int (*net_dev_add_v4addrs)(struct net_device *dev, uint32_t v4addrs, int length);
-	int (*net_dev_del_v4addr)(struct net_device *dev, uint32_t v4addr);
-	int (*net_dev_del_v4addrs)(struct net_device *dev, uint32_t *v4addr, int length);
-	int (*net_dev_get_primary_v4addr)(struct net_device *dev, __out uint32_t *v4addr);
-	int (*net_dev_get_v4addrs)(struct net_device *dev, __out unsigned *count, 
+	int (*add_v4addr)(struct net_device *dev, struct iovec *pstr);
+	int (*add_v4addrs)(struct net_device *dev, struct iovec *ppstr, int count);
+	int (*del_v4addr)(struct net_device *dev, struct iovec *pstr);
+	int (*del_v4addrs)(struct net_device *dev, struct iovec *ppstr, int count);
+	int (*get_primary_v4addr)(struct net_device *dev, __out uint32_t *v4addr);
+	int (*get_v4addrs)(struct net_device *dev, __out unsigned *count, 
 		__out uint32_t *v4addr, int length);
-	int (*net_dev_set_mode)(struct net_device *dev, unsigned mode);
-	int (*net_dev_enable)(struct net_device *dev, int enable);
-	int (*net_dev_start)(struct net_device *dev);
-	int (*net_dev_stop)(struct net_device *dev);
+	int (*set_mode)(struct net_device *dev, unsigned mode);
+	int (*enable)(struct net_device *dev, int enable);
+	int (*start)(struct net_device *dev);
+	int (*stop)(struct net_device *dev);
 };
 
 #define MAX_NIC_NAME_SIZE  64
@@ -65,8 +78,12 @@ static inline struct net_device* net_device_get(unsigned portid)
 	return &dev_array[portid];
 }
 
-struct net_device* net_device_alloc(unsigned portid,
+struct net_device* net_device_alloc(constunsigned portid,
 	char *name, struct net_device_ops *ops);
+
+int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param);
+
+int net_device_init(const unsigned *portid, int length);
 
 #ifdef __cplusplus
 }
