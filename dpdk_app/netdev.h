@@ -18,6 +18,7 @@ extern "C" {
 
 enum {
 	NDEV_CTRL_T_INET_ADDR,
+	NDEV_CTRL_T_DEV_NAME,
 };
 
 enum {

@@ -178,10 +178,12 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 		return retval;
 	
 	switch (op_type) {
+
+	/*set ip address*/
 	case NDEV_CTRL_T_INET_ADDR:		
 		if (param == NULL)
 			return -1;
-		if (param->ctlhdr.type == INET_ADD_V4ADDR) {
+		if (param->ctlhdr.type == INET_ADD_V4ADDR) {	/*add addresses*/
 			if (dev->ops->add_v4addrs) {
 				retval = dev->ops->add_v4addrs(dev, param->iov, param->iov_length);
 			}
@@ -192,6 +194,10 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 		} else {
 			
 		}		
+		break;
+
+	/*set device name*/
+	case NDEV_CTRL_T_DEV_NAME:
 		break;
 
 	default:
