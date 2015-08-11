@@ -98,6 +98,32 @@ error:
 	return -1;
 }
 
+static int net_device_set_name(struct net_device *dev, struct iovec *iov)
+{
+	int ret;
+
+	if (dev == NULL || iov == NULL || iov->iov_len == 0 || iov->iov_base == NULL)
+		return -1;
+
+	if (dev->dev == NULL)
+		return -1;
+
+	strncpy(dev->dev->data->name, iov->iov_base, iov->iov_len);
+	return 0;
+}
+
+static int net_device_get_name(struct net_device *dev, struct iovec *iov)
+{
+	if (dev == NULL || iov == NULL || iov->iov_base == NULL)
+		return -1;
+
+	if (dev->dev == NULL)
+		return -1;
+
+	strncpy(iov->iov_base, dev->dev->data->name, strlen(dev->dev->data->name));
+	iov->iov_len = strlen(iov->iov_base) + 1;
+	return 0;
+}
 
 struct net_device_ops default_ndev_ops = {
 	net_dev_add_v4addr, /*add_v4addr*/
@@ -110,6 +136,8 @@ struct net_device_ops default_ndev_ops = {
 	NULL, /*enable*/
 	NULL, /*start*/
 	NULL, /*stop*/
+	net_device_set_name,/*setname*/
+	net_device_get_name,/*getname*/
 };
 
 /**
@@ -180,15 +208,16 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 	
 	switch (ctrl_type) {
 	
-	/*set ip address*/
-	case NDEV_CTRL_T_INET_ADDR:		
+	
+	case NDEV_CTRL_T_INET_ADDR:	/*set ip address*/
 		if (param == NULL)
 			return -1;
-		if (param->ctlhdr.type == INET_ADD_V4ADDR) {	/*add addresses*/
+		
+		if (param->ctlhdr.type == INET_ADD_V4ADDR) {		/*add addresses*/
 			if (dev->ops->add_v4addrs) {
 				retval = dev->ops->add_v4addrs(dev, param->iov, param->iov_length);
 			}
-		} else if (param->ctlhdr.type == INET_DEL_V4ADDR) {
+		} else if (param->ctlhdr.type == INET_DEL_V4ADDR) {	/*del addresses*/
 			if (dev->ops->del_v4addrs) {
 				retval = dev->ops->del_v4addrs(dev, param->iov, param->iov_length);
 			}
@@ -197,8 +226,18 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 		}		
 		break;
 
-	/*set device name*/
-	case NDEV_CTRL_T_DEV_NAME:
+	case NDEV_CTRL_T_DEV_NAME:	/*set device name*/
+		if (param == NULL)
+			return -1;
+
+		if (param->ctl_hdr.type == NAME_SET) {			/*set device name*/
+			retval = dev->ops->set_name(dev, param->iov);
+		} else if (param->ctl_hdr.type == NAME_GET) {	/*get device name*/
+			retval = dev->ops->get_name(dev, param->iov);
+			if (!retval) {
+				param->iov_length = 1;
+			}
+		}		
 		break;
 
 	default:

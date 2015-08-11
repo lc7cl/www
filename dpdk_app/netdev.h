@@ -26,6 +26,12 @@ enum {
 	INET_DEL_V4ADDR
 };
 
+enum {
+	NAME_SET = 0,
+	NAME_GET
+};
+
+
 #define IS_LOOPBACK_DEVICE(dev) \
 	(((dev)->flag & NET_DEV_F_LOOPBACK) == NET_DEV_F_LOOPBACK)
 
@@ -53,6 +59,8 @@ struct net_device_ops {
 	int (*enable)(struct net_device *dev, int enable);
 	int (*start)(struct net_device *dev);
 	int (*stop)(struct net_device *dev);
+	int (*set_name)(struct net_device *dev, struct iovec *pstr);
+	int (*get_name)(struct net_device *dev, struct iovec *pstr);
 };
 
 #define MAX_NIC_NAME_SIZE  64
