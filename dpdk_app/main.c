@@ -10,6 +10,7 @@
 #include <rte_ip.h>
 #include <rte_udp.h>
 
+#include "common/common.h"
 #include "netif.h"
 
 #define RTE_LOGTYPE_PACKET RTE_LOGTYPE_USER1+1
