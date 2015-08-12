@@ -7,6 +7,7 @@ extern "C" {
 
 #include <rte_ip.h>
 #include "packet.h"
+#include "buffer.h"
 
 #define MAX_INET_PROTOS             256
 #define IPV4_VERSION_MASK           0xf0

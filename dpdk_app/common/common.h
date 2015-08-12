@@ -14,7 +14,8 @@ typedef uint32_t be32;
 
 #define __in
 #define __out
-#define RTE_LOGTYPE_NET RTE_LOGTYPE_USER1+1
+#define RTE_LOGTYPE_NET   RTE_LOGTYPE_USER1+1
+#define RTE_LOGTYPE_MBUFF RTE_LOGTYPE_USER1+2
 
 typedef struct msg_hdr {
 	struct ctl_hdr {

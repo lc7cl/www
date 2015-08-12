@@ -1,6 +1,7 @@
 #include <rte_ether.h>
 
 #include "af_inet.h"
+#include "buffer.h"
 #include "packet.h"
 
 struct ptype_list ptype_base;

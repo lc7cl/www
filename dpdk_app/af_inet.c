@@ -4,6 +4,7 @@
 #include "packet.h"
 #include "udp.h"
 #include "tcp.h"
+#include "hook.h"
 #include "af_inet.h"
 
 static struct net_protocol {
@@ -11,11 +12,7 @@ static struct net_protocol {
 	void (*handler)(struct rte_mbuf*, struct ipv4_hdr*);
 } *inet_protos[MAX_INET_PROTOS];
 
-void
-trace_mbuf(struct rte_mbuf *mbuf)
-{
-	
-}
+
 
 static struct net_protocol udp_protocol = {
 	.protocol = UDP_ID,
@@ -48,10 +45,27 @@ inet_proto_register()
 }
 
 void 
-ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
+ip_finish(struct rte_mbuf *mbuf)
 {
 	struct ipv4_hdr *iphdr;
 	struct net_protocol *proto;
+
+	iphdr = (struct ipv4_hdr*) rte_pktmbuf_mtod(mbuf, struct rte_mbuf*);
+	rte_pktmbuf_adj(mbuf, (iphdr->version_ihl & IPV4_HDR_IHL_MASK) * IPV4_IHL_MULTIPLIER);
+	proto = inet_protos[iphdr->next_proto_id];
+	if (proto == NULL)
+		goto drop_mbuf;
+	proto->handler(mbuf, iphdr);
+	
+drop_mbuf:
+	TRACE_DROP_MBUF(mbuf, 1, MBUF_P_IPV4);
+	rte_pktmbuf_free(mbuf); 
+}
+
+void 
+ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
+{
+	struct ipv4_hdr *iphdr;
 	
 	if (pt->type != ETHER_TYPE_IPv4) {
 		goto drop_mbuf;
@@ -67,14 +81,10 @@ ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
 		goto drop_mbuf;
 	}
 
-	rte_pktmbuf_adj(mbuf, (iphdr->version_ihl & IPV4_HDR_IHL_MASK) * IPV4_IHL_MULTIPLIER);
-	proto = inet_protos[iphdr->next_proto_id];
-	if (proto == NULL)
-		goto drop_mbuf;
-	proto->handler(mbuf, iphdr);
-
+	hook_proccess(mbuf, HOOK_PROTO_IPV4, HOOK_POS_IN, ip_finish);
+	return;
 drop_mbuf:
-	trace_mbuf(mbuf);
+	TRACE_DROP_MBUF(mbuf, 1, MBUF_P_IPV4);
 	rte_pktmbuf_free(mbuf);	
 }
 

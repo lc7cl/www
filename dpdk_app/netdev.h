@@ -71,6 +71,16 @@ typedef struct net_device {
 	struct ip_addr *v4_addr;
 	struct net_device_ops *ops;
 	struct rte_eth_dev *dev;
+	struct {
+		struct {
+			uint64_t drop[RTE_MAX_LCORE][MBUF_P_MAX];
+			uint64_t xmit[RTE_MAX_LCORE];
+		} tx;
+		struct {			
+			uint64_t drop[RTE_MAX_LCORE][MBUF_P_MAX];
+			uint64_t recv[RTE_MAX_LCORE];
+		} rx;
+	} stat;
 } net_device_t;
 
 

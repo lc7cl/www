@@ -2,6 +2,7 @@
 #include <rte_jhash.h>
 
 #include "sk.h"
+#include "buffer.h"
 #include "udp.h"
 
 static struct rte_hash *uhtable;
