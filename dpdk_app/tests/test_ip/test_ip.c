@@ -1,4 +1,6 @@
-#include "ip.h"
+#include <stdio.h>
+
+#include "af_inet.h"
 #include "netif.h"
 #include "hook.h"
 #include "port_queue_map.h"
@@ -66,7 +68,7 @@ static int packet_launch_one_lcore(__rte_unused void *)
 	return 0;
 }
 
-int main(int argc, char** argv)
+int main(int argc, char* argv[])
 {
 	int ret, i, socket;
 	uint8_t pid, nb_ports;

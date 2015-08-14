@@ -1,6 +1,7 @@
 #!/bin/bash
 
 CURDIR=$(pwd)
+ROOTDIR=$CURDIR/..
 
 PART1='
 ifeq ($(RTE_SDK),)
@@ -13,10 +14,11 @@ endif
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-CFLAGS+= -g
 '
 
-PART2=
+PART2="
+CFLAGS += -g -I$ROOTDIR/dist/include -L$ROOTDIR/dist/lib -lnetproto
+"
 PART3=
 
 PART4='include $(RTE_SDK)/mk/rte.extapp.mk'
@@ -27,15 +29,20 @@ function genmk {
         return
     fi
 
-    cd $1
+    if [ -f $1/Makefile ]
+    then
+        cp $1/Makefile $1/Makefile_bak
+    fi
 
+    cd $1
     echo "$PART1" > Makefile
-    PART2="APP=$1
+    PART2="${PART2}APP = $1
     "
     echo "$PART2" >> Makefile
 
-    for i in $1/*.c;do
-        PART3="${PART3}SRC-y+=$(basename $i)
+    for i in *.c
+    do
+        PART3="${PART3}SRCS-y += $(basename $i)
         "
     done
 

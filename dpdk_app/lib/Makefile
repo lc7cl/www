@@ -1,5 +1,7 @@
 include $(RTE_SDK)/mk/rte.vars.mk
 
+RTE_OUTPUT = ../dist
+
 # library name
 LIB = libnetproto.a
 
@@ -9,6 +11,8 @@ CFLAGS += $(WERROR_FLAGS) -I$(SRCDIR)
 EXPORT_MAP := netproto_version.map
 
 LIBABIVER := 1
+
+DIRS-y := common
 
 # all source are stored in SRCS-y
 SRCS-y := af_inet.c
@@ -35,6 +39,7 @@ SYMLINK-y-include += port_queue_map.h
 SYMLINK-y-include += sk.h
 SYMLINK-y-include += tcp.h
 SYMLINK-y-include += udp.h
+SYMLINK-y-include += common/common.h
 
 # this lib needs eal and ring
 
