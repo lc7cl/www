@@ -11,7 +11,7 @@ include $(RTE_SDK)/mk/rte.vars.mk
 
 
 
-CFLAGS += -g -I/home/lee/repositories/www/dpdk_app/tests/../dist/include -L/home/lee/repositories/www/dpdk_app/tests/../dist/lib -lnetproto
+CFLAGS += -g -I/home/lee/code/www/dpdk_app/tests/../dist/include -I/home/lee/code/www/dpdk_app/tests/../dist/include/net -L/home/lee/code/www/dpdk_app/tests/../dist/lib -lnetproto
 APP = test_ip
     
 SRCS-y += test_ip.c
