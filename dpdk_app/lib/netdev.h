@@ -98,7 +98,7 @@ static inline struct net_device* net_device_get(unsigned portid)
 }
 
 struct net_device* net_device_alloc(unsigned portid,
-	char *name, struct net_device_ops *ops);
+	const char *name, struct net_device_ops *ops);
 
 int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param);
 

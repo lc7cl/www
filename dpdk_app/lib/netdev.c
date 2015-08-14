@@ -14,7 +14,6 @@ struct net_device dev_array[RTE_MAX_ETHPORTS];
 
 static int retrive_addr(char *pstr, __out be32 *v4addr, __out uint8_t *mask)
 {
-	int ret;
 	char *p, *q;
 
 	if (pstr == NULL || v4addr == NULL || mask == NULL)
@@ -136,7 +135,7 @@ struct net_device_ops default_ndev_ops = {
 *
 */
 struct net_device* net_device_alloc(unsigned portid,
-	char *name, struct net_device_ops *ops)
+	const char *name, struct net_device_ops *ops)
 {
 	struct net_device *dev;
 	size_t name_len;
