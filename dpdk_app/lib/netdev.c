@@ -105,10 +105,7 @@ static int net_device_set_name(struct net_device *dev, struct iovec *iov)
 	if (dev == NULL || iov == NULL || iov->iov_len == 0 || iov->iov_base == NULL)
 		return -1;
 
-	if (dev->dev == NULL)
-		return -1;
-
-	strncpy(dev->dev->data->name, iov->iov_base, iov->iov_len);
+	strncpy(rte_eth_devices[dev->portid].data->name, iov->iov_base, iov->iov_len);
 	return 0;
 }
 
@@ -117,10 +114,7 @@ static int net_device_get_name(struct net_device *dev, struct iovec *iov)
 	if (dev == NULL || iov == NULL || iov->iov_base == NULL)
 		return -1;
 
-	if (dev->dev == NULL)
-		return -1;
-
-	strncpy(iov->iov_base, dev->dev->data->name, strlen(dev->dev->data->name));
+	strncpy(iov->iov_base, rte_eth_devices[dev->portid].data->name, strlen(dev->dev->data->name));
 	iov->iov_len = strlen(iov->iov_base) + 1;
 	return 0;
 }
