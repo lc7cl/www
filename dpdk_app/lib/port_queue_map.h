@@ -24,8 +24,8 @@ struct port_queue_conf {
 	int nb_rxq;
 };
 
-extern struct lcore_queue_conf per_lcore_q_conf[];
-extern struct port_queue_conf per_port_q_conf[];
+extern struct lcore_queue_conf per_lcore_q_conf[RTE_MAX_LCORE];
+extern struct port_queue_conf per_port_q_conf[RTE_MAX_ETHPORTS];
 
 static inline struct lcore_queue_conf* lcore_q_conf_get(int lcore)
 {

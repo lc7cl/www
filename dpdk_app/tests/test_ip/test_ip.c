@@ -1,10 +1,12 @@
 #include <stdio.h>
 
+#include <rte_ethdev.h>
 #include "af_inet.h"
-#include "netif.h"
+#include <netif.h>
 #include "hook.h"
 #include "port_queue_map.h"
 
+#define NB_MBUF 1024
 #define RTE_LOGTYPE_TEST_IPV4 (RTE_LOGTYPE_TEST+1)
 #define RX_BURST_NUM 32
 
@@ -43,7 +45,7 @@ static struct hook_ops test_ip_hook = {
 	.func = test_ip_rcv,
 };
 
-static int packet_launch_one_lcore(__rte_unused void *)
+static int packet_launch_one_lcore(__rte_unused void *unused)
 {
 	unsigned lcore;
 	int i;
@@ -60,7 +62,7 @@ static int packet_launch_one_lcore(__rte_unused void *)
 	
 	for (;;) {
 		for (i = 0; i < lcore_q->nb_rxq; i++) {
-			netif_rx(lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb, 
+			netif_rx(lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb[0], 
 				lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].len);
 		}
 	}	
@@ -99,7 +101,7 @@ int main(int argc, char* argv[])
 	for (pid = 0; pid < nb_ports; pid++) {
 		ret = net_device_init(pid);
 		if (ret) {
-			RTE_LOG(WARNING, NET, "init net device error!\n");
+			RTE_LOG(WARNING, TEST, "init net device error!\n");
 			goto release_net_device;
 		}		
 	} 
