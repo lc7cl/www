@@ -22,6 +22,6 @@ SRCS-y+=netif.c
 SRCS-y+=packet.c
 SRCS-y+=hook.c
 SRCS-y+=buffer.c
-SRCS-y+=main.c
+SRCS-y+=port_queue_map.c
 
 include $(RTE_SDK)/mk/rte.extapp.mk
