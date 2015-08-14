@@ -91,7 +91,7 @@ error:
 	if (dev->ops->del_v4addrs) {
 		dev->ops->del_v4addrs(dev, ppstr, i);
 	} else if (dev->ops->del_v4addr) {
-		for (i; i > 0; i--) {
+		for (; i > 0; i--) {
 			dev->ops->del_v4addr(dev, &ppstr[i - 1]);
 		}
 	}
@@ -112,7 +112,7 @@ static int net_device_get_name(struct net_device *dev, struct iovec *iov)
 	if (dev == NULL || iov == NULL || iov->iov_base == NULL)
 		return -1;
 
-	strncpy(iov->iov_base, rte_eth_devices[dev->portid].data->name, strlen(dev->dev->data->name));
+	strncpy(iov->iov_base, rte_eth_devices[dev->portid].data->name, strlen(rte_eth_devices[dev->portid].data->name));
 	iov->iov_len = strlen(iov->iov_base) + 1;
 	return 0;
 }

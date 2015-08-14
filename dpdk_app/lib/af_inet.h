@@ -18,7 +18,7 @@ extern "C" {
 
 #define IS_BROADCAST_IPV4(v4addr, mask)\
 	((v4addr != (v4addr & ((1 << mask) - 1) << (32 - mask))) \
-	&& (v4addr != (v4addr || (1 << (32 - mask) - 1))))
+	&& (v4addr != (v4addr || ((1 << (32 - mask)) - 1))))
 
 #define IS_VALID_UC_IPV4(dev, v4addr, mask)\
 	((IS_LOOPBACK_DEVICE(dev) && (v4addr == IPV4_LOOPBACK))\
