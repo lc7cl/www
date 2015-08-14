@@ -10,6 +10,7 @@ endif
 include $(RTE_SDK)/mk/rte.vars.mk
 
 export DPDK_APP_OUTPUT = $(shell pwd)/dist
+export O = $(shell pwd)/dist
 
 DIRS-y += lib
 DIRS-y += tests

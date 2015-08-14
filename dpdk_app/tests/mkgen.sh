@@ -17,7 +17,8 @@ include $(RTE_SDK)/mk/rte.vars.mk
 '
 
 PART2="
-CFLAGS += -g -I$ROOTDIR/dist/include -I$ROOTDIR/dist/include/net -L$ROOTDIR/dist/lib -lnetproto
+CFLAGS += -g -I$ROOTDIR/dist/include -I$ROOTDIR/dist/include/net -L$ROOTDIR/dist/lib
+LDFLAGS += -lnetproto
 "
 PART3=
 
