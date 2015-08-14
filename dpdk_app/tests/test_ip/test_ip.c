@@ -4,6 +4,7 @@
 #include "port_queue_map.h"
 
 #define RTE_LOGTYPE_TEST_IPV4 (RTE_LOGTYPE_TEST+1)
+#define RX_BURST_NUM 32
 
 static uint16_t tx_rings = 1;
 static uint16_t rx_rings = 1;
@@ -20,16 +21,14 @@ static const struct rte_eth_conf default_rte_eth_conf = {
     .txmode = { .mq_mode = ETH_MQ_TX_NONE },
 };
 
+struct mbuf_table {
+	struct rte_mbuf *mb[RX_BURST_NUM];
+	int len;
+};
+
 static struct queue_conf {
-	unsigned nb_rx_queue;
-
-	struct mbuf_table rx_mbufs;
+	struct mbuf_table rx_mbufs[RTE_MAX_ETHPORTS];
 } lcore_queue_conf[RTE_MAX_LCORE];
-
-static struct port_conf {
-	struct rx_queue rxq[];
-	int nb_rxq;
-} per_port_conf[MAX_PORTS];
 
 static int test_ip_rcv(struct rte_mbuf *mb)
 {
@@ -48,6 +47,7 @@ static int packet_launch_one_lcore(__rte_unused void *)
 	int i;
 	struct rx_queue *rxq;
 	struct lcore_queue_conf *lcore_q;
+	struct rte_mbuf *mb;
 
 	lcore = rte_lcore_id();
 	lcore_q = lcore_q_conf_get(lcore);
@@ -57,12 +57,11 @@ static int packet_launch_one_lcore(__rte_unused void *)
 	}
 	
 	for (;;) {
-		for (i = 0; i < )
-
-	}
-	
-
-	
+		for (i = 0; i < lcore_q->nb_rxq; i++) {
+			netif_rx(lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb, 
+				lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].len);
+		}
+	}	
 	
 	return 0;
 }
@@ -111,7 +110,6 @@ int main(int argc, char** argv)
 	lcore_id = 0;
 	lcore_q = lcore_q_conf_get(lcore_id);
     for (pid = 0; pid < nb_ports; pid++) {
-
 		port_q = port_q_conf_get(pid);
 		/*config eth dev*/
         ret = rte_eth_dev_configure(pid, rx_rings, tx_rings, &default_rte_eth_conf);
@@ -127,6 +125,7 @@ int main(int argc, char** argv)
                 rte_exit(EXIT_FAILURE, "Not enough cores!\n");
             lcore_q = lcore_q_conf_get(lcore_id);
         }
+		lcore_queue_conf[lcore_id].rx_mbufs[pid].len = RX_BURST_NUM;
 		/*port - lcore - queue map*/
 		rxq = &lcore_q->rxq[lcore_q->nb_rxq];
         rxq->port = pid;

@@ -7,7 +7,6 @@ extern "C" {
 
 #define MAX_RX_QUEUE_PER_CORE 	16
 #define MAX_RX_QUEUE_PER_PORT 	8
-#define MAX_PORTS				4
 
 struct rx_queue {
 	int qid;
