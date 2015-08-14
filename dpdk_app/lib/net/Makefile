@@ -9,7 +9,7 @@ RTE_OUTPUT = $(DPDK_APP_OUTPUT)
 # library name
 LIB = libnetproto.a
 
-CFLAGS += -O3
+CFLAGS += -O3 -g
 CFLAGS += $(WERROR_FLAGS) -I$(SRCDIR)
 
 EXPORT_MAP := netproto_version.map

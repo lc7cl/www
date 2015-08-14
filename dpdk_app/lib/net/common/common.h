@@ -37,7 +37,7 @@ static inline struct iovec* msg_hdr_alloc_iovs(int iov_length, int data_len)
 		for (i = 0; i < iov_length; i++) {
 			iov[i].iov_len = data_len;
 			iov[i].iov_base = (void*)(((char*)iov) + 
-				i *(sizeof(struct iovec) + data_len));
+				i *(sizeof(struct iovec) + data_len) + sizeof(struct iovec));
 		}
 	}		
 	return iov;

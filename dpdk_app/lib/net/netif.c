@@ -25,7 +25,7 @@ netif_rx(struct rte_mbuf *mbuf, unsigned num)
 	struct packet_type *pt;
 
 	if (mbuf == NULL) {
-		RTE_LOG(INFO, NETIF, "mbuf is null!\n");
+		//RTE_LOG(INFO, NETIF, "mbuf is null!\n");
 		return retval;
 	}
 
