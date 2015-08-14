@@ -32,18 +32,18 @@ SRCS-y += tcp.c
 SRCS-y += udp.c
 
 # install this header file
-SYMLINK-y-include := af_inet.h
-SYMLINK-y-include += arp.h
-SYMLINK-y-include += buffer.h
-SYMLINK-y-include += hook.h
-SYMLINK-y-include += netdev.h
-SYMLINK-y-include += netif.h
-SYMLINK-y-include += packet.h
-SYMLINK-y-include += port_queue_map.h
-SYMLINK-y-include += sk.h
-SYMLINK-y-include += tcp.h
-SYMLINK-y-include += udp.h
-SYMLINK-y-include/common := common/common.h
+SYMLINK-y-include/net := af_inet.h
+SYMLINK-y-include/net += arp.h
+SYMLINK-y-include/net += buffer.h
+SYMLINK-y-include/net += hook.h
+SYMLINK-y-include/net += netdev.h
+SYMLINK-y-include/net += netif.h
+SYMLINK-y-include/net += packet.h
+SYMLINK-y-include/net += port_queue_map.h
+SYMLINK-y-include/net += sk.h
+SYMLINK-y-include/net += tcp.h
+SYMLINK-y-include/net += udp.h
+SYMLINK-y-include/net/common := common/common.h
 
 # this lib needs eal and ring
 
