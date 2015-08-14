@@ -1,10 +1,10 @@
-#include $(RTE_SDK)/mk/rte.vars.mk
+include $(RTE_SDK)/mk/rte.vars.mk
 
 ifeq ($(RTE_OUTPUT),)
-$(error "RTE_OUTPUT undefined")
+$(error "RTE_OUTPUT undefined")
 endif
 
-$(error $(RTE_OUTPUT))
+RTE_OUTPUT = $(DPDK_APP_OUTPUT)
 
 # library name
 LIB = libnetproto.a
@@ -16,7 +16,7 @@ EXPORT_MAP := netproto_version.map
 
 LIBABIVER := 1
 
-DIRS-y := common
+# DIRS-y := common
 
 # all source are stored in SRCS-y
 SRCS-y := af_inet.c
