@@ -246,14 +246,10 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param)
 	return retval;
 }
 
-int net_device_init(const unsigned *portid, int length)
+int net_device_init(const unsigned portid)
 {
 	struct net_device *retval;
-    int i;
     struct msg_hdr mhdr;
-
-	if (portid == NULL || length == 0)
-		return -1;
 
     memset(&mhdr, 0, sizeof mhdr);
     mhdr.iov = msg_hdr_alloc_iovs(1, 64);
@@ -262,22 +258,16 @@ int net_device_init(const unsigned *portid, int length)
     mhdr.iov_length = 1;
     mhdr.ctlhdr.type = NAME_GET;
 
-	for (i = 0; i < length; i++) {
-		retval = net_device_alloc(portid[i], NULL, NULL);
-		if (retval == NULL) {
-            rte_free(mhdr.iov);
-			goto error_release_ndev;
-        }
-        if (net_dev_ctrl(retval, NDEV_CTRL_T_DEV_NAME, &mhdr) == 0) {
-            RTE_LOG(DEBUG, NET, "init nic %s ok\n", (char*)mhdr.iov[0].iov_base);
-        }
+	retval = net_device_alloc(portid, NULL, NULL);
+	if (retval == NULL) {
+    	rte_free(mhdr.iov);
+		net_device_release(portid);
+		return -1;
 	}
-
+    if (net_dev_ctrl(retval, NDEV_CTRL_T_DEV_NAME, &mhdr) == 0) {
+        RTE_LOG(DEBUG, NET, "init nic %s ok\n", (char*)mhdr.iov[0].iov_base);
+    }
+	
     rte_free(mhdr.iov);
 	return 0;
-error_release_ndev:
-	for (i; i > 0; i--) {
-		net_device_release(portid[i - 1]);
-	}
-	return -1;
 }

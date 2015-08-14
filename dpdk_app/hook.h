@@ -31,7 +31,7 @@ struct hook_ops {
 	int proto;
 	int pos;
 	int (*func)(struct rte_mbuf *m);
-	LIST_ENTRY(packet_type) list;
+	LIST_ENTRY(hook_ops) list;
 };
 
 typedef void (*hook_ok)(struct rte_mbuf *m);
