@@ -100,8 +100,6 @@ error:
 
 static int net_device_set_name(struct net_device *dev, struct iovec *iov)
 {
-	int ret;
-
 	if (dev == NULL || iov == NULL || iov->iov_len == 0 || iov->iov_base == NULL)
 		return -1;
 
@@ -141,7 +139,6 @@ struct net_device* net_device_alloc(unsigned portid,
 	char *name, struct net_device_ops *ops)
 {
 	struct net_device *dev;
-	struct rte_eth_dev *eth_dev;
 	size_t name_len;
 	
 	if (!rte_eth_dev_is_valid_port(portid)) {
@@ -151,12 +148,6 @@ struct net_device* net_device_alloc(unsigned portid,
 	}
 
 	dev = &dev_array[portid];
-	if (dev->dev != NULL) {
-		/*TODO*/
-		RTE_LOG(WARNING, PROTO, "%s %d portid %u is used!\n"
-			, __func__, __LINE__, portid);
-		return NULL;
-	}
 
 	if (name == NULL)
 		name = DEFAULT_NDEV_NAME;
