@@ -40,7 +40,6 @@ static int test_ip_rcv(struct rte_mbuf *mb)
 {
     struct queue_conf *qconf;
 
-    printf("%s %d\n", __func__, __LINE__);
     qconf = &lcore_queue_conf[rte_lcore_id()];
     if (qconf->dumpf) {
         rte_pktmbuf_dump(qconf->dumpf, mb, rte_pktmbuf_data_len(mb));
