@@ -1,7 +1,7 @@
 
 #include "hook.h"
 
-struct hook_head hhead[HOOK_PROTO_MAX][HOOK_POS_MAX];
+struct hook_head hhead[HOOK_PROTO_MAX][HOOK_MAX];
 
 rte_rwlock_t hook_lck;
 
@@ -9,7 +9,7 @@ int hook_register(struct hook_ops *ops)
 {
 	if (ops == NULL
 		|| ops->proto >= HOOK_PROTO_MAX
-		|| ops->pos >= HOOK_POS_MAX
+		|| ops->pos >= HOOK_MAX
 		|| ops->func == NULL)
 		return -1;
 
@@ -23,7 +23,7 @@ void hook_unregister(struct hook_ops *ops)
 {
 	if (ops == NULL
 		|| ops->proto >= HOOK_PROTO_MAX
-		|| ops->pos >= HOOK_POS_MAX
+		|| ops->pos >= HOOK_MAX
 		|| ops->func == NULL)
 		return;
 

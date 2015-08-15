@@ -5,6 +5,8 @@
 extern "C" {
 #endif
 
+#include <rte_ip.h>
+
 #define MAX_INET_PROTOS             256
 #define IPV4_VERSION_MASK           0xf0
 #define IPV4_HEADLENGTH_MASK        0x0f
@@ -24,6 +26,8 @@ struct net_protocol {
 	uint8_t protocol;
 	void (*handler)(struct rte_mbuf*, struct ipv4_hdr*);
 };
+
+extern struct net_protocol *inet_protos[];
 
 int inet_add_protocol(struct net_protocol *protocol);
 int inet_proto_register(void);

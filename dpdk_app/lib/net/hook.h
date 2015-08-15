@@ -40,7 +40,7 @@ typedef void (*hook_ok)(struct rte_mbuf *m);
 
 LIST_HEAD(hook_head, hook_ops);
 
-extern struct hook_head hhead[HOOK_PROTO_MAX][HOOK_POS_MAX];
+extern struct hook_head hhead[HOOK_PROTO_MAX][HOOK_MAX];
 extern rte_rwlock_t hook_lck;
 
 static inline void hook_proccess(struct rte_mbuf *m, uint8_t proto, uint8_t pos, 

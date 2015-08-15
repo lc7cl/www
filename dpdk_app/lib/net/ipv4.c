@@ -1,6 +1,7 @@
 #include <rte_ether.h>
 #include <rte_ip.h>
 
+#include "af_inet.h"
 #include "hook.h"
 #include "ipv4.h"
 
@@ -42,7 +43,7 @@ void ipv4_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
 		goto drop_mbuf;
 	}
 
-	hook_proccess(mbuf, HOOK_PROTO_IPV4, HOOK_PRE_ROUTING, ip_finish);
+	hook_proccess(mbuf, HOOK_PROTO_IPV4, HOOK_PRE_ROUTING, ipv4_finish);
 	return;
 
 drop_mbuf:

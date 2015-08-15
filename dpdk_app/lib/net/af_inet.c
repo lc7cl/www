@@ -5,7 +5,7 @@
 #include "ipv4.h"
 #include "af_inet.h"
 
-static struct net_protocol *inet_protos[MAX_INET_PROTOS];
+struct net_protocol *inet_protos[MAX_INET_PROTOS];
 
 static struct net_protocol udp_protocol = {
 	.protocol = UDP_ID,
