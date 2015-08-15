@@ -1,10 +1,9 @@
-#include <rte_rwlock.h>
 
 #include "hook.h"
 
 struct hook_head hhead[HOOK_PROTO_MAX][HOOK_POS_MAX];
 
-static rte_rwlock_t hook_lck;
+rte_rwlock_t hook_lck;
 
 int hook_register(struct hook_ops *ops)
 {

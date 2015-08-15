@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <sys/queue.h>
+#include <rte_rwlock.h>
 
 #include "buffer.h"
 
@@ -39,18 +40,22 @@ typedef void (*hook_ok)(struct rte_mbuf *m);
 LIST_HEAD(hook_head, hook_ops);
 
 extern struct hook_head hhead[HOOK_PROTO_MAX][HOOK_POS_MAX];
+extern rte_rwlock_t hook_lck;
 
 static inline void hook_proccess(struct rte_mbuf *m, uint8_t proto, uint8_t pos, 
 	hook_ok ok)
 {
 	struct hook_ops *ops;
-	int ret;
+	int ret = HOOK_RET_ACCEPT;
 	
+    rte_rwlock_read_lock(&hook_lck);
 	LIST_FOREACH(ops, &hhead[proto][pos], list) {
 		ret = ops->func(m);
 		if (ret == HOOK_RET_DROP)
 			break;
 	}
+    rte_rwlock_read_unlock(&hook_lck);
+
 	if (ret == HOOK_RET_ACCEPT) {
 		ok(m);
 		return;

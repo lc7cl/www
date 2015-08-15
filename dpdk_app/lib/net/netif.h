@@ -5,7 +5,7 @@
 extern "C" {
 #endif
 
-int netif_rx(struct rte_mbuf *mbuf, unsigned num);
+int netif_rx(struct rte_mbuf **mbuf, unsigned num);
 
 #ifdef __cplusplus
 }

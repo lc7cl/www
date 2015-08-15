@@ -9,6 +9,7 @@
 #define NB_MBUF 1024
 #define RTE_LOGTYPE_TEST_IPV4 (RTE_LOGTYPE_TEST+1)
 #define RX_BURST_NUM 32
+#define DUMP_FILE_PATH "/var/log/dpdk_rx_dump_lcore%u"
 
 static uint16_t tx_rings = 1;
 static uint16_t rx_rings = 1;
@@ -32,10 +33,19 @@ struct mbuf_table {
 
 static struct queue_conf {
 	struct mbuf_table rx_mbufs[RTE_MAX_ETHPORTS];
+    FILE *dumpf;
 } lcore_queue_conf[RTE_MAX_LCORE];
 
 static int test_ip_rcv(struct rte_mbuf *mb)
 {
+    struct queue_conf *qconf;
+
+    printf("%s %d\n", __func__, __LINE__);
+    qconf = &lcore_queue_conf[rte_lcore_id()];
+    if (qconf->dumpf) {
+        rte_pktmbuf_dump(qconf->dumpf, mb, rte_pktmbuf_data_len(mb));
+    }
+
 	return HOOK_RET_ACCEPT;
 }
 
@@ -52,6 +62,8 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 	struct rx_queue *rxq;
 	struct lcore_queue_conf *lcore_q;
 	struct rte_mbuf **pmb;
+    char path[64];
+    struct queue_conf *qconf;
 
 	lcore = rte_lcore_id();
 	lcore_q = lcore_q_conf_get(lcore);
@@ -59,17 +71,31 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 		RTE_LOG(ALERT, TEST_IPV4, "lcore %u hasn't any rx queue!\n", lcore);
 		return 1;
 	}
-	
+    qconf = &lcore_queue_conf[lcore];
+
+    snprintf(path, sizeof path, DUMP_FILE_PATH, lcore);
+    if (qconf->dumpf == NULL) {
+        qconf->dumpf = fopen(path, "w+");
+        if (qconf->dumpf == NULL) {
+            RTE_LOG(ERR, TEST_IPV4, "open file %s error:%s!\n", path, strerror(errno));
+            return 1;
+        }
+    }
+
 	for (;;) {
 		for (i = 0; i < lcore_q->nb_rxq; i++) {
 			rxq = &lcore_q->rxq[i];
-			pmb = lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb;
-			lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].len = 
+			pmb = qconf->rx_mbufs[rxq->port].mb;
+			qconf->rx_mbufs[rxq->port].len = 
 				rte_eth_rx_burst(rxq->port, rxq->qid, pmb, RX_BURST_NUM);
-			netif_rx(lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb[0], 
-				lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].len);
+            if (qconf->rx_mbufs[rxq->port].len) {
+                netif_rx(pmb, qconf->rx_mbufs[rxq->port].len);
+            }
 		}
 	}	
+
+    if (qconf->dumpf)
+        fclose(qconf->dumpf);
 	
 	return 0;
 }
@@ -97,6 +123,7 @@ int main(int argc, char* argv[])
 		rte_exit(EXIT_FAILURE, "Cannot init af_inet\n");
 
 	/*register test hook*/
+    hook_register(&test_ip_hook);
 
 	/*init net device*/
 	nb_ports = rte_eth_dev_count();

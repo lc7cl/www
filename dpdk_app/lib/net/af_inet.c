@@ -70,12 +70,13 @@ void ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt)
 		goto drop_mbuf;
 	}
 
-	if (rte_ipv4_cksum(iphdr) != 0) {
+	if (rte_ipv4_cksum(iphdr) != 0xffff) {
 		goto drop_mbuf;
 	}
 
 	hook_proccess(mbuf, HOOK_PROTO_IPV4, HOOK_POS_IN, ip_finish);
 	return;
+
 drop_mbuf:
 	TRACE_DROP_MBUF(mbuf, 1);
 	rte_pktmbuf_free(mbuf);	

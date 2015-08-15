@@ -16,7 +16,7 @@ print_ether_addr(const char *what, struct ether_addr *addr)
 }
 
 int 
-netif_rx(struct rte_mbuf *mbuf, unsigned num)
+netif_rx(struct rte_mbuf **mbuf, unsigned num)
 {
 	int retval = 0;
 	unsigned i;
@@ -24,24 +24,20 @@ netif_rx(struct rte_mbuf *mbuf, unsigned num)
 	struct ether_hdr *eth_hdr;
 	struct packet_type *pt;
 
-	if (mbuf == NULL || num) {
-		//RTE_LOG(INFO, NETIF, "mbuf is null!\n");
+	if (mbuf == NULL || num == 0) {
+		RTE_LOG(INFO, NETIF, "mbuf is null!\n");
 		return retval;
 	}
 
 	for (i = 0; i < num; i++) {
-		mb = mbuf + i;
+		mb = mbuf[i];
 		eth_hdr = rte_pktmbuf_mtod(mb, struct ether_hdr *);
 		LIST_FOREACH(pt, &ptype_base, list) {
-			if (pt->type == eth_hdr->ether_type) {
+			if (pt->type == rte_be_to_cpu_16(eth_hdr->ether_type)) {
+                rte_pktmbuf_adj(mb, sizeof(struct ether_hdr));
 				pt->func(mb, pt);
 			}
 		}
-		printf("port:%u, packet_type:%u, ol_flags:%lx, ether_type:%u\n", 
-                mb->port, mb->packet_type, mb->ol_flags, eth_hdr->ether_type);
-		print_ether_addr("saddr=", &eth_hdr->s_addr);
-		print_ether_addr("daddr=", &eth_hdr->d_addr);
-		printf("\n");
 	}
 
 	return retval;
