@@ -26,7 +26,7 @@ static const struct rte_eth_conf default_rte_eth_conf = {
 };
 
 struct mbuf_table {
-	struct rte_mbuf *mb[MAX_PKT_BURST];
+	struct rte_mbuf *mb[RX_BURST_NUM];
 	int len;
 };
 
@@ -64,7 +64,7 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 		for (i = 0; i < lcore_q->nb_rxq; i++) {
 			pmb = lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb;
 			lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].len = 
-				rte_eth_rx_burst(portid, rxq->queue_id, pmb, MAX_PKT_BURST);
+				rte_eth_rx_burst(portid, rxq->queue_id, pmb, RX_BURST_NUM);
 			netif_rx(lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].mb[0], 
 				lcore_queue_conf[lcore].rx_mbufs[lcore_q->rxq[i].port].len);
 		}
