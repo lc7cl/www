@@ -1,7 +1,7 @@
 #include <rte_ether.h>
 
 #include "af_inet.h"
-#include "buffer.h"
+#include "ipv4.h"
 #include "packet.h"
 
 struct ptype_list ptype_base;
@@ -15,7 +15,7 @@ packet_type_add(struct packet_type *pt)
 
 struct packet_type ipv4_packet = {
 	.type = ETHER_TYPE_IPv4,
-	.func = ip_rcv,
+	.func = ipv4_rcv,
 	.list = LIST_HEAD_INITIALIZER(NULL)
 };
 

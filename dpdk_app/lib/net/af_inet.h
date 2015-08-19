@@ -5,10 +5,6 @@
 extern "C" {
 #endif
 
-#include <rte_ip.h>
-#include "packet.h"
-#include "buffer.h"
-
 #define MAX_INET_PROTOS             256
 #define IPV4_VERSION_MASK           0xf0
 #define IPV4_HEADLENGTH_MASK        0x0f
@@ -29,7 +25,6 @@ struct net_protocol {
 	void (*handler)(struct rte_mbuf*, struct ipv4_hdr*);
 };
 
-void ip_rcv(struct rte_mbuf *mbuf, struct packet_type *pt);
 int inet_add_protocol(struct net_protocol *protocol);
 int inet_proto_register(void);
 int inet_init(void);

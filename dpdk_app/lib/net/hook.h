@@ -23,9 +23,10 @@ enum {
 };
 
 enum {
-	HOOK_POS_IN = 0,
-	HOOK_POS_OUT,
-	HOOK_POS_MAX = 8
+	HOOK_PRE_ROUTING = 0,
+	HOOK_LOCAL_IN,
+	HOOK_LOCAL_OUT,
+	HOOK_MAX = 8
 };
 
 struct hook_ops {

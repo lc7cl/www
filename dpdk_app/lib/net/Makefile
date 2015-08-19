@@ -21,6 +21,7 @@ LIBABIVER := 1
 # all source are stored in SRCS-y
 SRCS-y := af_inet.c
 SRCS-y += arp.c
+SRCS-y += ipv4.c
 SRCS-y += buffer.c
 SRCS-y += hook.c
 SRCS-y += netdev.c
@@ -34,6 +35,7 @@ SRCS-y += udp.c
 # install this header file
 SYMLINK-y-include/net := af_inet.h
 SYMLINK-y-include/net += arp.h
+SYMLINK-y-include/net += ipv4.h
 SYMLINK-y-include/net += buffer.h
 SYMLINK-y-include/net += hook.h
 SYMLINK-y-include/net += netdev.h
