@@ -51,7 +51,7 @@ static int test_ip_rcv(struct rte_mbuf *mb)
 
 static struct hook_ops test_ip_hook = {
 	.proto = HOOK_PROTO_IPV4,
-	.pos = HOOK_POS_IN,
+	.pos = HOOK_PRE_ROUTING,
 	.func = test_ip_rcv,
 };
 
