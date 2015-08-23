@@ -22,7 +22,7 @@ static struct rte_hash_parameters uhash_param = {
 void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 {
 	struct udp_hdr *udp_hdr;
-	struct sk *s = NULL;
+	struct sock *s = NULL;
 	struct udp_key ukey;
 
 	if (mbuf)
