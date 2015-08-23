@@ -1,8 +1,8 @@
 #include <rte_hash.h>
 #include <rte_jhash.h>
 
-#include "sk.h"
 #include "buffer.h"
+#include "sk.h"
 #include "udp.h"
 
 static struct rte_hash *uhtable;
@@ -39,7 +39,8 @@ void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 	rte_hash_lookup_data(uhtable, (const void*)&ukey, (void **)&s);
 	if (s == NULL)
 		goto drop;
-	s->func(mbuf);
+    if (s->param.mode == SOCK_MODE_COMPLETE)
+	    s->param.func(mbuf);
 
 drop:
 	rte_pktmbuf_free(mbuf);
@@ -54,17 +55,16 @@ int udp_init(void)
 	return 0;
 }
 
-int udp_send(struct sock *sk, char *buff, int length)
+
+int udp_send(__rte_unused struct sock *sk, __rte_unused char *buff, __rte_unused int length);
+int udp_send(__rte_unused struct sock *sk, __rte_unused char *buff, __rte_unused int length)
 {
 	return 0;
 }
 
-struct proto udp_proto = {
-	.send = udp_send,
-	.bind = udp_bind,
-};
-
-int udp_bind(struct sock *sk, uint32_t addr, uint16_t port) {
+int udp_bind(struct sock *sk, uint32_t addr, uint16_t port);
+int udp_bind(struct sock *sk, uint32_t addr, uint16_t port) 
+{
 	struct udp_key ukey;
 
 	ukey.dst_addr = addr;
@@ -72,3 +72,7 @@ int udp_bind(struct sock *sk, uint32_t addr, uint16_t port) {
 	return rte_hash_add_key_data(uhtable, &ukey, sk);
 }
 
+struct proto udp_proto = {
+	.send = &udp_send,
+	.bind = &udp_bind,
+};

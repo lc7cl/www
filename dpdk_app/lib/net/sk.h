@@ -9,22 +9,31 @@ extern "C" {
 #include <rte_ring.h>
 
 enum {
-	SOCK_MODE_COMPELETE,
-	SOCK_MODE_PIPLINE,
+	SOCK_MODE_COMPELETE = 0,
+#define SOCK_MODE_COMPLETE SOCK_MODE_COMPLETE
+	SOCK_MODE_PIPLINE = 1,
+#define SOCK_MODE_PIPELINE SOCK_MODE_PIPELINE
+};
+
+struct sock_parameter {
+    int mode;
+    union {
+        struct rte_ring *pipe;
+        void (*func)(struct rte_mbuf*);
+    };
 };
 
 struct sock {
-	void (*func)(struct rte_mbuf*);
 	struct rte_ring backlog;
 	struct rte_ring write_ring;
 	unsigned lcore_id;
-	int mode;	
 	struct rte_ring* pipe_ring;
 	int l4_proto;
 	struct proto *proto_ops;
 	struct l4_info {
 		uint16_t port;
 	} l4_info;
+    struct sock_parameter param;
 };
 
 enum {
@@ -80,11 +89,11 @@ enum {
 };
 
 struct proto {
-	int (*send)(struct sock, char *buff, int length);	
-	int (*bind)(struct sock, uint32_t, uint16_t);
+	int (*send)(struct sock*, char *buff, int length);	
+	int (*bind)(struct sock*, uint32_t, uint16_t);
 };
 
-struct sock* create_sock(__rte_unused int family, int proto, int mode, struct rte_ring *pipe);
+struct sock* create_sock(__rte_unused int family, int proto, struct sock_parameter *param);
 void destroy_sock(struct sock* sk);
 int sock_bind(struct sock* sk, uint32_t addr, uint16_t port);
 

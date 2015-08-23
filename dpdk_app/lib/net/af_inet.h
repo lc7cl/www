@@ -34,7 +34,8 @@ int inet_proto_register(void);
 int inet_init(void);
 
 struct sock;
-struct sock *inet_alloc_sock(int proto, int mode, struct rte_ring *pipe);
+struct sock_parameter;
+struct sock *inet_alloc_sock(int proto, struct sock_parameter *param);
 
 
 #ifdef __cplusplus

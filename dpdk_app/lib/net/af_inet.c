@@ -1,8 +1,10 @@
 
 #include "packet.h"
+#include "sk.h"
 #include "udp.h"
 #include "tcp.h"
 #include "ipv4.h"
+#include "common/common.h"
 #include "af_inet.h"
 
 #define NB_AF_INET_SOCK_NUM 65536
@@ -44,8 +46,6 @@ int inet_proto_register(void)
 
 int inet_init(void)
 {
-	int retval;
-
 	af_inet_sock_pool = rte_mempool_create("AF_INET_SOCK",
 		NB_AF_INET_SOCK_NUM,
 		sizeof(struct sock) * 2,
@@ -79,32 +79,32 @@ int inet_init(void)
 	return 0;
 }
 
-struct sock *inet_alloc_sock(int proto, int mode, struct rte_ring *pipe)
+struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 {
 	struct sock *sk;
 
-	assert(af_inet_sock_pool != NULL);
+	NET_ASSERT(af_inet_sock_pool != NULL && param != NULL);
 
-	if (rte_mempool_mc_get(af_inet_sock_pool, &sk))
+	if (rte_mempool_mc_get(af_inet_sock_pool, (void **)&sk))
 		return NULL;
 
-	if (mode == SOCK_MODE_COMPELETE) {
-		sk->pipe_ring = NULL;
-	} else if (mode == SOCK_MODE_PIPLINE) {
-		sk->pipe_ring = pipe;
+	if (param->mode == SOCK_MODE_COMPELETE) {
+        sk->param.func = param->func;
+	} else if (param->mode == SOCK_MODE_PIPLINE) {
+		sk->param.pipe = param->pipe;
 	} else {
-		RTE_LOG(WARNING, NET, "mode is unsupported\n");
+		RTE_LOG(WARNING, PROTO, "mode is unsupported\n");
 		goto destroy_sock;
 	}
-	sk->mode = mode;
+	sk->param.mode = param->mode;
 	if (proto >= SOCK_PTOTO_IPPROTO_MAX) {
-		RTE_LOG(WARNING, NET, "wrong proto\n");
+		RTE_LOG(WARNING, PROTO, "wrong proto\n");
 		goto destroy_sock;
 	}
 	sk->l4_proto = proto;
 	sk->proto_ops = sock_proto[proto];
 	if (sk->proto_ops == NULL) {
-		RTE_LOG(WARNING, NET, "proto is unsupported\n");
+		RTE_LOG(WARNING, PROTO, "proto is unsupported\n");
 		goto destroy_sock;
 	}
 

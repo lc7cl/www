@@ -18,6 +18,7 @@ typedef uint32_t be32;
 #define RTE_LOGTYPE_MBUFF (RTE_LOGTYPE_USER8+2)
 #define RTE_LOGTYPE_TEST  (RTE_LOGTYPE_USER8+8)
 
+#define NET_ASSERT(x) if ( !(x) ) rte_panic("net panic!!!\n")
 
 typedef struct msg_hdr {
 	struct ctl_hdr {
