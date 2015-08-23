@@ -88,7 +88,7 @@ struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 	if (rte_mempool_mc_get(af_inet_sock_pool, (void **)&sk))
 		return NULL;
 
-	if (param->mode == SOCK_MODE_COMPELETE) {
+	if (param->mode == SOCK_MODE_COMPLETE) {
         sk->param.func = param->func;
 	} else if (param->mode == SOCK_MODE_PIPLINE) {
 		sk->param.pipe = param->pipe;
