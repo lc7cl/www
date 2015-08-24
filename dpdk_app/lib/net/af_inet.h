@@ -33,6 +33,10 @@ int inet_add_protocol(struct net_protocol *protocol);
 int inet_proto_register(void);
 int inet_init(void);
 
+struct sock;
+struct sock *inet_alloc_sock(int proto, int mode, struct rte_ring *pipe);
+
+
 #ifdef __cplusplus
 }
 #endif

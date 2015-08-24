@@ -8,6 +8,10 @@ extern "C" {
 #include <rte_ip.h>
 #include <rte_udp.h>
 
+#include "sk.h"
+
+extern struct proto udp_proto;
+
 void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr);
 
 int udp_init(void);
