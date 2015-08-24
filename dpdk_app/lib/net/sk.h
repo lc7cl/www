@@ -86,6 +86,7 @@ struct proto {
 
 struct sock* create_sock(__rte_unused int family, int proto, int mode, struct rte_ring *pipe);
 void destroy_sock(struct sock* sk);
+int sock_bind(struct sock* sk, uint32_t addr, uint16_t port);
 
 
 #ifdef __clpusplus
