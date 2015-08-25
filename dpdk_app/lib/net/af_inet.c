@@ -85,7 +85,7 @@ struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 
 	NET_ASSERT(af_inet_sock_pool != NULL && param != NULL);
 
-	if (rte_mempool_mc_get(af_inet_sock_pool, (void **)&sk))
+	if (rte_mempool_get(af_inet_sock_pool, (void **)&sk))
 		return NULL;
 
 	if (param->mode == SOCK_MODE_COMPLETE) {
@@ -117,6 +117,6 @@ struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 	return sk;
 
 destroy_sock:
-	rte_mempool_mp_put(af_inet_sock_pool, sk);
+	rte_mempool_put(af_inet_sock_pool, sk);
 	return NULL;
 }
