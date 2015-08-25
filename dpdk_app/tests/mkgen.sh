@@ -32,22 +32,23 @@ function genmk {
 
     if [ -f $1/Makefile ]
     then
-        cp $1/Makefile $1/Makefile_bak
+        return
+      #  cp $1/Makefile $1/Makefile_bak
     fi
 
     cd $1
     echo "$PART1" > Makefile
-    PART2="${PART2}APP = $1
+    APART2="${PART2}APP = $1
     "
-    echo "$PART2" >> Makefile
+    echo "$APART2" >> Makefile
 
     for i in *.c
     do
-        PART3="${PART3}SRCS-y += $(basename $i)
+        APART3="${PART3}SRCS-y += $(basename $i)
         "
     done
 
-    echo "$PART3" >> Makefile
+    echo "$APART3" >> Makefile
     echo "$PART4" >> Makefile
     cd $CURDIR
 }
