@@ -48,14 +48,14 @@ int inet_init(void)
 {
 	af_inet_sock_pool = rte_mempool_create("AF_INET_SOCK",
 		NB_AF_INET_SOCK_NUM,
-		sizeof(struct sock) * 2,
+		sizeof(struct sock),
 		32,//unsigned cache_size,
 		0,//unsigned private_data_size,
 		NULL,//rte_mempool_ctor_t * mp_init,
 		NULL,//void * mp_init_arg,
 		NULL,//rte_mempool_obj_ctor_t * obj_init,
 		NULL,//void * obj_init_arg,
-		0,//int socket_id,
+		SOCKET_ID_ANY,//int socket_id,
 		0);
 
 	if (af_inet_sock_pool == NULL)
