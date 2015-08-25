@@ -89,12 +89,12 @@ struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 		return NULL;
 
 	if (param->mode == SOCK_MODE_COMPLETE) {
-		if (param.func == NULL)
+		if (param->func == NULL)
 			goto destroy_sock;
 		else
         	sk->param.func = param->func;
 	} else if (param->mode == SOCK_MODE_PIPLINE) {
-		if (param.pipe == NULL)
+		if (param->pipe == NULL)
 			goto destroy_sock;
 		else
 			sk->param.pipe = param->pipe;
