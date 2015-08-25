@@ -26,6 +26,12 @@ struct mbuf_table {
 	int len;
 };
 
+static const struct rte_eth_conf default_rte_eth_conf = {
+    .rxmode = { .max_rx_pkt_len = ETHER_MAX_LEN,
+                .mq_mode = ETH_MQ_RX_RSS},
+    .txmode = { .mq_mode = ETH_MQ_TX_NONE },
+};
+
 static struct queue_conf {
 	struct mbuf_table mtables[RTE_MAX_ETHPORTS];
 } queue_conf[RTE_MAX_LCORE];
