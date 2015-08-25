@@ -2,6 +2,7 @@
 
 #include <rte_mbuf.h>
 #include <rte_log.h>
+#include <rte_ethdev.h>
 
 #include <sk.h>
 #include <port_queue_map.h>
