@@ -50,7 +50,8 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 		printf("question : %s\n", r->name);
 	} else {
 		printf("format error!\n");
-	}	
+	}
+	rte_pktmbuf_free(m);
 }
 
 static int packet_launch_one_lcore(__rte_unused void *unused)
