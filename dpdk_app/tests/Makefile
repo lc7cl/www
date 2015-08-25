@@ -9,6 +9,6 @@ endif
 
 include $(RTE_SDK)/mk/rte.vars.mk
 
-DIRS-y += test_ip
+DIRS-y += test_ip test_udp
 
 include $(RTE_SDK)/mk/rte.extsubdir.mk

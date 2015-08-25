@@ -8,9 +8,10 @@ ifeq ($(RTE_TARGET),)
 endif
 
 include $(RTE_SDK)/mk/rte.vars.mk
-
-export DPDK_APP_OUTPUT = $(shell pwd)/dist
-export O = $(shell pwd)/dist
+include config
+DPDK_APP_OUTPUT = $(shell pwd)/dist
+O = $(shell pwd)/dist
+export
 
 DIRS-y += lib
 DIRS-y += tests
