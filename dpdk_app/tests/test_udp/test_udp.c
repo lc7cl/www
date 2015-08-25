@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <arpa/inet.h>
 
 #include <rte_mbuf.h>
 #include <rte_log.h>
@@ -96,6 +97,8 @@ int main(int argc, char ** argv)
 	struct rx_queue *rxq;
 	struct sock *sk;
 	struct sock_parameter sk_param;
+	uint32_t default_addr = 0;
+	uint16_t default_port = 53;
 	
 	ret = rte_eal_init(argc, argv);
 	if (ret < 0)
@@ -103,7 +106,14 @@ int main(int argc, char ** argv)
 	argc -= ret;
 	argv += ret;
 
-	printf("%d\n", argc);
+	if (argc > 1) {
+		argc--;
+		default_addr = inet_addr(argv[1]);
+		if (argc == 3)
+			default_port = rte_cpu_to_be_16((uint16_t)aton(argv[2]));
+		else
+			rte_exit(EXIT_FAILURE, "invalid arguments\n");
+	}
 
 	/*init proto stack*/
 	ret = inet_init();
