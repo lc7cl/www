@@ -25,7 +25,7 @@ void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 	struct sock *s = NULL;
 	struct udp_key ukey;
 
-	if (mbuf)
+	if (mbuf == NULL)
 		return;
 
 	udp_hdr = rte_pktmbuf_mtod(mbuf, struct udp_hdr*);
@@ -41,7 +41,7 @@ void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 		goto drop;
     if (s->param.mode == SOCK_MODE_COMPLETE)
 	    s->param.func(mbuf, ipv4_hdr->src_addr, udp_hdr->src_port);
-
+    return;
 drop:
 	TRACE_DROP_MBUF(mbuf, 1);
 	rte_pktmbuf_free(mbuf);

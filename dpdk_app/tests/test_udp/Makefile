@@ -10,8 +10,14 @@ endif
 include $(RTE_SDK)/mk/rte.vars.mk
 
 
-
-CFLAGS += -g -I/home/lee/code/www/dpdk_app/tests/../dist/include -I/home/lee/code/www/dpdk_app/tests/../dist/include/net -I/home/lee/code/www/dpdk_app/tests/../dist/include/dns -L/home/lee/code/www/dpdk_app/tests/../dist/lib
+CFLAGS += -g
+CFLAGS += -I/home/lee/code/www/dpdk_app/tests/../dist/include 
+CFLAGS += -I/home/lee/code/www/dpdk_app/tests/../dist/include/net
+CFLAGS += -I/home/lee/code/www/dpdk_app/tests/../dist/include/dns 
+CFLAGS += -L/home/lee/code/www/dpdk_app/tests/../dist/lib
+ifeq ($(TRACE_MBUF),1)
+CFLAGS += -DTRACE_MBUF
+endif
 LDFLAGS += -lnetproto
 APP = test_udp
     

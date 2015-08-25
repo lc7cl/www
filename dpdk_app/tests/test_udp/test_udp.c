@@ -141,7 +141,7 @@ int main(int argc, char ** argv)
 	sk = create_sock(0, SOCK_PTOTO_IPPROTO_UDP, &sk_param);
 	if (sk == NULL)
 		rte_exit(EXIT_FAILURE, "Cannot create sock\n");
-	if (sock_bind(sk, 0, 53))
+	if (sock_bind(sk, default_addr, default_port))
 		rte_exit(EXIT_FAILURE, "Sock bind error!\n");
 
 	/*init eth dev*/

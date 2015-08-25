@@ -1,1 +1,3 @@
 CONFIG_DNS := y
+
+TRACE_MBUF=1

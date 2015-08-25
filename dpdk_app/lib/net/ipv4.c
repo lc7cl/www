@@ -19,6 +19,7 @@ static void ipv4_finish(struct rte_mbuf *mbuf)
 	if (proto == NULL)
 		goto drop_mbuf;
 	proto->handler(mbuf, iphdr);
+    return;
 	
 drop_mbuf:
 	TRACE_DROP_MBUF(mbuf, 1);

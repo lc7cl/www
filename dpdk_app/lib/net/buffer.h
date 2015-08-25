@@ -11,9 +11,9 @@ extern "C" {
 struct net_device;
 
 #ifdef TRACE_MBUF
-static inline void trace_mbuf(struct rte_mbuf *mbuf)
+static inline void trace_mbuf(struct rte_mbuf *mbuf, const char *func, int line)
 {
-	printf("drop mbuf from port:%u\n", mbuf->port);
+	printf("%s %d drop mbuf from port:%u\n", func, line, mbuf->port);
 }
 #else
 static inline void trace_mbuf(__rte_unused struct rte_mbuf *mbuf) {}
@@ -23,7 +23,7 @@ void stat_mbuf(struct rte_mbuf *mbuf, uint8_t in, uint8_t drop);
 
 #define TRACE_DROP_MBUF(m, in) do {	\
 	stat_mbuf(m, in, 1);				\
-	trace_mbuf(m);						\
+	trace_mbuf(m, __func__, __LINE__);						\
 } while(0)
 
 #ifdef __cplusplus

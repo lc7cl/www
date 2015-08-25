@@ -13,11 +13,16 @@ ifeq ($(RTE_TARGET),)
 endif
 
 include $(RTE_SDK)/mk/rte.vars.mk
-
 '
-
 PART2="
-CFLAGS += -g -I$ROOTDIR/dist/include -I$ROOTDIR/dist/include/net -L$ROOTDIR/dist/lib
+CFLAGS += -g
+CFLAGS += -I$ROOTDIR/dist/include 
+CFLAGS += -I$ROOTDIR/dist/include/net
+CFLAGS += -I$ROOTDIR/dist/include/dns 
+CFLAGS += -L$ROOTDIR/dist/lib
+ifeq (\$(TRACE_MBUF),1)
+CFLAGS += -DTRACE_MBUF
+endif
 LDFLAGS += -lnetproto
 "
 PART3=
