@@ -27,7 +27,7 @@ struct mbuf_table {
 };
 
 static struct queue_conf {
-	struct mbuf_table mtable;
+	struct mbuf_table mtables[RTE_MAX_ETHPORTS];
 } queue_conf[RTE_MAX_LCORE];
 
 static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port) 
@@ -147,7 +147,7 @@ int main(int argc, char ** argv)
                 rte_exit(EXIT_FAILURE, "Not enough cores!\n");
             lcore_q = lcore_q_conf_get(lcore_id);
         }
-		lcore_queue_conf[lcore_id].rx_mbufs[pid].len = RX_BURST_NUM;
+		lcore_queue_conf[lcore_id].mtables[pid].len = RX_BURST_NUM;
 		/*port - lcore - queue map*/
 		rxq = &lcore_q->rxq[lcore_q->nb_rxq];
         rxq->port = pid;
