@@ -1,6 +1,10 @@
 #include <stdio.h>
 
 #include <rte_mbuf.h>
+#include <rte_log.h>
+
+#include <port_queue_map.h>
+#include <common/common.h>
 #include <common/dns.h>
 
 #define NB_MBUF 1024
@@ -22,7 +26,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	struct rr *r;
 
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
-	r = dns_hdr + 1;
+	r = (struct rr *)(dns_hdr + 1);
 	if (dns_hdr->qr == 0
 		&& dns_hdr->qdcount) {
 		printf("question : %s\n", r->name);
