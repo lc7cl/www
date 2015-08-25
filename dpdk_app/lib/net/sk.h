@@ -19,7 +19,7 @@ struct sock_parameter {
     int mode;
     union {
         struct rte_ring *pipe;
-        void (*func)(struct rte_mbuf*);
+        void (*func)(struct rte_mbuf*, uint32_t, uint16_t);
     };
 };
 

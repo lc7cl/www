@@ -40,7 +40,7 @@ void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 	if (s == NULL)
 		goto drop;
     if (s->param.mode == SOCK_MODE_COMPLETE)
-	    s->param.func(mbuf);
+	    s->param.func(mbuf, ipv4_hdr->src_addr, udp_hdr->src_port);
 
 drop:
 	rte_pktmbuf_free(mbuf);

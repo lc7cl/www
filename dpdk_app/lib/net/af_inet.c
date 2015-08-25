@@ -89,9 +89,15 @@ struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 		return NULL;
 
 	if (param->mode == SOCK_MODE_COMPLETE) {
-        sk->param.func = param->func;
+		if (sk->param.func == NULL)
+			goto destroy_sock;
+		else
+        	sk->param.func = param->func;
 	} else if (param->mode == SOCK_MODE_PIPLINE) {
-		sk->param.pipe = param->pipe;
+		if (sk->param.pipe == NULL)
+			goto destroy_sock;
+		else
+			sk->param.pipe = param->pipe;
 	} else {
 		RTE_LOG(WARNING, PROTO, "mode is unsupported\n");
 		goto destroy_sock;
