@@ -82,6 +82,8 @@ int main(int argc, char ** argv)
 	argc -= ret;
 	argv += ret;
 
+	printf("%d\n", argc);
+
 	/*init proto stack*/
 	ret = inet_init();
 	if (ret)
