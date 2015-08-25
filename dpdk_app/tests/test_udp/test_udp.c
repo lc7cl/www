@@ -66,11 +66,11 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 	for (;;) {
 		for (i = 0; i < lcore_q->nb_rxq; i++) {
 			rxq = &lcore_q->rxq[i];
-			pmb = qconf->rx_mbufs[rxq->port].mb;
-			qconf->rx_mbufs[rxq->port].len = 
+			pmb = qconf->mtables[rxq->port].mb;
+			qconf->mtables[rxq->port].len = 
 				rte_eth_rx_burst(rxq->port, rxq->qid, pmb, RX_BURST_NUM);
-            if (qconf->rx_mbufs[rxq->port].len) {
-                netif_rx(pmb, qconf->rx_mbufs[rxq->port].len);
+            if (qconf->mtables[rxq->port].len) {
+                netif_rx(pmb, qconf->mtables[rxq->port].len);
             }
 		}
 	}	
@@ -147,7 +147,7 @@ int main(int argc, char ** argv)
                 rte_exit(EXIT_FAILURE, "Not enough cores!\n");
             lcore_q = lcore_q_conf_get(lcore_id);
         }
-		lcore_queue_conf[lcore_id].mtables[pid].len = RX_BURST_NUM;
+		queue_conf[lcore_id].mtables[pid].len = RX_BURST_NUM;
 		/*port - lcore - queue map*/
 		rxq = &lcore_q->rxq[lcore_q->nb_rxq];
         rxq->port = pid;
