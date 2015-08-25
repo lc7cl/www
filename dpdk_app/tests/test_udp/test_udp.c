@@ -107,7 +107,6 @@ int main(int argc, char ** argv)
 	argv += ret;
 
 	if (argc > 1) {
-		argc--;
 		default_addr = inet_addr(argv[1]);
 		if (argc == 3)
 			default_port = rte_cpu_to_be_16((uint16_t)strtol(argv[2], NULL, 10));
