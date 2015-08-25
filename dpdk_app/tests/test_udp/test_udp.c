@@ -110,7 +110,7 @@ int main(int argc, char ** argv)
 		argc--;
 		default_addr = inet_addr(argv[1]);
 		if (argc == 3)
-			default_port = rte_cpu_to_be_16((uint16_t)aton(argv[2]));
+			default_port = rte_cpu_to_be_16((uint16_t)strtol(argv[2], NULL, 10));
 		else
 			rte_exit(EXIT_FAILURE, "invalid arguments\n");
 	}
