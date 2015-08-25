@@ -43,6 +43,7 @@ void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 	    s->param.func(mbuf, ipv4_hdr->src_addr, udp_hdr->src_port);
 
 drop:
+	TRACE_DROP_MBUF(mbuf, 1);
 	rte_pktmbuf_free(mbuf);
 }
 
