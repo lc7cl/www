@@ -3,6 +3,7 @@
 #include <rte_mbuf.h>
 #include <rte_log.h>
 
+#include <sk.h>
 #include <port_queue_map.h>
 #include <common/common.h>
 #include <common/dns.h>
@@ -10,6 +11,15 @@
 #define NB_MBUF 1024
 #define RTE_LOGTYPE_TEST_UDP (RTE_LOGTYPE_TEST+2)
 #define RX_BURST_NUM 32
+
+static uint16_t tx_rings = 1;
+static uint16_t rx_rings = 1;
+static uint8_t 	nb_ports = 1;
+static unsigned nb_rx_queue_per_core = 1;
+static uint32_t nb_txd = 32;
+static uint32_t nb_rxd = 32;
+
+static struct rte_mempool * pkt_mbuf_pool = NULL;
 
 struct mbuf_table {
 	struct rte_mbuf *mb[RX_BURST_NUM];
@@ -51,7 +61,7 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 		RTE_LOG(ALERT, TEST_UDP, "lcore %u hasn't any rx queue!\n", lcore);
 		return 1;
 	}
-    qconf = &lcore_queue_conf[lcore];
+    qconf = &queue_conf[lcore];
 
 	for (;;) {
 		for (i = 0; i < lcore_q->nb_rxq; i++) {
