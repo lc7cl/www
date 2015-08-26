@@ -70,6 +70,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	struct name_queue queue;
 	char *p;
 	int nb_question = 0, nb_name = 0;
+	int ignore_answer = 0, ignore_authority = 0, ignore_additional = 0;
 
 	if (m == NULL || question == NULL || qsize == NULL || res == NULL || rr_size == NULL)
 		return EERROR;
@@ -83,7 +84,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	if (hdr->qdcount == 1) {
 		n = rte_malloc(NULL, sizeof *n, 0);
 		if (n == 0)
-			return ENOMEM;
+			return ENOMEMORY;
 		ret = retrieve_name(p, n);
 		if (ret) {
 			rte_free(n);
@@ -97,8 +98,14 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	} else {
 		return EFORMAT;
 	}
+
+	/*for dns request, ignore answer/authority section*/
+	if (hdr->qr == 0) {
+		ignore_answer = 1;
+		ignore_authority = 1;
+	}
 	
-	if (hdr->ancount) {
+	if (!ignore_answer && hdr->ancount) {
 		if (hdr->ancount > 1)
 			return EFORMAT;		
 		n = rte_malloc(NULL, sizeof *n, 0);
@@ -110,7 +117,12 @@ int dns_pkt_parse(struct rte_mbuf *m,
 		}
 		TAILQ_INSERT_HEAD(&queue, n, list);
 		nb_name++;
-	}	
+	}
+
+	if (!ignore_authority && hdr->ancount) {
+
+	}
+	
 	TAILQ_CONCAT(res, &queue, list);	
 	*rr_size = nb_name;
 	return ret;
