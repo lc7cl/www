@@ -21,7 +21,8 @@ int retrieve_name(char *in, struct dns_name *name)
 
 	p = in;
 	name->nb_label = 0;
-	do {
+	while (len != (NAME_LENGTH_MAX - 1)) {
+		len++;
 		if (*p == '\0')
 			break;
 		
@@ -39,17 +40,15 @@ int retrieve_name(char *in, struct dns_name *name)
 			label_len--;
 		}
 		p++;
-	} while (++len != (NAME_LENGTH_MAX - 1));
+	} 
 
 	if (*p != '\0') 
 		goto invalid_fomat;
 	
-	if (len) {
-		domain = rte_malloc(NULL, len, 0);
-		memcpy(domain, in, len);
-		name->data = domain;
-		name->name_len = len;
-	}
+	domain = rte_malloc(NULL, len, 0);
+	memcpy(domain, in, len);
+	name->data = domain;
+	name->name_len = len;
 
 	return ESUCCESS;
 	
