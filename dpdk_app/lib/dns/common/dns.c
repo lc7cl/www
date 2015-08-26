@@ -71,7 +71,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	char *p;
 	int nb_question = 0, nb_name = 0;
 
-	if (m == NULL || question == NULL || res == NULL || size == NULL)
+	if (m == NULL || question == NULL || qsize == NULL || res == NULL || rr_size == NULL)
 		return EERROR;
 
 	*qsize = nb_question;
