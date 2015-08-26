@@ -46,6 +46,11 @@ int retrieve_name(char *in, struct dns_name *name)
 		goto invalid_fomat;
 	
 	domain = rte_malloc(NULL, len, 0);
+	if (domain == NULL) {
+		name->data = NULL;
+		name->name_len = 0;
+		return ENOMEMORY;
+	}
 	memcpy(domain, in, len);
 	name->data = domain;
 	name->name_len = len;
