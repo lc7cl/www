@@ -18,6 +18,7 @@ enum {
 	ESUCCESS = 0,
 	EERROR,
 	ENOMEM,
+#define ENOMEM ENOMEM
 	EFORMAT,
 	ENORR,
 
