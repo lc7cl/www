@@ -3,6 +3,7 @@
 
 #include <sys/queue.h>
 #include <rte_common.h>
+#include <rte_malloc.h>
 
 typedef uint32_t be32;
 
