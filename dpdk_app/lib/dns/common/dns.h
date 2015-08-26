@@ -56,9 +56,7 @@ struct rr {
 	uint16_t rdlength;
 	char rdata[0];
 };
-
 TAILQ_HEAD(rrlist,rr);
-TAILQ_HEAD(name_queue, dns_name);
 
 struct dns_name {
 	TAILQ_ENTRY(dns_name) list;
@@ -67,6 +65,8 @@ struct dns_name {
 	uint8_t nb_label;
 	struct rrlist head;
 };
+TAILQ_HEAD(name_queue, dns_name);
+
 
 //typedef LIST_HEAD(dns_name) dns_name_list_t;
  
