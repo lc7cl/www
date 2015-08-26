@@ -39,7 +39,7 @@ struct dns_hdr {
 struct dns_name;
 
 struct rr {	
-	LIST_ENTRY(rr) list;
+	TAILQ_ENTRY(rr) list;
 	struct dns_name *name;
 	uint16_t type;
 	uint16_t class;
@@ -48,10 +48,10 @@ struct rr {
 	char rdata[0];
 };
 
-LIST_HEAD(rrlist,rr);
+TAILQ_HEAD(rrlist,rr);
 
 struct dns_name {
-	LIST_ENTRY(dns_name) list;
+	TAILQ_ENTRY(dns_name) list;
 	char *data;
 	uint8_t pos[NAME_LENGTH_MAX];
 	uint8_t nb_label;
@@ -61,6 +61,7 @@ struct dns_name {
 //typedef LIST_HEAD(dns_name) dns_name_list_t;
  
 int dns_retrieve_rrs(struct rte_mbuf *m, int section, struct rr **rrs, int length, __out int *size);
-int dns_pkt_parse(struct rte_mbuf *m, LIST_HEAD(dns_name) *res, int length, __out int *size);
+int dns_pkt_parse(struct rte_mbuf *m, TAILQ_HEAD(dns_name) *res, int length, __out int *size);
+int retrieve_name(char *in, struct dns_name *name);
 
 #endif
