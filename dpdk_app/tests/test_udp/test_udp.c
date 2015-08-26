@@ -48,7 +48,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	struct dns_question *question;
 
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
-	r = (struct rr *)(dns_hdr + 1);
+	r = (struct dns_rr *)(dns_hdr + 1);
 	if (dns_hdr->qr == 0) {
 		rc = dns_pkt_parse(m, question, &qsize, &res, &size);
 		if (rc == ESUCCESS && qsize == 1) {
