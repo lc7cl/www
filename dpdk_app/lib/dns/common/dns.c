@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "dns.h"
 
 #define DNS_COMPRESS_MASK 0xc0
@@ -63,11 +65,10 @@ int dns_pkt_parse(struct rte_mbuf *m, struct name_queue *res, __out int *size)
 	struct dns_hdr *hdr;
 	struct dns_name *n;
 	struct name_queue queue;
-	char name_buf[NAME_LENGTH_MAX];
 	char *p;
 	int nb_name = 0;
 
-	if (m == NULL || res == NULL || length == 0 || size == NULL)
+	if (m == NULL || res == NULL || size == NULL)
 		return EERROR;
 
 	*size = nb_name;
@@ -79,7 +80,7 @@ int dns_pkt_parse(struct rte_mbuf *m, struct name_queue *res, __out int *size)
 		p = (char*)(hdr + 1);
 		n = rte_malloc(NULL, sizeof *n, 0);
 		CHECK_MEM_ALLOC(n);
-		ret = retrieve_name(p, n)
+		ret = retrieve_name(p, n);
 		if (ret) {
 			rte_free(n);
 			goto clean_list;
