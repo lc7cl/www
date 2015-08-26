@@ -17,7 +17,7 @@ typedef uint32_t be32;
 enum {
 	ESUCCESS = 0,
 	EERROR,
-	ENOMEM,
+	ENOMEMORY,
 	EFORMAT,
 	ENORR,
 
