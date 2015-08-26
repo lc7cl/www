@@ -122,6 +122,10 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	if (!ignore_authority && hdr->ancount) {
 
 	}
+
+	if (!ignore_additional && hdr->arcount) {
+
+	}
 	
 	TAILQ_CONCAT(res, &queue, list);	
 	*rr_size = nb_name;
