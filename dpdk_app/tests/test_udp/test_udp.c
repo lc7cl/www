@@ -42,14 +42,22 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 {
 	struct dns_hdr *dns_hdr;
 	struct rr *r;
+	int rc = EERROR, size = 0;
+	TAILQ_HEAD(dns_name) res;
+	struct dns_name *name;
 
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	r = (struct rr *)(dns_hdr + 1);
-	if (dns_hdr->qr == 0
-		&& dns_hdr->qdcount) {
-		printf("question : %s\n", r->name);
+	if (dns_hdr->qr == 0) {
+		rc = dns_pkt_parse(m, &res, &size);
+		if (rc == ESUCCESS && size == 1) {
+			name = TAILQ_FIRST(&res);
+			printf("question : %s\n", name->data);
+		}
+		else
+			printf("%s %d format error!\n", __func__, __LINE__);
 	} else {
-		printf("format error!\n");
+		printf("%s %d format error!\n", __func__, __LINE__);
 	}
 	rte_pktmbuf_free(m);
 }

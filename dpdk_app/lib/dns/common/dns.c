@@ -104,7 +104,7 @@ invalid_fomat:
 	return EFORMAT;
 }
 
-int dns_pkt_parse(struct rte_mbuf *m, TAILQ_HEAD(dns_name) *res, int length, __out int *size)
+int dns_pkt_parse(struct rte_mbuf *m, TAILQ_HEAD(dns_name) *res, __out int *size)
 {
 #define CHECK_MEM_ALLOC(x) do { if ((x) == NULL) goto clean_list; } while(0)
 	int ret;
