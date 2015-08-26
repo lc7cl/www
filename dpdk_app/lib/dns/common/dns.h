@@ -1,6 +1,10 @@
 #ifndef _DNS_H_
 #define _DNS_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <sys/queue.h>
 #include <rte_common.h>
 #include <rte_malloc.h>
@@ -13,6 +17,8 @@ typedef uint32_t be32;
 
 #define LABEL_LENGTH_MAX (64)
 #define NAME_LENGTH_MAX (256)
+
+#define DNS_ASSERT(x) if ( !(x) ) rte_panic("dns panic!!!\n")
 
 enum {
 	ESUCCESS = 0,
@@ -80,5 +86,9 @@ int retrieve_name(char *in, struct dns_name *name);
 int dns_pkt_parse(struct rte_mbuf *m, 
 	struct dns_question *question, __out int *qsize, 
 	struct name_queue *res, __out int *size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

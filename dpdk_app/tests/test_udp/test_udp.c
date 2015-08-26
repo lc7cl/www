@@ -48,6 +48,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	struct name_queue res;
 	struct dns_name *name;
 	struct dns_question question;
+	char domain[256];
 	char filename[256];
 
 	if (f[rte_lcore_id()] == NULL) {
@@ -63,7 +64,8 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 		rc = dns_pkt_parse(m, &question, &qsize, &res, &size);
 		if (rc == ESUCCESS && qsize == 1) {
 			name = &question.name;
-			printf("question : %s\n", name->data);
+			if (print_dns_name(domain, 256, name)) 
+				printf("question : %s\n", domain);
 		}
 		else
 			printf("%s %d format error!\n", __func__, __LINE__);
