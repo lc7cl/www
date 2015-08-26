@@ -19,6 +19,9 @@ ifeq ($(TRACE_MBUF),1)
 CFLAGS += -DTRACE_MBUF
 endif
 LDFLAGS += -lnetproto
+ifeq ($(TRACE_MBUF),1)
+LDFLAGS += -ldns
+endif
 APP = test_udp
     
 SRCS-y += test_udp.c
