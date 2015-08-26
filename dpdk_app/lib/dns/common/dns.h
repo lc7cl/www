@@ -58,6 +58,7 @@ struct rr {
 };
 
 TAILQ_HEAD(rrlist,rr);
+TAILQ_HEAD(name_queue, dns_name);
 
 struct dns_name {
 	TAILQ_ENTRY(dns_name) list;
@@ -70,7 +71,7 @@ struct dns_name {
 //typedef LIST_HEAD(dns_name) dns_name_list_t;
  
 int dns_retrieve_rrs(struct rte_mbuf *m, int section, struct rr **rrs, int length, __out int *size);
-int dns_pkt_parse(struct rte_mbuf *m, TAILQ_HEAD(dns_name) *res, __out int *size);
+int dns_pkt_parse(struct rte_mbuf *m, struct name_queue *res, __out int *size);
 int retrieve_name(char *in, struct dns_name *name);
 
 #endif
