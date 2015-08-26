@@ -8,54 +8,6 @@ static inline int valid_dns_character(char c)
 		|| (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ? 1 : 0;
 }
 
-int dns_retrieve_rrs(struct rte_mbuf *m, int section, struct rr **rrs, int length, __out int *size)
-{
-	int ret;
-	struct dns_hdr *hdr;
-	char *rr;
-
-	if (m == NULL || rrs == NULL || length == 0)
-		return EERROR;
-
-	hdr = rte_pktmbuf_mtod(m, struct dns_hdr*);
-	switch (section) {
-		
-	case SECTION_QUESTION:
-		if (hdr->qdcount == 0) {
-			ret = ENORR;
-			break;
-		}
-		rr = hdr
-		break;
-		
-	case SECTION_ANSWER:		
-		if (hdr->ancount == 0) {
-			ret = ENORR;
-			break;
-		}
-		break;
-		
-	case SECTION_AUTHORITY:		
-		if (hdr->nscount == 0) {
-			ret = ENORR;
-			break;
-		}
-		break;
-		
-	case SECTION_ADDITIONAL:		
-		if (hdr->arcount == 0) {
-			ret = ENORR;
-			break;
-		}
-		break;
-		
-	default:
-		return EERROR;
-		break;
-	}
-	return ret;	
-}
-
 int retrieve_name(char *in, struct dns_name *name)
 {
 	uint8_t len = 0, label_len = 0;
