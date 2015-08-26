@@ -3,6 +3,11 @@
 
 #include <rte_common.h>
 
+typedef uint32_t be32;
+
+#define __in
+#define __out
+
 #define LABEL_LENGTH_MAX (64)
 #define NAME_LENGTH_MAX (256)
 
