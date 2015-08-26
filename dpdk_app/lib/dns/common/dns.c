@@ -81,7 +81,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	p = (char*)(hdr + 1);
 	question->name = NULL;
-	if (hdr->qdcount == 1) {
+	if (rte_be_to_cpu_16(hdr->qdcount) == 1) {
 		n = rte_malloc(NULL, sizeof *n, 0);
 		if (n == 0)
 			return ENOMEMORY;
@@ -105,7 +105,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 		ignore_authority = 1;
 	}
 	
-	if (!ignore_answer && hdr->ancount) {
+	if (!ignore_answer && rte_be_to_cpu_16(hdr->ancount)) {
 		if (hdr->ancount > 1)
 			return EFORMAT;		
 		n = rte_malloc(NULL, sizeof *n, 0);
@@ -119,11 +119,11 @@ int dns_pkt_parse(struct rte_mbuf *m,
 		nb_name++;
 	}
 
-	if (!ignore_authority && hdr->ancount) {
+	if (!ignore_authority && rte_be_to_cpu_16(hdr->ancount)) {
 
 	}
 
-	if (!ignore_additional && hdr->arcount) {
+	if (!ignore_additional && rte_be_to_cpu_16(hdr->arcount)) {
 
 	}
 	
