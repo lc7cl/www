@@ -43,7 +43,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	struct dns_hdr *dns_hdr;
 	struct rr *r;
 	int rc = EERROR, size = 0;
-	TAILQ_HEAD(dns_name) res;
+	struct name_queue res;
 	struct dns_name *name;
 
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
