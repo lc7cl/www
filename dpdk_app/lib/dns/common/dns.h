@@ -1,6 +1,7 @@
 #ifndef _DNS_H_
 #define _DNS_H_
 
+#include <sys/queue.h>
 #include <rte_common.h>
 
 typedef uint32_t be32;
