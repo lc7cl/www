@@ -48,6 +48,7 @@ int retrieve_name(char *in, struct dns_name *name)
 		domain = rte_malloc(NULL, len, 0);
 		memcpy(domain, in, len);
 		name->data = domain;
+		name->name_len = len;
 	}
 
 	return ESUCCESS;
@@ -58,26 +59,47 @@ invalid_fomat:
 	return EFORMAT;
 }
 
-int dns_pkt_parse(struct rte_mbuf *m, struct name_queue *res, __out int *size)
+int dns_pkt_parse(struct rte_mbuf *m, 
+	struct dns_question *question, __out int *qsize, 
+	struct name_queue *res, __out int *rr_size)
 {
-#define CHECK_MEM_ALLOC(x) do { if ((x) == NULL) goto clean_list; } while(0)
+#define CHECK_MEM_ALLOC(x) do { if ((x) == NULL) { ret = ENOMEM; goto clean_list;} } while(0)
 	int ret = EERROR;
 	struct dns_hdr *hdr;
 	struct dns_name *n;
 	struct name_queue queue;
 	char *p;
-	int nb_name = 0;
+	int nb_question = 0, nb_name = 0;
 
-	if (m == NULL || res == NULL || size == NULL)
+	if (m == NULL || question == NULL || res == NULL || size == NULL)
 		return EERROR;
 
-	*size = nb_name;
+	*qsize = nb_question;
+	*rr_size = nb_name;
 	TAILQ_INIT(&queue);
 	hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
+	p = (char*)(hdr + 1);
+	question->name = NULL;
+	if (hdr->qdcount == 1) {
+		n = rte_malloc(NULL, sizeof *n, 0);
+		if (n == 0)
+			return ENOMEM;
+		ret = retrieve_name(p, n);
+		if (ret) {
+			rte_free(n);
+			goto clean_list;
+		}
+		p += n->name_len;
+		question->name = n;
+		question->qtype = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;
+		question->qclass = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;		
+	} else {
+		return EFORMAT;
+	}
+	
 	if (hdr->ancount) {
 		if (hdr->ancount > 1)
-			return EFORMAT;
-		p = (char*)(hdr + 1);
+			return EFORMAT;		
 		n = rte_malloc(NULL, sizeof *n, 0);
 		CHECK_MEM_ALLOC(n);
 		ret = retrieve_name(p, n);
@@ -89,10 +111,12 @@ int dns_pkt_parse(struct rte_mbuf *m, struct name_queue *res, __out int *size)
 		nb_name++;
 	}	
 	TAILQ_CONCAT(res, &queue, list);	
-	*size = nb_name;
+	*rr_size = nb_name;
 	return ret;
 
 clean_list:
+	if (question->name)
+		rte_free(question->name);
 	while (!TAILQ_EMPTY(&queue)) {
 		n = TAILQ_FIRST(&queue);
 		TAILQ_REMOVE(&queue, n, list);
