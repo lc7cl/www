@@ -47,7 +47,18 @@ struct dns_hdr {
 	uint16_t arcount;			
 } __attribute((__packed__))__;
 
-struct dns_name;
+struct dns_rr;
+TAILQ_HEAD(rrlist, dns_rr);
+
+struct dns_name {
+	TAILQ_ENTRY(dns_name) list;
+	char *data;
+	uint8_t pos[NAME_LENGTH_MAX];
+	uint8_t nb_label;
+	uint8_t name_len;
+	struct rrlist head;
+};
+TAILQ_HEAD(name_queue, dns_name);
 
 struct dns_question {
 	struct dns_name name;
@@ -64,17 +75,6 @@ struct dns_rr {
 	uint16_t rdlength;
 	char rdata[0];
 };
-TAILQ_HEAD(rrlist, dns_rr);
-
-struct dns_name {
-	TAILQ_ENTRY(dns_name) list;
-	char *data;
-	uint8_t pos[NAME_LENGTH_MAX];
-	uint8_t nb_label;
-	uint8_t name_len;
-	struct rrlist head;
-};
-TAILQ_HEAD(name_queue, dns_name);
 
 int retrieve_name(char *in, struct dns_name *name);
 int dns_pkt_parse(struct rte_mbuf *m, 
