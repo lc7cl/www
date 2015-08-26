@@ -62,7 +62,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	if (dns_hdr->qr == 0) {
 		rc = dns_pkt_parse(m, &question, &qsize, &res, &size);
 		if (rc == ESUCCESS && qsize == 1) {
-			name = question->name;
+			name = question.name;
 			printf("question : %s\n", name->data);
 		}
 		else
