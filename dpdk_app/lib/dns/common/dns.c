@@ -1,5 +1,5 @@
 #include <string.h>
-
+#include <rte_byteorder.h>
 #include "dns.h"
 
 #define DNS_COMPRESS_MASK 0xc0
