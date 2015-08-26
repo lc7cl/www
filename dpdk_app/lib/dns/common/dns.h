@@ -50,7 +50,7 @@ struct dns_hdr {
 struct dns_name;
 
 struct dns_question {
-	struct dns_name *name;
+	struct dns_name name;
 	uint16_t qtype;
 	uint16_t qclass;
 };

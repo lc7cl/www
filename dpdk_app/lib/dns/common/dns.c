@@ -16,8 +16,8 @@ int retrieve_name(char *in, struct dns_name *name)
 	char *p;
 	char *domain = NULL;
 	
-	if (in || name)
-		return 0;
+	if (in == NULL || name == NULL)
+		return EERROR;
 
 	p = in;
 	name->nb_label = 0;
@@ -68,6 +68,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	struct name_queue *res, __out int *rr_size)
 {
 #define CHECK_MEM_ALLOC(x) do { if ((x) == NULL) { ret = ENOMEM; goto clean_list;} } while(0)
+
 	int ret = EERROR;
 	struct dns_hdr *hdr;
 	struct dns_name *n;
@@ -84,18 +85,12 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	TAILQ_INIT(&queue);
 	hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	p = (char*)(hdr + 1);
-	question->name = NULL;
 	if (rte_be_to_cpu_16(hdr->qdcount) == 1) {
-		n = rte_malloc(NULL, sizeof *n, 0);
-		if (n == NULL)
-			return ENOMEMORY;
-		ret = retrieve_name(p, n);
-		if (ret) {
-			rte_free(n);
+		ret = retrieve_name(p, &question->name);
+		if (ret) 
 			goto clean_list;
-		}
-		p += n->name_len;
-		question->name = n;
+
+		p += question->name.name_len;
 		question->qtype = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;
 		question->qclass = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;	
 		*qsize = 1;
@@ -136,8 +131,6 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	return ret;
 
 clean_list:
-	if (question->name)
-		rte_free(question->name);
 	while (!TAILQ_EMPTY(&queue)) {
 		n = TAILQ_FIRST(&queue);
 		TAILQ_REMOVE(&queue, n, list);
