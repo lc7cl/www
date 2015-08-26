@@ -39,6 +39,7 @@ void udp_rcv(struct rte_mbuf *mbuf, struct ipv4_hdr *ipv4_hdr)
 	rte_hash_lookup_data(uhtable, (const void*)&ukey, (void **)&s);
 	if (s == NULL)
 		goto drop;
+	rte_pktmbuf_adj(mbuf, sizeof(struct udp_hdr));
     if (s->param.mode == SOCK_MODE_COMPLETE)
 	    s->param.func(mbuf, ipv4_hdr->src_addr, udp_hdr->src_port);
     return;
