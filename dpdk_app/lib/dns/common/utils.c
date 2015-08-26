@@ -1,3 +1,4 @@
+#include <string.h>
 #include "utils.h"
 
 int print_dns_name(char *out, int size, struct dns_name *in)
