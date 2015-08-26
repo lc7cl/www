@@ -61,7 +61,7 @@ invalid_fomat:
 int dns_pkt_parse(struct rte_mbuf *m, struct name_queue *res, __out int *size)
 {
 #define CHECK_MEM_ALLOC(x) do { if ((x) == NULL) goto clean_list; } while(0)
-	int ret;
+	int ret = EERROR;
 	struct dns_hdr *hdr;
 	struct dns_name *n;
 	struct name_queue queue;
