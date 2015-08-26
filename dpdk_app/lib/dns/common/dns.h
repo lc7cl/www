@@ -1,6 +1,8 @@
 #ifndef _DNS_H_
 #define _DNS_H_
 
+#include <rte_common.h>
+
 #define LABEL_LENGTH_MAX (64)
 #define NAME_LENGTH_MAX (256)
 
