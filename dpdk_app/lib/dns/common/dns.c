@@ -92,7 +92,8 @@ int dns_pkt_parse(struct rte_mbuf *m,
 		p += n->name_len;
 		question->name = n;
 		question->qtype = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;
-		question->qclass = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;		
+		question->qclass = rte_be_to_cpu_16(*(uint16_t*)p); p += 2;	
+		*qsize = 1;
 	} else {
 		return EFORMAT;
 	}

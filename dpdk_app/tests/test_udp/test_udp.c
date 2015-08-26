@@ -41,16 +41,17 @@ static struct queue_conf {
 static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port) 
 {
 	struct dns_hdr *dns_hdr;
-	struct rr *r;
-	int rc = EERROR, size = 0;
+	struct dns_rr *r;
+	int rc = EERROR, size = 0, qsize = 0;
 	struct name_queue res;
 	struct dns_name *name;
+	struct dns_question *question;
 
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	r = (struct rr *)(dns_hdr + 1);
 	if (dns_hdr->qr == 0) {
-		rc = dns_pkt_parse(m, &res, &size);
-		if (rc == ESUCCESS && size == 1) {
+		rc = dns_pkt_parse(m, question, &qsize, &res, &size);
+		if (rc == ESUCCESS && qsize == 1) {
 			name = TAILQ_FIRST(&res);
 			printf("question : %s\n", name->data);
 		}
