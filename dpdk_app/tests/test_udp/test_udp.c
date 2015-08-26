@@ -38,6 +38,8 @@ static struct queue_conf {
 	struct mbuf_table mtables[RTE_MAX_ETHPORTS];
 } queue_conf[RTE_MAX_LCORE];
 
+static FILE *f[RTE_MAX_LCORE];
+
 static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port) 
 {
 	struct dns_hdr *dns_hdr;
@@ -46,9 +48,18 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	struct name_queue res;
 	struct dns_name *name;
 	struct dns_question *question;
+	char filename[256];
 
+	if (f[rte_lcore_id()] == NULL) {
+		snprintf(filename, 256, "/var/log/dpdk_lcore%d", rte_lcore_id());
+		f[rte_lcore_id()] = fopen(filename, "w+");
+		if (f[rte_lcore_id()] == NULL)
+			return;
+	}
+	
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	r = (struct dns_rr *)(dns_hdr + 1);
+	rte_hexdump(f[rte_lcore_id()] , NULL, (char*)dns_hdr, sizeof *dns_hdr);
 	if (dns_hdr->qr == 0) {
 		rc = dns_pkt_parse(m, question, &qsize, &res, &size);
 		if (rc == ESUCCESS && qsize == 1) {
