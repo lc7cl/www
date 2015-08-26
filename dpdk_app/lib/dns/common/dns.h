@@ -4,6 +4,7 @@
 #include <sys/queue.h>
 #include <rte_common.h>
 #include <rte_malloc.h>
+#include <rte_mbuf.h>
 
 typedef uint32_t be32;
 
@@ -46,7 +47,6 @@ struct dns_hdr {
 } __attribute((__packed__))__;
 
 struct dns_name;
-
 struct rr {	
 	TAILQ_ENTRY(rr) list;
 	struct dns_name *name;
@@ -56,7 +56,7 @@ struct rr {
 	uint16_t rdlength;
 	char rdata[0];
 };
-TAILQ_HEAD(rrlist,rr);
+TAILQ_HEAD(rrlist, rr);
 
 struct dns_name {
 	TAILQ_ENTRY(dns_name) list;
