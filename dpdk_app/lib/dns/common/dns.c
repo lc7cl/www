@@ -82,7 +82,7 @@ int dns_pkt_parse(struct rte_mbuf *m,
 	question->name = NULL;
 	if (rte_be_to_cpu_16(hdr->qdcount) == 1) {
 		n = rte_malloc(NULL, sizeof *n, 0);
-		if (n == 0)
+		if (n == NULL)
 			return ENOMEMORY;
 		ret = retrieve_name(p, n);
 		if (ret) {
