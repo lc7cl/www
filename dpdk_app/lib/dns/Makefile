@@ -23,9 +23,11 @@ LIBABIVER := 1
 
 # all source are stored in SRCS-y
 SRCS-y := common/dns.c
+SRCS-y += common/utils.c
 
 # install this header file
 SYMLINK-y-include/dns/common := common/dns.h
+SYMLINK-y-include/dns/common += common/utils.h
 
 # this lib needs eal and ring
 
