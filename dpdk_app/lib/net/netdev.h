@@ -62,6 +62,7 @@ struct net_device_ops {
 	int (*stop)(struct net_device *dev);
 	int (*set_name)(struct net_device *dev, struct iovec *pstr);
 	int (*get_name)(struct net_device *dev, struct iovec *pstr);
+	int (*xmit)(struct net_device *dev, struct rte_mbuf *mb);
 };
 
 #define MAX_NIC_NAME_SIZE  64

@@ -116,6 +116,26 @@ static int net_device_get_name(struct net_device *dev, struct iovec *iov)
 	return 0;
 }
 
+static int net_device_xmit(struct net_device *ndev, struct rte_mbuf *mbuf)
+{
+	/*TODO soft queue*/
+	struct lcore_queue_conf *lcqconf;
+	unsigned lcore = rte_lcore_id();
+	unsigned port = ndev->portid;
+	int qid;
+	struct rte_mbuf *mtable[1];
+	
+	lcqconf = lcore_q_conf_get(lcore);
+	qid = lcqconf->txq[lcqconf->next_txq++];
+	mtable[0] = mbuf;
+	if (rte_eth_tx_burst(port, qid, mtable, 1)) {
+		RTE_LOG(DEBUG, NET, "transmit packet \n");
+	} else {
+		rte_pktmbuf_free(mbuf);
+	}
+	return 0;
+}
+
 struct net_device_ops default_ndev_ops = {
 	net_dev_add_v4addr, /*add_v4addr*/
 	net_dev_add_v4addrs, /*add_v4addrs*/
@@ -129,6 +149,7 @@ struct net_device_ops default_ndev_ops = {
 	NULL, /*stop*/
 	net_device_set_name,/*setname*/
 	net_device_get_name,/*getname*/
+	net_device_xmit, /*xmit*/
 };
 
 /**

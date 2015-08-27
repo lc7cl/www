@@ -113,6 +113,8 @@ struct sock *inet_alloc_sock(int proto, struct sock_parameter *param)
 		RTE_LOG(WARNING, PROTO, "proto is unsupported\n");
 		goto destroy_sock;
 	}
+	sk->next_ip_id = 0;
+	sk->nic = RTE_MAX_ETHPORTS;
 
 	return sk;
 

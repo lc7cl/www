@@ -17,5 +17,6 @@ extern struct ptype_list ptype_base;
 
 int packet_type_add(struct packet_type *pt);
 int packet_init(void);
+int packet_xmit(int port, struct rte_mbuf *mbuf);
 
 #endif

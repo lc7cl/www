@@ -7,21 +7,28 @@ extern "C" {
 
 #define MAX_RX_QUEUE_PER_CORE 	16
 #define MAX_RX_QUEUE_PER_PORT 	8
+#define MAX_TX_QUEUE_PER_CORE 	16
+#define MAX_TX_QUEUE_PER_PORT 	8
 
-struct rx_queue {
+struct txrx_queue {
 	int qid;
 	unsigned lcore;
 	unsigned port;
 };
 
 struct lcore_queue_conf {
-	struct rx_queue rxq[MAX_RX_QUEUE_PER_CORE];
+	struct txrx_queue rxq[MAX_RX_QUEUE_PER_CORE];
 	int nb_rxq;
+	struct txrx_queue txq[MAX_TX_QUEUE_PER_CORE];
+	int nb_txq;
+	int next_txq;
 };
 
 struct port_queue_conf {
-	struct rx_queue rxq[MAX_RX_QUEUE_PER_PORT];
-	int nb_rxq;
+	struct txrx_queue rxq[MAX_RX_QUEUE_PER_PORT];
+	int nb_rxq;	
+	struct txrx_queue txq[MAX_TX_QUEUE_PER_PORT];
+	int nb_txq;
 };
 
 extern struct lcore_queue_conf per_lcore_q_conf[];

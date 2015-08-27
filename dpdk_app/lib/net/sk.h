@@ -28,12 +28,14 @@ struct sock {
 	struct rte_ring write_ring;
 	unsigned lcore_id;
 	struct rte_ring* pipe_ring;
-	int l4_proto;
+	uint8_t l4_proto;
 	struct proto *proto_ops;
 	struct l4_info {
 		uint16_t port;
 	} l4_info;
     struct sock_parameter param;
+	uint16_t next_ip_id;
+	unsigned nic;
 };
 
 enum {
