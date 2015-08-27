@@ -14,10 +14,10 @@ int print_dns_name(char *out, int size, struct dns_name *in)
 	memcpy(out, in->data + 1, len);
 
 	for (i = 1; i < in->nb_label; i++) {
-		*out[in->pos[i]] = '.';
+		out[in->pos[i]] = '.';
 	}
-	*out[len - 1] = '.';
-	*out[len] = '\0';
+	out[len - 1] = '.';
+	out[len] = '\0';
 	return len;	
 }
 
