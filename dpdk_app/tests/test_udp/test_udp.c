@@ -66,7 +66,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 		if (rc == ESUCCESS && qsize == 1) {
 			name = &question.name;
 			if (print_dns_name(domain, 256, name)) 
-				printf("question : %s %s\n", question.name, domain);
+				printf("question : %s %s\n", name->data, domain);
 		}
 		else
 			printf("%s %d format error!\n", __func__, __LINE__);
