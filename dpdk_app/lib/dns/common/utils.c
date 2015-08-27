@@ -23,7 +23,7 @@ int print_dns_name(char *out, int size, struct dns_name *in)
 
 int format_domain(struct dns_name *out, char *in, int size, int dot_end)
 {
-	char *domain, *label_pos, *p;
+	char *domain, *label_pos;
 	int truesize, i;
 	
 	DNS_ASSERT(out != NULL && in != NULL);
@@ -50,7 +50,7 @@ int format_domain(struct dns_name *out, char *in, int size, int dot_end)
 		}
 	}	
 	if (i == truesize - 1 && !dot_end) {
-		*label_pos = (char)(domain + i - label_pos);
+		*label_pos = domain + i - label_pos;
 	}
 	domain[truesize - 1] = '\0';
 	out->data = domain;
