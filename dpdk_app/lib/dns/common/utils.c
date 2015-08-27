@@ -44,7 +44,7 @@ int format_domain(struct dns_name *out, char *in, int size, int dot_end)
 	out->pos[out->nb_label++] = label_pos - in;
 	for (i = 0; i < truesize - 1; i++) {
 		if (domain[i] == '.') {
-			*label_pos = domain + i - (label_pos - in);
+			*label_pos = domain + i - label_pos;
 			label_pos = domain + i;
 			out->pos[out->nb_label++] = label_pos - in;
 		}
