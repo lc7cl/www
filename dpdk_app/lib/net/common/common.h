@@ -11,7 +11,7 @@ extern "C" {
 #include <rte_malloc.h>
 
 typedef uint32_t be32;
-typedef uint16_t be32;
+typedef uint16_t be16;
 
 
 #define __in
