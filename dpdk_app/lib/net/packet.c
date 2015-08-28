@@ -2,6 +2,7 @@
 
 #include "af_inet.h"
 #include "ipv4.h"
+#include "arp.h"
 #include "packet.h"
 
 struct ptype_list ptype_base;
@@ -16,6 +17,12 @@ packet_type_add(struct packet_type *pt)
 struct packet_type ipv4_packet = {
 	.type = ETHER_TYPE_IPv4,
 	.func = ipv4_rcv,
+	.list = LIST_HEAD_INITIALIZER(NULL)
+};
+
+struct packet_type arp_packet = {
+	.type = ETHER_TYPE_ARP,
+	.func = arp_rcv,
 	.list = LIST_HEAD_INITIALIZER(NULL)
 };
 
@@ -40,6 +47,7 @@ packet_init(void)
 	int retval;
 
 	retval = packet_type_add(&ipv4_packet);
+	retval = packet_type_add(&arp_packet);
 	
 	return retval;
 }

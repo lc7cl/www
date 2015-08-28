@@ -10,6 +10,7 @@ extern "C" {
 
 #define MAX_NET_DEVICE_COUNT 64
 
+#define NET_DEV_F_NONE         0x0
 #define NET_DEV_F_ENABLE       0x00000001
 #define NET_DEV_F_DISABLE      0x00000002
 #define NET_DEV_F_START        0x00000004
@@ -93,9 +94,14 @@ extern struct net_device dev_array[];
 */
 static inline struct net_device* net_device_get(unsigned portid)
 {
+	struct net_device *ndev;
 	if (portid >= RTE_MAX_ETHPORTS)
 		return NULL;
-	return &dev_array[portid];
+	ndev = &dev_array[portid];
+	if (ndev->flag != NET_DEV_F_NONE
+		&& (ndev->flag & NET_DEV_F_ENABLE))
+		return ndev;
+	return NULL;
 }
 
 struct net_device* net_device_alloc(unsigned portid,
@@ -105,6 +111,8 @@ int net_dev_ctrl(struct net_device *dev, int ctrl_type, struct msg_hdr *param);
 
 int net_device_init(unsigned portid);
 void net_device_release(__rte_unused unsigned portid);
+int net_device_inet_addr_match(struct net_device *ndev, be32 ipv4_addr);
+
 
 #ifdef __cplusplus
 }

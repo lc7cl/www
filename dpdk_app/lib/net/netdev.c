@@ -275,3 +275,12 @@ int net_device_init(unsigned portid)
     rte_free(mhdr.iov);
 	return 0;
 }
+
+int net_device_inet_addr_match(struct net_device *ndev, be32 ipv4_addr)
+{
+	int match = 0;
+	int ip_addr *addr;
+
+	
+}
+
