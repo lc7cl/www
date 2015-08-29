@@ -1,7 +1,7 @@
 #include <rte_hash.h>
 #include <rte_arp.h>
 
-#include "port_queue.h"
+#include "port_queue_map.h"
 #include "net_device.h"
 #include "arp.h"
 
