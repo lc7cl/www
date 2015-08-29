@@ -1,5 +1,8 @@
 #include <rte_hash.h>
 #include <rte_arp.h>
+
+#include "port_queue.h"
+#include "net_device.h"
 #include "arp.h"
 
 #define MAX_ARP_NODES 4096
@@ -10,7 +13,7 @@ struct rte_hash_parameters arp_table_params = {
 	.key_len = sizeof(unsigned),
 	.entries = MAX_ARP_NODES,
 	.reserved = 0,
-	.hash_func = rte_jhash3,
+	.hash_func = rte_jhash,
 	.socket_id = 0,
 };
 
