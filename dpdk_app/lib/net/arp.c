@@ -2,7 +2,7 @@
 #include <rte_arp.h>
 #include "arp.h"
 
-#define MAX_ARP_NODES = 4096;
+#define MAX_ARP_NODES 4096
 
 struct rte_hash *arp_table;
 struct rte_hash_parameters arp_table_params = {
