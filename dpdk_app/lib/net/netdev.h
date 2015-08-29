@@ -115,7 +115,6 @@ int net_device_init(unsigned portid);
 void net_device_release(__rte_unused unsigned portid);
 int net_device_inet_addr_match(struct net_device *ndev, be32 ipv4_addr);
 
-
 #ifdef __cplusplus
 }
 #endif

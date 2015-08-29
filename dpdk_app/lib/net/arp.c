@@ -1,4 +1,5 @@
 #include <rte_hash.h>
+#include <rte_jhash.h>
 #include <rte_arp.h>
 
 #include "port_queue_map.h"
@@ -62,16 +63,16 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be3
 		return -1;
 	rte_pktmbuf_append(m, sizeof(struct ether_hdr) + sizeof(struct arp_hdr) + sizeof(struct arp_ipv4));
 	/*ether header*/
-	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr);
+	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr*);
 	ether_addr_copy(dhaddr, &eth_hdr->d_addr);
-	ether_addr_copy(ndev->portid, &eth_hdr->s_addr);
+	ether_addr_copy(&ndev->haddr, &eth_hdr->s_addr);
 	eth_hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_ARP);
 
 	/*arp header*/
 	arp_hdr = (struct arp_hdr *)(eth_hdr + 1);
 	arp_hdr->arp_hrd = rte_cpu_to_be_16(ARP_HRD_ETHER);
 	arp_hdr->arp_pro = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
-	arp_hdr->arp_hln = sizeof (struct ether_addr);
+	arp_hdr->arp_hln = sizeof(struct ether_addr);
 	arp_hdr->arp_pln = sizeof be32;
 	arp_hdr->arp_op = rte_cpu_to_be_16(op);
 

@@ -63,7 +63,7 @@ static int net_dev_add_v4addr(struct net_device *dev, struct iovec *pstr)
 		}			
 	}
 
-	addr = rte_malloc(NULL, sizeof *addr, 0);
+	addr = rte_malloc(NULL, sizeof(*addr), 0);
 	if (addr == NULL)
 		return -1;
 
@@ -283,6 +283,6 @@ int net_device_inet_addr_match(struct net_device *ndev, be32 ipv4_addr)
 	int match = 0;
 	int ip_addr *addr;
 
-	
+	return 0;
 }
 
