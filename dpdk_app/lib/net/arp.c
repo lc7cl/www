@@ -7,7 +7,7 @@
 struct rte_hash *arp_table;
 struct rte_hash_parameters arp_table_params = {
 	.name = "arp_table",
-	.key_len = sizeof unsigned,
+	.key_len = sizeof(unsigned),
 	.entries = MAX_ARP_NODES,
 	.reserved = 0,
 	.hash_func = rte_jhash3,
@@ -35,7 +35,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	if (arp_hdr->arp_op == ARP_OP_REQUEST) {
 		/*proccess duplicate ip detection*/
 		if (sip == 0 && net_device_inet_addr_match(ndev, sip)) {
-			arp_send(ndev, ARP_OP_REPLY, rte);
+			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, );
 		}
 	}
 	
@@ -61,7 +61,7 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be3
 	/*ether header*/
 	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr);
 	ether_addr_copy(dhaddr, &eth_hdr->d_addr);
-	rte_eth_macaddr_get(ndev->portid, &eth_hdr->s_addr);
+	ether_addr_copy(ndev->portid, &eth_hdr->s_addr);
 	eth_hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_ARP);
 
 	/*arp header*/
@@ -90,7 +90,7 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be3
 	return 0;
 }
 
-int arp_init()
+int arp_init(void)
 {
 	arp_table = rte_hash_create(&arp_table_params);
 	if (arp_table == NULL)

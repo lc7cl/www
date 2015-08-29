@@ -71,6 +71,7 @@ typedef struct net_device {
 	char name[MAX_NIC_NAME_SIZE];
 	unsigned portid;
 	unsigned flag;
+	struct eth_addr haddr;
 	struct ip_addr *v4_addr;
 	struct net_device_ops *ops;
 	struct {

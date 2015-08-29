@@ -187,6 +187,8 @@ struct net_device* net_device_alloc(unsigned portid,
 	strncpy(dev->name, name, name_len);
 	dev->v4_addr = NULL;
 
+	rte_eth_macaddr_get(dev->portid, &dev->haddr);
+	
 	return dev;	
 }
 
