@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <rte_ether.h>
+#include "packet.h"
 
 void arp_rcv(struct rte_mbuf *mbuf, struct packet_type *pt);
 int arp_send(int op, struct ether_hdr *shaddr, be32 saddr, 
