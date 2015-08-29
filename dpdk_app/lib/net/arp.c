@@ -2,7 +2,7 @@
 #include <rte_arp.h>
 
 #include "port_queue_map.h"
-#include "net_device.h"
+#include "netdev.h"
 #include "arp.h"
 
 #define MAX_ARP_NODES 4096
