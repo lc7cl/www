@@ -39,7 +39,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	if (arp_hdr->arp_op == ARP_OP_REQUEST) {
 		/*proccess duplicate ip detection*/
 		if (sip == 0 && net_device_inet_addr_match(ndev, sip)) {
-			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, );
+			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, sip, );
 		}
 	}
 	
