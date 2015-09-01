@@ -82,7 +82,7 @@ static int arp_probe(struct rte_timer *timer, __rte_unused void* arg)
 	return 0;
 }
 
-static struct arp_node* arp_node_create(struct net_device *ndev, be32 addr, struct ether_addr *haddr, unsigned state)
+struct arp_node* arp_node_create(struct net_device *ndev, be32 addr, struct ether_addr *haddr, unsigned state)
 {
 	struct arp_node *new;
 	int retval;
@@ -116,7 +116,7 @@ static int arp_node_update(struct net_device *ndev, be32 addr, struct ether_addr
 
 	if (rte_hash_lookup_data(ndev->arp_table, &addr, (void**)&node)) {
 		if (create) {
-			node = arp_node_create(addr, haddr, state);
+			node = arp_node_create(ndev, addr, haddr, state);
 			if (node == NULL)
 				return -1;
 			if (rte_hash_add_key_data(ndev->arp_table, &addr, node)) {
@@ -134,7 +134,7 @@ static int arp_node_update(struct net_device *ndev, be32 addr, struct ether_addr
 				rte_timer_stop(&node->timer);
 			rte_timer_reset(&node->timer, ARP_AGEING_PERIOD, SINGLE, LCORE_ID_ANY, arp_probe, NULL);
 			TAILQ_FOREACH(pkt, &node->backlog, list) {
-				if (add_ether_hdr_and_send(node, mbuf))
+				if (add_ether_hdr_and_send(node, pkt->mbuf))
 					break;
 			}
 		}
@@ -252,7 +252,7 @@ int arp_init(struct net_device *ndev)
 		return -1;
 	ndev->arp_mbuf_mp = rte_mempool_create("arp_mempool",
 		MAX_ARP_NODES,
-		sizeof(struct arp_node),
+		sizeof(struct rte_mbuf),
 		0,
 		0,
 		NULL,

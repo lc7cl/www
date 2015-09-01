@@ -10,6 +10,7 @@ extern "C" {
 
 struct pktbuf {
 	TAILQ_ENTRY(pktbuf) list;
+	struct rte_mbuf *mbuf;
 };
 
 static inline struct pktbuf* get_pktbuf(struct rte_mbuf *mbuf) 
