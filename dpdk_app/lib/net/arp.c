@@ -2,6 +2,7 @@
 #include <rte_jhash.h>
 #include <rte_arp.h>
 #include <rte_cycles.h>
+#include <rte_ethdev.h>
 
 #include "port_queue_map.h"
 #include "netdev.h"
@@ -97,12 +98,13 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_addr *shaddr, be
 	/*arp payload*/
 	payload = (struct arp_ipv4*)(arp_hdr + 1);
 	ether_addr_copy(shaddr, &payload->arp_sha);
-	payload->sip = saddr;
+	payload->arp_sip = saddr;
 	ether_addr_copy(dhaddr, &payload->arp_tha);
-	payload->dip = daddr;
+	payload->arp_tip = daddr;
 
 	lcore_q = lcore_q_conf_get(rte_lcore_id());
-	qid = lcore_q->nb_txq[lcore_q->next_txq++].qid;
+	qid = lcore_q->txq[lcore_q->next_txq++].qid;
+	lcore_q->next_txq = (lcore_q->next_txq + 1) % lcore_q->nb_txq;
 
 	if (rte_eth_tx_burst(ndev->portid, qid, &m, 1) == 0) {
 		rte_pktmbuf_free(m);
@@ -132,7 +134,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 
 	if (arp_op != ARP_OP_REQUEST
 		|| arp_op != ARP_OP_REPLY) {
-		RTE_LOG(DEBUG, NET, "invalid arp_op\n");
+		RTE_LOG(DEBUG, PROTO, "invalid arp_op\n");
 		goto release_mbuf;
 	}
 
@@ -148,7 +150,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 		if (net_device_inet_addr_match(ndev, payload->arp_tip)) {
 			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, payload->arp_tip, &payload->arp_sha, payload->arp_sip);
 		} else if (payload->arp_tip == payload->arp_sip) { /*arp announce*/
-			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_COMPELTE, 1);			
+			arp_node_update(payload->arp_sip, &payload->arp_sha, ARP_S_COMPELTE, 1);			
 		}
 		goto release_mbuf;		
 	}
@@ -156,10 +158,10 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	if (arp_hdr->arp_op == ARP_OP_REPLY) {
 		struct arp_node *node;
 
-		if (rte_hash_lookup_data(arp_table, &payload->arp_sip, &node))
-			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_STALE, 1);
+		if (rte_hash_lookup_data(arp_table, &payload->arp_sip, (void**)&node))
+			arp_node_update(payload->arp_sip, &payload->arp_sha, ARP_S_STALE, 1);
 		else
-			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_COMPELTE, 0);		
+			arp_node_update(payload->arp_sip, &payload->arp_sha, ARP_S_COMPELTE, 0);		
 	} 
 	
 release_mbuf:

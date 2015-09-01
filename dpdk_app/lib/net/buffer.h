@@ -12,7 +12,7 @@ struct pktbuf {
 	TAILQ_ENTRY(pktbuf) list;
 };
 
-static struct pktbuf* get_pktbuf(struct rte_mbuf *mbuf) 
+static inline struct pktbuf* get_pktbuf(struct rte_mbuf *mbuf) 
 {
 	return (struct pktbuf*)mbuf->userdata;
 }
