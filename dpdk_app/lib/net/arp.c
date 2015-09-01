@@ -70,11 +70,11 @@ static void arp_probe(struct rte_timer *timer, __rte_unused void* arg)
 	node = (struct arp_node *)((char*)timer - offsetof(struct arp_node, timer));
 	src_addr = net_device_get_primary_addr(node->ndev->portid);
 	if (src_addr && 
-		arp_send(node->ndev, ARP_OP_REQUEST, &ndev->haddr, src_addr, &node->haddr, node->addr)) {
+		arp_send(node->ndev, ARP_OP_REQUEST, &node->ndev->haddr, src_addr, &node->haddr, node->addr)) {
 		node->state = ARP_S_PROBE;
 	} else {
 		node->state = ARP_S_DISCARD;
-		rte_hash_del_key(ndev->arp_table, &node->addr);
+		rte_hash_del_key(node->ndev->arp_table, &node->addr);
 		rte_free(node);
 	}
 }
