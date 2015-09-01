@@ -65,6 +65,52 @@ static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, 
 	return 0;
 }
 
+int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be32 saddr, 
+	struct ether_hdr *dhaddr, be32 daddr)
+{
+	struct rte_mbuf *m;
+	struct ether_hdr *eth_hdr;
+	struct arp_hdr *arp_hdr;
+	struct arp_ipv4 *payload;
+	struct lcore_queue_conf *lcore_q;
+	int qid;
+
+	m = rte_pktmbuf_alloc(arp_mbuf_mp);
+	if (m == NULL)
+		return -1;
+	rte_pktmbuf_append(m, sizeof(struct ether_hdr) + sizeof(struct arp_hdr) + sizeof(struct arp_ipv4));
+	/*ether header*/
+	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr*);
+	ether_addr_copy(dhaddr, &eth_hdr->d_addr);
+	ether_addr_copy(&ndev->haddr, &eth_hdr->s_addr);
+	eth_hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_ARP);
+
+	/*arp header*/
+	arp_hdr = (struct arp_hdr *)(eth_hdr + 1);
+	arp_hdr->arp_hrd = rte_cpu_to_be_16(ARP_HRD_ETHER);
+	arp_hdr->arp_pro = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+	arp_hdr->arp_hln = sizeof(struct ether_addr);
+	arp_hdr->arp_pln = sizeof be32;
+	arp_hdr->arp_op = rte_cpu_to_be_16(op);
+
+	/*arp payload*/
+	payload = (struct arp_ipv4*)(arp_hdr + 1);
+	ether_addr_copy(shaddr, &payload->arp_sha);
+	payload->sip = saddr;
+	ether_addr_copy(dhaddr, &payload->arp_tha);
+	payload->dip = daddr;
+
+	lcore_q = lcore_q_conf_get(rte_lcore_id());
+	qid = lcore_q->nb_txq[lcore_q->next_txq++].qid;
+
+	if (rte_eth_tx_burst(ndev->portid, qid, &m, 1) == 0) {
+		rte_pktmbuf_free(m);
+		return -1;	
+	}
+	
+	return 0;
+}
+
 void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 {
 	struct arp_hdr *arp_hdr;
@@ -115,52 +161,6 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 release_mbuf:
 	rte_pktmbuf_free(mbuf);
 	return;
-}
-
-int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be32 saddr, 
-	struct ether_hdr *dhaddr, be32 daddr)
-{
-	struct rte_mbuf *m;
-	struct ether_hdr *eth_hdr;
-	struct arp_hdr *arp_hdr;
-	struct arp_ipv4 *payload;
-	struct lcore_queue_conf *lcore_q;
-	int qid;
-
-	m = rte_pktmbuf_alloc(arp_mbuf_mp);
-	if (m == NULL)
-		return -1;
-	rte_pktmbuf_append(m, sizeof(struct ether_hdr) + sizeof(struct arp_hdr) + sizeof(struct arp_ipv4));
-	/*ether header*/
-	eth_hdr = rte_pktmbuf_mtod(m, struct ether_hdr*);
-	ether_addr_copy(dhaddr, &eth_hdr->d_addr);
-	ether_addr_copy(&ndev->haddr, &eth_hdr->s_addr);
-	eth_hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_ARP);
-
-	/*arp header*/
-	arp_hdr = (struct arp_hdr *)(eth_hdr + 1);
-	arp_hdr->arp_hrd = rte_cpu_to_be_16(ARP_HRD_ETHER);
-	arp_hdr->arp_pro = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
-	arp_hdr->arp_hln = sizeof(struct ether_addr);
-	arp_hdr->arp_pln = sizeof be32;
-	arp_hdr->arp_op = rte_cpu_to_be_16(op);
-
-	/*arp payload*/
-	payload = (struct arp_ipv4*)(arp_hdr + 1);
-	ether_addr_copy(shaddr, &payload->arp_sha);
-	payload->sip = saddr;
-	ether_addr_copy(dhaddr, &payload->arp_tha);
-	payload->dip = daddr;
-
-	lcore_q = lcore_q_conf_get(rte_lcore_id());
-	qid = lcore_q->nb_txq[lcore_q->next_txq++].qid;
-
-	if (rte_eth_tx_burst(ndev->portid, qid, &m, 1) == 0) {
-		rte_pktmbuf_free(m);
-		return -1;	
-	}
-	
-	return 0;
 }
 
 int arp_init(void)
