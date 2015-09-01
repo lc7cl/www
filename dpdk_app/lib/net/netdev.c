@@ -127,7 +127,7 @@ static int net_device_xmit(struct net_device *ndev, struct rte_mbuf *mbuf)
 	struct rte_mbuf *mtable[1];
 	
 	lcqconf = lcore_q_conf_get(lcore);
-	qid = lcqconf->txq[lcqconf->next_txq++];
+	qid = lcqconf->txq[lcqconf->next_txq++].qid;
 	mtable[0] = mbuf;
 	if (rte_eth_tx_burst(port, qid, mtable, 1)) {
 		RTE_LOG(DEBUG, PROTO, "transmit packet \n");
