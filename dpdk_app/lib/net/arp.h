@@ -9,6 +9,7 @@ extern "C" {
 #include <rte_ether.h>
 #include <packet.h>
 #include <common/common.h>
+#include <netdev.h>
 
 #define ARP_S_STALE 0x0
 #define ARP_S_PROBE 0x1

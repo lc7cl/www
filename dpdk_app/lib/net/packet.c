@@ -26,11 +26,12 @@ struct packet_type arp_packet = {
 	.list = LIST_HEAD_INITIALIZER(NULL)
 };
 
-int packet_xmit(int port, struct rte_mbuf *mbuf)
+int packet_xmit(unsigned port, struct rte_mbuf *mbuf)
 {
 	struct ether_hdr *eth_hdr;
+	struct net_device *ndev = net_device_get(port);
 		
-	NET_ASSERT(dev != NULL && mbuf != NULL);
+	NET_ASSERT(ndev != NULL && mbuf != NULL);
 	
 	rte_pktmbuf_prepend(mbuf, sizeof(struct ether_hdr));
 	eth_hdr = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
@@ -38,7 +39,7 @@ int packet_xmit(int port, struct rte_mbuf *mbuf)
 	/*TODO arp*/
 	//rte_eth_macaddr_get(&eth_hdr->d_addr);
 	eth_hdr->ether_type = ETHER_TYPE_IPv4;
-	return dev->ops->xmit(dev, mbuf);
+	return ndev->ops->xmit(ndev, mbuf);
 }
 
 int 
