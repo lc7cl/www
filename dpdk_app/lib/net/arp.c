@@ -1,12 +1,14 @@
 #include <rte_hash.h>
 #include <rte_jhash.h>
 #include <rte_arp.h>
+#include <rte_cycles.h>
 
 #include "port_queue_map.h"
 #include "netdev.h"
 #include "arp.h"
 
 #define MAX_ARP_NODES 4096
+
 
 struct rte_hash *arp_table;
 struct rte_hash_parameters arp_table_params = {
@@ -19,6 +21,49 @@ struct rte_hash_parameters arp_table_params = {
 };
 
 static struct rte_mempool *arp_mbuf_mp;
+
+static struct arp_node* arp_node_create(be32 addr, struct ether_addr *haddr, unsigned state)
+{
+	struct arp_node *new;
+
+	new = rte_malloc(NULL, sizeof(*new), 0);
+	if (!new)
+		return NULL;
+
+	new->state = state;
+	new->addr = addr;
+	if (haddr) {
+		/*TODO validicate haddr*/		
+		ether_addr_copy(haddr, &new->haddr);
+	}
+	rte_timer_init(&new->timer);
+	TAILQ_INIT(&new->backlog);
+	new->update_time = rte_get_tsc_cycles();
+
+	return new;	
+}
+
+static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, int create)
+{
+	struct arp_node *node;
+
+	if (rte_hash_lookup_data(arp_table, &addr, &node)) {
+		if (create) {
+			node = arp_node_create(addr, haddr, state);
+			if (node == NULL)
+				return -1;
+			if (rte_hash_add_key_data(arp_table, &addr, node)) {
+				rte_free(node);
+				return -1;
+			}		
+			return 0;
+		}
+	} else {
+		ether_addr_copy(haddr, &node->haddr);
+		node->state = state;
+	}
+	return 0;
+}
 
 void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 {
@@ -36,12 +81,36 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	
 	sip = payload->arp_sip;
 
+	if (arp_hdr->arp_op != ARP_OP_REQUEST
+		|| arp_hdr->arp_op != ARP_OP_REPLY) {
+		RTE_LOG(DEBUG, NET, "invalid arp_op\n");
+		return;
+	}
+
 	if (arp_hdr->arp_op == ARP_OP_REQUEST) {
 		/*proccess duplicate ip detection*/
 		if (sip == 0 && net_device_inet_addr_match(ndev, sip)) {
-			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, sip, );
+			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, sip, &payload->arp_tha, payload->arp_tip);
+			return;
 		}
 	}
+
+	if (arp_hdr->arp_op == ARP_OP_REQUEST) {
+		/*arp announce*/
+		if (payload->arp_tip == payload->arp_sip) {
+			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_COMPELTE, 1);
+			return;
+		}
+	}
+
+	if (arp_hdr->arp_op == ARP_OP_REPLY) {
+		struct arp_node *node;
+
+		if (rte_hash_lookup_data(arp_table, &payload->arp_sip, &node))
+			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_STALE, 1);
+		else
+			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_COMPELTE, 0);		
+	} 
 	
 release_mbuf:
 	rte_pktmbuf_free(mbuf);
@@ -101,7 +170,7 @@ int arp_init(void)
 		return -1;
 	arp_mbuf_mp = rte_mempool_create("arp_mempool",
 		MAX_ARP_NODES,
-		sizeof(struct rte_mbuf),
+		sizeof(struct arp_node),
 		0,
 		0,
 		NULL,

@@ -8,6 +8,15 @@ extern "C" {
 #include <rte_mbuf.h>
 #include "netdev.h"
 
+struct pktbuf {
+	TAILQ_ENTRY(pktbuf) list;
+};
+
+static struct pktbuf* get_pktbuf(struct rte_mbuf *mbuf) 
+{
+	return (struct pktbuf*)mbuf->userdata;
+}
+
 struct net_device;
 
 #ifdef TRACE_MBUF
