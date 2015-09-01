@@ -5,8 +5,9 @@
 extern "C" {
 #endif
 
-#include "packet.h"
+#include <packet.h>
 #include <common/common.h>
+#include <sk.h>
 
 #define DEFAULT_TTL 64;
 
