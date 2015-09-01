@@ -66,8 +66,8 @@ static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, 
 	return 0;
 }
 
-int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be32 saddr, 
-	const struct ether_hdr *dhaddr, be32 daddr)
+int arp_send(struct net_device *ndev, uint16_t op, struct ether_addr *shaddr, be32 saddr, 
+	struct ether_addr *dhaddr, be32 daddr)
 {
 	struct rte_mbuf *m;
 	struct ether_hdr *eth_hdr;
