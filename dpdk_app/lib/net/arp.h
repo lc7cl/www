@@ -33,22 +33,7 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_addr *shaddr, be
 	struct ether_addr *dhaddr, be32 daddr);
 int arp_init(struct net_device *ndev);
 struct arp_node* arp_node_create(struct net_device *ndev, be32 addr, struct ether_addr *haddr, unsigned state);
-
-
-static inline struct arp_node *arp_node_lookup(struct net_device *ndev, be32 addr, int create)
-{
-	struct arp_node *node;
-
-	if (rte_hash_lookup_data(ndev->arp_table, &addr, &node)) {
-		if (create) {
-			node = arp_node_create(addr, NULL, ARP_S_STALE);
-		} else {
-			return NULL;
-		} 
-	}
-
-	return node;
-}
+struct arp_node *arp_node_lookup(struct net_device *ndev, be32 addr, int create);
 
 #ifdef __clpusplus
 }

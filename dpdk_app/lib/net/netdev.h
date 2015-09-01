@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <rte_ether.h>
+#include <rte_hash.h>
 #include "common/common.h"
 #include "buffer.h"
 #include <arp.h>

@@ -142,6 +142,21 @@ static int arp_node_update(struct net_device *ndev, be32 addr, struct ether_addr
 	return 0;
 }
 
+struct arp_node *arp_node_lookup(struct net_device *ndev, be32 addr, int create)
+{
+	struct arp_node *node;
+
+	if (rte_hash_lookup_data(ndev->arp_table, &addr, &node)) {
+		if (create) {
+			node = arp_node_create(ndev, addr, NULL, ARP_S_STALE);
+		} else {
+			return NULL;
+		} 
+	}
+
+	return node;
+}
+
 int arp_send(struct net_device *ndev, uint16_t op, struct ether_addr *shaddr, be32 saddr, 
 	struct ether_addr *dhaddr, be32 daddr)
 {
