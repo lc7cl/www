@@ -143,7 +143,7 @@ struct arp_node *arp_node_lookup(struct net_device *ndev, be32 addr, int create)
 {
 	struct arp_node *node;
 
-	if (rte_hash_lookup_data(ndev->arp_table, &addr, &node)) {
+	if (rte_hash_lookup_data(ndev->arp_table, &addr, (void**)&node)) {
 		if (create) {
 			node = arp_node_create(ndev, addr, NULL, ARP_S_STALE);
 		} else {
