@@ -65,7 +65,6 @@ static int sendpkt(struct arp_node *node, struct rte_mbuf *mbuf)
 static void arp_probe(struct rte_timer *timer, __rte_unused void* arg) 
 {
 	struct arp_node *node;
-	struct net_device *ndev;
 	be32 src_addr;
 
 	node = (struct arp_node *)((char*)timer - offsetof(struct arp_node, timer));
