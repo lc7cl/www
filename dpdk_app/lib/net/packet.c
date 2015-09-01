@@ -39,7 +39,7 @@ int packet_xmit(unsigned port, struct rte_mbuf *mbuf, be32 daddr)
 		return -1;
 	}
 	
-	return node->ndev->ops->xmit(ndev, mbuf, node);
+	return node->sendpkt(node, mbuf);
 }
 
 int 
