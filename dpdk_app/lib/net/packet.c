@@ -34,9 +34,11 @@ int packet_xmit(unsigned port, struct rte_mbuf *mbuf, be32 daddr)
 		
 	NET_ASSERT(ndev != NULL && mbuf != NULL);
 
-	node = arp_node_lookup(daddr);
-	if (node == NULL)
+	node = arp_node_lookup(ndev, daddr, 1);
+	if (node == NULL) {
+		rte_free(mbuf);		
 		return -1;
+	}
 	
 	return node->ndev->ops->xmit(ndev, mbuf, node);
 }
