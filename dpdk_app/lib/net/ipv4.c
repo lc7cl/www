@@ -87,6 +87,6 @@ int ip_pkt_build(struct sock *sk, struct rte_mbuf *mb, be32 dst_addr)
 
 int ip_output(struct sock *sk, struct rte_mbuf *mb, be32 daddr)
 {
-	packet_xmit(sk->nic, mb, daddr, be32 daddr);
+	packet_xmit(sk->nic, mb, daddr);
 	return 0;
 }
