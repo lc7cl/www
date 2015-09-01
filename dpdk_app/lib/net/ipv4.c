@@ -55,7 +55,7 @@ drop_mbuf:
 int ip_pkt_build(struct sock *sk, struct rte_mbuf *mb, be32 dst_addr)
 {
 	struct ipv4_hdr *iphdr;
-	uint16_t tot_len;
+	//uint16_t tot_len;
 	struct net_device *ndev;
 	be32 src_addr;
 	
