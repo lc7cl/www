@@ -62,7 +62,7 @@ static int sendpkt(struct arp_node *node, struct rte_mbuf *mbuf)
 	return 0;
 }
 
-static int arp_probe(struct rte_timer *timer, __rte_unused void* arg) 
+static void arp_probe(struct rte_timer *timer, __rte_unused void* arg) 
 {
 	struct arp_node *node;
 	struct net_device *ndev;
@@ -78,14 +78,11 @@ static int arp_probe(struct rte_timer *timer, __rte_unused void* arg)
 		rte_hash_del_key(ndev->arp_table, &node->addr);
 		rte_free(node);
 	}
-	
-	return 0;
 }
 
 struct arp_node* arp_node_create(struct net_device *ndev, be32 addr, struct ether_addr *haddr, unsigned state)
 {
 	struct arp_node *new;
-	int retval;
 
 	NET_ASSERT(ndev != NULL);
 
