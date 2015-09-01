@@ -5,6 +5,8 @@
 
 #include <rte_mbuf.h>
 
+#include <common/common.h>
+
 typedef struct packet_type {
 	unsigned type;
 	void (*func)(struct rte_mbuf *mbuf, struct packet_type *pt);
