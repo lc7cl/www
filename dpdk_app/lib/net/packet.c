@@ -35,7 +35,7 @@ int packet_xmit(unsigned port, struct rte_mbuf *mbuf)
 	
 	rte_pktmbuf_prepend(mbuf, sizeof(struct ether_hdr));
 	eth_hdr = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
-	rte_eth_macaddr_get(&eth_hdr->s_addr);
+	rte_eth_macaddr_get(port, &eth_hdr->s_addr);
 	/*TODO arp*/
 	//rte_eth_macaddr_get(&eth_hdr->d_addr);
 	eth_hdr->ether_type = ETHER_TYPE_IPv4;
