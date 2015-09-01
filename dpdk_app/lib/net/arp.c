@@ -9,9 +9,9 @@
 #include "arp.h"
 
 #define MAX_ARP_NODES 4096
+#define ARP_PROBE_PERIOD (10 * 1000 * 1000) /*10s*/
+#define ARP_AGEING_PERIOD (20 * 1000 * 1000)/*20s*/
 
-
-struct rte_hash *arp_table;
 struct rte_hash_parameters arp_table_params = {
 	.name = "arp_table",
 	.key_len = sizeof(unsigned),
@@ -21,16 +21,79 @@ struct rte_hash_parameters arp_table_params = {
 	.socket_id = 0,
 };
 
-static struct rte_mempool *arp_mbuf_mp;
+static int add_ether_hdr_and_send(struct arp_node *node, struct rte_mbuf *mbuf)
+{
+	struct ether_hdr *hdr;
 
-static struct arp_node* arp_node_create(be32 addr, struct ether_addr *haddr, unsigned state)
+	rte_pktmbuf_prepend(mbuf, sizeof(struct ether_hdr));
+	hdr = rte_pktmbuf_mtod(mbuf, struct ether_hdr *);
+	ether_addr_copy(&node->haddr, &hdr->d_addr);
+	ether_addr_copy(&node->ndev->haddr, &hdr->s_addr);
+	hdr->ether_type = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
+	return node->ndev->ops->xmit(node->ndev, mbuf);
+}
+
+static int sendpkt(struct arp_node *node, struct rte_mbuf *mbuf)
+{
+	struct pktbuf *pkt;
+
+	pkt = get_pktbuf(mbuf);
+
+	NET_ASSERT(pkt != NULL);
+	
+	if (node->state == ARP_S_COMPELTE) {
+		if (TAILQ_EMPTY(&node->backlog)) {
+			/*send direct*/
+			return add_ether_hdr_and_send(node, mbuf);
+		} else {
+			TAILQ_INSERT_TAIL(&node->backlog, pkt, list);
+			TAILQ_FOREACH(pkt, &node->backlog, list) {
+				if (add_ether_hdr_and_send(node, mbuf)) {
+					break;
+				}
+			}
+		}
+	} else if (node->state != ARP_S_DISCARD) {
+		TAILQ_INSERT_TAIL(&node->backlog, pkt, list);
+	} else {
+		TRACE_DROP_MBUF(mbuf, 0);
+		return 1;
+	}
+	return 0;
+}
+
+static int arp_probe(struct rte_timer *timer, __rte_unused void* arg) 
+{
+	struct arp_node *node;
+	struct net_device *ndev;
+	be32 src_addr;
+
+	node = (struct arp_node *)((char*)timer - offsetof(struct arp_node, timer));
+	src_addr = net_device_get_primary_addr(node->ndev->portid);
+	if (src_addr && 
+		arp_send(node->ndev, ARP_OP_REQUEST, &ndev->haddr, src_addr, &node->haddr, node->addr)) {
+		node->state = ARP_S_PROBE;
+	} else {
+		node->state = ARP_S_DISCARD;
+		rte_hash_del_key(ndev->arp_table, &node->addr);
+		rte_free(node);
+	}
+	
+	return 0;
+}
+
+static struct arp_node* arp_node_create(struct net_device *ndev, be32 addr, struct ether_addr *haddr, unsigned state)
 {
 	struct arp_node *new;
+	int retval;
 
-	new = rte_malloc(NULL, sizeof(*new), 0);
-	if (!new)
+	NET_ASSERT(ndev != NULL);
+
+	new = rte_malloc(NULL, sizeof(struct arp_node), 0);
+	if (new == NULL)
 		return NULL;
 
+	new->ndev = ndev;
 	new->state = state;
 	new->addr = addr;
 	if (haddr) {
@@ -38,22 +101,25 @@ static struct arp_node* arp_node_create(be32 addr, struct ether_addr *haddr, uns
 		ether_addr_copy(haddr, &new->haddr);
 	}
 	rte_timer_init(&new->timer);
+	rte_timer_reset(&new->timer, ARP_PROBE_PERIOD, SINGLE, LCORE_ID_ANY, arp_probe, NULL);
 	TAILQ_INIT(&new->backlog);
-	new->update_time = rte_get_tsc_cycles();
+	new->update_time = rte_rdtsc_precise();
+	new->sendpkt = sendpkt;
 
 	return new;	
 }
 
-static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, int create)
+static int arp_node_update(struct net_device *ndev, be32 addr, struct ether_addr *haddr, unsigned state, int create)
 {
 	struct arp_node *node;
+	struct pktbuf *pkt;
 
-	if (rte_hash_lookup_data(arp_table, &addr, (void**)&node)) {
+	if (rte_hash_lookup_data(ndev->arp_table, &addr, (void**)&node)) {
 		if (create) {
 			node = arp_node_create(addr, haddr, state);
 			if (node == NULL)
 				return -1;
-			if (rte_hash_add_key_data(arp_table, &addr, node)) {
+			if (rte_hash_add_key_data(ndev->arp_table, &addr, node)) {
 				rte_free(node);
 				return -1;
 			}		
@@ -63,6 +129,15 @@ static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, 
 		ether_addr_copy(haddr, &node->haddr);
 		node->state = state;
 		node->update_time = rte_get_tsc_cycles();
+		if (state == ARP_S_COMPELTE) {
+			if (rte_timer_pending(&node->timer))
+				rte_timer_stop(&node->timer);
+			rte_timer_reset(&node->timer, ARP_AGEING_PERIOD, SINGLE, LCORE_ID_ANY, arp_probe, NULL);
+			TAILQ_FOREACH(pkt, &node->backlog, list) {
+				if (add_ether_hdr_and_send(node, mbuf))
+					break;
+			}
+		}
 	}
 	return 0;
 }
@@ -77,7 +152,7 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_addr *shaddr, be
 	struct lcore_queue_conf *lcore_q;
 	int qid;
 
-	m = rte_pktmbuf_alloc(arp_mbuf_mp);
+	m = rte_pktmbuf_alloc(ndev->arp_mbuf_mp);
 	if (m == NULL)
 		return -1;
 	rte_pktmbuf_append(m, sizeof(struct ether_hdr) + sizeof(struct arp_hdr) + sizeof(struct arp_ipv4));
@@ -150,7 +225,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 		if (net_device_inet_addr_match(ndev, payload->arp_tip)) {
 			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, payload->arp_tip, &payload->arp_sha, payload->arp_sip);
 		} else if (payload->arp_tip == payload->arp_sip) { /*arp announce*/
-			arp_node_update(payload->arp_sip, &payload->arp_sha, ARP_S_COMPELTE, 1);			
+			arp_node_update(ndev, payload->arp_sip, &payload->arp_sha, ARP_S_COMPELTE, 1);			
 		}
 		goto release_mbuf;		
 	}
@@ -158,10 +233,11 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	if (arp_hdr->arp_op == ARP_OP_REPLY) {
 		struct arp_node *node;
 
-		if (rte_hash_lookup_data(arp_table, &payload->arp_sip, (void**)&node))
+		if (rte_hash_lookup_data(arp_table, &payload->arp_sip, (void**)&node)) {
 			arp_node_update(payload->arp_sip, &payload->arp_sha, ARP_S_STALE, 1);
-		else
+		} else {
 			arp_node_update(payload->arp_sip, &payload->arp_sha, ARP_S_COMPELTE, 0);		
+		}
 	} 
 	
 release_mbuf:
@@ -169,12 +245,12 @@ release_mbuf:
 	return;
 }
 
-int arp_init(void)
+int arp_init(struct net_device *ndev)
 {
-	arp_table = rte_hash_create(&arp_table_params);
-	if (arp_table == NULL)
+	ndev->arp_table = rte_hash_create(&arp_table_params);
+	if (ndev->arp_table == NULL)
 		return -1;
-	arp_mbuf_mp = rte_mempool_create("arp_mempool",
+	ndev->arp_mbuf_mp = rte_mempool_create("arp_mempool",
 		MAX_ARP_NODES,
 		sizeof(struct arp_node),
 		0,
@@ -185,8 +261,8 @@ int arp_init(void)
 		NULL,
 		0,
 		0);
-	if (arp_mbuf_mp == NULL) {
-		rte_hash_free(arp_table);
+	if (ndev->arp_mbuf_mp == NULL) {
+		rte_hash_free(ndev->arp_table);
 		return -1;
 	}
 	return 0;

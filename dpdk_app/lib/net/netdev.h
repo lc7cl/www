@@ -8,6 +8,7 @@ extern "C" {
 #include <rte_ether.h>
 #include "common/common.h"
 #include "buffer.h"
+#include <arp.h>
 
 #define MAX_NET_DEVICE_COUNT 64
 
@@ -75,6 +76,8 @@ typedef struct net_device {
 	struct ether_addr haddr;
 	struct ip_addr *v4_addr;
 	struct net_device_ops *ops;
+	struct rte_hash *arp_table;
+	struct rte_mempool *arp_mbuf_mp;
 	struct {
 		struct {
 			uint64_t drop[RTE_MAX_LCORE];
@@ -104,6 +107,23 @@ static inline struct net_device* net_device_get(unsigned portid)
 		&& (ndev->flag & NET_DEV_F_ENABLE))
 		return ndev;
 	return NULL;
+}
+
+static inline be32 net_device_get_primary_addr(unsigned portid)
+{
+	struct net_device *ndev;
+	struct ip_addr* ip_addr;
+	
+	ndev = net_device_get(portid);
+	if (ndev == NULL)
+		return 0;
+
+	ip_addr = ndev->v4_addr;
+	if (ip_addr) {
+		return ip_addr->addr.ipv4;
+	}
+	
+	return 0;
 }
 
 struct net_device* net_device_alloc(unsigned portid,

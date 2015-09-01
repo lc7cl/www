@@ -13,7 +13,7 @@ extern "C" {
 
 void ipv4_rcv(struct rte_mbuf *mbuf, struct packet_type *pt);
 int ip_pkt_build(struct sock *sk, struct rte_mbuf *mb, be32 dst_addr);
-int ip_output(struct sock *sk, struct rte_mbuf *mb);
+int ip_output(struct sock *sk, struct rte_mbuf *mb, be32 daddr);
 
 
 #ifdef __cplusplus
