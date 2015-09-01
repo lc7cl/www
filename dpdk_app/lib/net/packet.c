@@ -28,7 +28,6 @@ struct packet_type arp_packet = {
 
 int packet_xmit(unsigned port, struct rte_mbuf *mbuf, be32 daddr)
 {
-	struct ether_hdr *eth_hdr;
 	struct net_device *ndev = net_device_get(port);
 	struct arp_node *node;
 		
