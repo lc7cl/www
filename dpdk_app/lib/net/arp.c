@@ -245,7 +245,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	if (arp_hdr->arp_op == ARP_OP_REPLY) {
 		struct arp_node *node;
 
-		if (rte_hash_lookup_data(arp_table, &payload->arp_sip, (void**)&node)) {
+		if (rte_hash_lookup_data(ndev->arp_table, &payload->arp_sip, (void**)&node)) {
 			arp_node_update(ndev, payload->arp_sip, &payload->arp_sha, ARP_S_STALE, 1);
 		} else {
 			arp_node_update(ndev, payload->arp_sip, &payload->arp_sha, ARP_S_COMPELTE, 0);		
