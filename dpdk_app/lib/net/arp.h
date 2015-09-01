@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include <rte_timer.h>
 #include <rte_ether.h>
 #include <packet.h>
 #include <common/common.h>

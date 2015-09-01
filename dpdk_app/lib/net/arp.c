@@ -61,6 +61,7 @@ static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, 
 	} else {
 		ether_addr_copy(haddr, &node->haddr);
 		node->state = state;
+		new->update_time = rte_get_tsc_cycles();
 	}
 	return 0;
 }
@@ -117,6 +118,7 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	struct arp_ipv4 *payload;
 	struct net_device *ndev;
 	uint32_t sip;
+	uint16_t arp_op;
 
 	ndev = net_device_get(mbuf->port);
 	if (ndev == NULL || ndev->portid != mbuf->port) 
@@ -126,27 +128,29 @@ void arp_rcv(struct rte_mbuf *mbuf, __rte_unused struct packet_type *pt)
 	payload = (struct arp_ipv4*)(arp_hdr + 1);
 	
 	sip = payload->arp_sip;
+	arp_op = rte_be_to_cpu_16(arp_hdr->arp_op);
 
-	if (arp_hdr->arp_op != ARP_OP_REQUEST
-		|| arp_hdr->arp_op != ARP_OP_REPLY) {
+	if (arp_op != ARP_OP_REQUEST
+		|| arp_op != ARP_OP_REPLY) {
 		RTE_LOG(DEBUG, NET, "invalid arp_op\n");
-		return;
+		goto release_mbuf;
 	}
 
-	if (arp_hdr->arp_op == ARP_OP_REQUEST) {
+	if (sip == 0) {
 		/*proccess duplicate ip detection*/
-		if (sip == 0 && net_device_inet_addr_match(ndev, sip)) {
-			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, sip, &payload->arp_tha, payload->arp_tip);
-			return;
-		}
+		if (arp_op == ARP_OP_REQUEST) {
+			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, payload->arp_tip, &payload->arp_sha, payload->arp_sip);
+		}		
+		goto release_mbuf;
 	}
 
-	if (arp_hdr->arp_op == ARP_OP_REQUEST) {
-		/*arp announce*/
-		if (payload->arp_tip == payload->arp_sip) {
-			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_COMPELTE, 1);
-			return;
+	if (arp_op == ARP_OP_REQUEST) {
+		if (net_device_inet_addr_match(ndev, payload->arp_tip)) {
+			arp_send(ndev, ARP_OP_REPLY, &ndev->haddr, payload->arp_tip, &payload->arp_sha, payload->arp_sip);
+		} else if (payload->arp_tip == payload->arp_sip) { /*arp announce*/
+			arp_node_update(payload->arp_sip, payload->arp_sha, ARP_S_COMPELTE, 1);			
 		}
+		goto release_mbuf;		
 	}
 
 	if (arp_hdr->arp_op == ARP_OP_REPLY) {
