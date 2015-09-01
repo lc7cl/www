@@ -6,6 +6,7 @@
 #include <rte_ethdev.h>
 
 #include "af_inet.h"
+#include "port_queue_map.h"
 #include "netdev.h"
 
 struct net_device dev_array[RTE_MAX_ETHPORTS];
@@ -129,7 +130,7 @@ static int net_device_xmit(struct net_device *ndev, struct rte_mbuf *mbuf)
 	qid = lcqconf->txq[lcqconf->next_txq++];
 	mtable[0] = mbuf;
 	if (rte_eth_tx_burst(port, qid, mtable, 1)) {
-		RTE_LOG(DEBUG, NET, "transmit packet \n");
+		RTE_LOG(DEBUG, PROTO, "transmit packet \n");
 	} else {
 		rte_pktmbuf_free(mbuf);
 	}
@@ -282,6 +283,13 @@ int net_device_inet_addr_match(struct net_device *ndev, be32 ipv4_addr)
 {
 	int match = 0;
 	int ip_addr *addr;
+
+	addr = ndev->v4_addr;
+	while (addr) {
+		if (addr->addr.ipv4 == ipv4_addr)
+			return 1;
+		addr = addr->next;
+	}
 
 	return 0;
 }
