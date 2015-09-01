@@ -24,8 +24,8 @@ struct arp_node {
 };
 
 void arp_rcv(struct rte_mbuf *mbuf, struct packet_type *pt);
-int arp_send(int op, struct ether_hdr *shaddr, be32 saddr, 
-	struct ether_hdr *dhaddr, be32 daddr);
+int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be32 saddr, 
+	const struct ether_hdr *dhaddr, be32 daddr);
 int arp_init(void);
 
 

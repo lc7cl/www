@@ -47,7 +47,7 @@ static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, 
 {
 	struct arp_node *node;
 
-	if (rte_hash_lookup_data(arp_table, &addr, &node)) {
+	if (rte_hash_lookup_data(arp_table, &addr, (void**)&node)) {
 		if (create) {
 			node = arp_node_create(addr, haddr, state);
 			if (node == NULL)
@@ -61,13 +61,13 @@ static int arp_node_update(be32 addr, struct ether_addr *haddr, unsigned state, 
 	} else {
 		ether_addr_copy(haddr, &node->haddr);
 		node->state = state;
-		new->update_time = rte_get_tsc_cycles();
+		node->update_time = rte_get_tsc_cycles();
 	}
 	return 0;
 }
 
 int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be32 saddr, 
-	struct ether_hdr *dhaddr, be32 daddr)
+	const struct ether_hdr *dhaddr, be32 daddr)
 {
 	struct rte_mbuf *m;
 	struct ether_hdr *eth_hdr;
@@ -91,7 +91,7 @@ int arp_send(struct net_device *ndev, uint16_t op, struct ether_hdr *shaddr, be3
 	arp_hdr->arp_hrd = rte_cpu_to_be_16(ARP_HRD_ETHER);
 	arp_hdr->arp_pro = rte_cpu_to_be_16(ETHER_TYPE_IPv4);
 	arp_hdr->arp_hln = sizeof(struct ether_addr);
-	arp_hdr->arp_pln = sizeof be32;
+	arp_hdr->arp_pln = sizeof(be32);
 	arp_hdr->arp_op = rte_cpu_to_be_16(op);
 
 	/*arp payload*/
