@@ -64,7 +64,7 @@ struct dns_name {
 	uint8_t name_len;
 	struct rrlist head;
 };
-TAILQ_HEAD(name_queue, dns_name);
+TAILQ_HEAD(dns_name_queue, dns_name);
 
 struct dns_question {
 	struct dns_name name;
@@ -87,7 +87,7 @@ struct dns_rr {
 int retrieve_name(char *in, struct dns_name *name);
 int dns_pkt_parse(struct rte_mbuf *m, 
 	struct dns_question *question, __out int *qsize, 
-	struct name_queue *res, __out int *size);
+	struct dns_name_queue *res, __out int *size);
 
 #ifdef __cplusplus
 }

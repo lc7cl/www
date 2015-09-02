@@ -46,7 +46,7 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	struct dns_hdr *dns_hdr;
 	struct dns_rr *r;
 	int rc = EERROR, size = 0, qsize = 0;
-	struct name_queue res;
+	struct dns_name_queue res;
 	struct dns_name *name;
 	struct dns_question question;
 	char domain[256];
