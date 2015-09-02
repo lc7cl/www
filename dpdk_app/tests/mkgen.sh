@@ -24,9 +24,13 @@ ifeq (\$(TRACE_MBUF),1)
 CFLAGS += -DTRACE_MBUF
 endif
 LDFLAGS += -lnetproto
-ifeq (\$(TRACE_MBUF),1)
+ifeq (\$(CONFIG_DNS),y)
 LDFLAGS += -ldns
 endif
+
+DEPDIRS-y += net
+DEPDIRS-\$(CONFIG_DNS) += dns
+
 "
 PART3=
 

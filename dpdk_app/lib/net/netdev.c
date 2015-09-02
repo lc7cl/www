@@ -271,6 +271,13 @@ int net_device_init(unsigned portid)
 		net_device_release(portid);
 		return -1;
 	}
+
+    if (arp_init(retval)) {
+        rte_free(mhdr.iov);
+        net_device_release(portid);
+        return -1;
+    }
+        
     if (net_dev_ctrl(retval, NDEV_CTRL_T_DEV_NAME, &mhdr) == 0) {
         RTE_LOG(DEBUG, PROTO, "init nic %s ok\n", (char*)mhdr.iov[0].iov_base);
     }

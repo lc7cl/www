@@ -15,5 +15,6 @@ export
 
 DIRS-y += lib
 DIRS-y += tests
+DIRS-y += app
 
 include $(RTE_SDK)/mk/rte.extsubdir.mk
