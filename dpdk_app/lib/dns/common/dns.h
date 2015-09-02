@@ -83,6 +83,7 @@ struct dns_rr {
 	uint16_t rdlength;
 	char rdata[0];
 };
+TAILQ_HEAD(dns_rr_queue, dns_rr);
 
 int retrieve_name(char *in, struct dns_name *name);
 int dns_pkt_parse(struct rte_mbuf *m, 
