@@ -14,7 +14,7 @@ CFLAGS += -I$(DPDK_APP_OUTPUT)/include -I$(DPDK_APP_OUTPUT)/include/net -I$(DPDK
 
 LDFLAGS += -lnetproto -ldns
 
-SRCS-y := main.c
+SRCS-y := ldns-main.c
 SRCS-y += dispatch.c
 SRCS-y += client.c
 
