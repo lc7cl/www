@@ -1,11 +1,13 @@
 #include "client.h"
 #include "dispatch.h"
 
+/*process dns request from stub dns*/
 int process_client_request()
 {
     return 0;
 }
 
+/*process */
 int process_server_response()
 {
     return 0;
