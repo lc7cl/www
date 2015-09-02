@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
 	struct port_queue_conf *port_q;
 	struct lcore_queue_conf *lcore_q;
 	struct rte_mbuf *mbuf;
-	struct rx_queue *rxq;
+	struct txrx_queue *rxq;
 
 	ret = rte_eal_init(argc, argv);
     if (ret < 0)
