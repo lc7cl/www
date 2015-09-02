@@ -70,7 +70,9 @@ struct dns_question {
 	struct dns_name name;
 	uint16_t qtype;
 	uint16_t qclass;
+    TAILQ_ENTRY(dns_question) list;
 };
+TAILQ_HEAD(dns_question_queue, dns_question);
 
 struct dns_rr {	
 	TAILQ_ENTRY(dns_rr) list;

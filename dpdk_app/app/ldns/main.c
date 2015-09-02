@@ -9,8 +9,9 @@
 #include <netdev.h>
 #include <port_queue_map.h>
 #include <sk.h>
-
 #include <common/dns.h>
+
+#include "dispatch.h"
 
 #define RTE_LOGTYPE_LDNS (RTE_LOGTYPE_USER7 + 1)
 
@@ -42,15 +43,7 @@ static const struct rte_eth_conf default_rte_eth_conf = {
 
 static void dns_process(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
 {
-    struct dns_hdr *dnshdr;
-
-    dnshdr = rte_pktmbuf_mtod(mbuf, struct dns_hdr*);
-    if (dnshdr->qr == 0) {
-        /*dns request*/
-    } else {
-        /*dns response*/
-    }
-    printf("%u  %u\n", addr, port);
+    dispatch_dns_pkt(mbuf, addr, port);
 }
 
 static int packet_launch_one_lcore(__rte_unused void* unused)
