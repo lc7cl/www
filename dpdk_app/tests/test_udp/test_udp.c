@@ -80,7 +80,7 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 {
 	unsigned lcore;
 	int i;
-	struct rx_queue *rxq;
+	struct txrx_queue *rxq;
 	struct lcore_queue_conf *lcore_q;
 	struct rte_mbuf **pmb;
     char path[64];
@@ -117,7 +117,7 @@ int main(int argc, char ** argv)
 	struct port_queue_conf *port_q;
 	struct lcore_queue_conf *lcore_q;	
 	struct rte_mbuf *mbuf;
-	struct rx_queue *rxq;
+	struct txrx_queue *rxq;
 	struct sock *sk;
 	struct sock_parameter sk_param;
 	uint32_t default_addr = 0;
