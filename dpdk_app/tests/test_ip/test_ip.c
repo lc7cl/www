@@ -58,7 +58,7 @@ static int packet_launch_one_lcore(__rte_unused void *unused)
 {
 	unsigned lcore;
 	int i;
-	struct rx_queue *rxq;
+	struct txrx_queue *rxq;
 	struct lcore_queue_conf *lcore_q;
 	struct rte_mbuf **pmb;
     char path[64];
