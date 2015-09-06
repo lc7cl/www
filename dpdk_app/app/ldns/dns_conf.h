@@ -1,5 +1,7 @@
-#ifndef _CONF_H_
-#define _CONF_H_
+#ifndef _DNS_CONF_H_
+#define _DNS_CONF_H_
+
+#include <rte_common.h>
 
 enum {
 	DNS_MODE_RECURSIVE_ONLY,
