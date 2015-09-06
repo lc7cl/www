@@ -11,6 +11,7 @@
 #include <sk.h>
 #include <common/dns.h>
 
+#include "dns_conf.h"
 #include "dispatch.h"
 
 #define RTE_LOGTYPE_LDNS (RTE_LOGTYPE_USER7 + 1)
@@ -39,6 +40,10 @@ static const struct rte_eth_conf default_rte_eth_conf = {
     .txmode = {
         .mq_mode = ETH_MQ_TX_NONE,
     },
+};
+
+static struct dns_conf default_dns_cfg = {
+	.mode = DNS_MODE_AUTHORIZATION,
 };
 
 static void dns_process(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
@@ -157,6 +162,9 @@ int main(int argc, char ** argv)
         if (ret < 0)
             rte_exit(EXIT_FAILURE, "fail to start port %u\n", pid);
     }
+
+	if (dns_set_cfg(&default_dns_cfg))
+		rte_exit(EXIT_FAILURE, "fail to set dns configuration%u\n", pid);
 
     rte_eal_mp_remote_launch(packet_launch_one_lcore, NULL, SKIP_MASTER);
     RTE_LCORE_FOREACH_SLAVE(lcore_id) {
