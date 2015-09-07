@@ -1,9 +1,20 @@
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+
+#include <rte_ring.h>
+#include <rte_mempool.h>
+#include <rte_ether.h>
+#include <rte_ethdev.h>
+#include <rte_lcore.h>
+#include <rte_mbuf.h>
+
 #include "packet_construct.h"
 
 static uint16_t nb_tx_desc = 128;
 static uint16_t nb_tx_queue = 8;
-struct rte_mempool *rxpool;
-static rte_ring *reqest_ring_per_socket[RTE_MAX_NUMA_NODES];
+static struct rte_mempool *rxpool;
+static struct rte_ring *reqest_ring_per_socket[RTE_MAX_NUMA_NODES];
 #define NB_ELEM_PER_RING 4096
 #define NB_BURST 32
 #define NB_TX_POOL 4096
@@ -34,7 +45,7 @@ struct request_data {
 struct mbuf_table {
 	struct rte_mbuf *mbuf[NB_BURST];
 	int length;
-}
+};
 
 static struct rte_eth_conf default_port_conf = {
 	.txmode = {
@@ -59,7 +70,7 @@ static void packet_construct_task(void)
 	char domain[LINE_SIZE];
 	int domain_len;
 	char *pch;
-	request_data_t *req;
+	struct request_data *req;
 	int ret;
 
 	ring = reqest_ring_per_socket[rte_socket_id()];
@@ -97,7 +108,7 @@ static void packet_construct_task(void)
 			if (pch == NULL) {
 				continue;
 			} else if (strcmp(pch, "A") == 0) { 
-				req = rte_malloc_socket(NULL, sizeof(sizeof(struct request_data) + domain_len), 0, rte_socket_id());
+				req = rte_malloc_socket(NULL, sizeof(struct request_data) + domain_len, 0, rte_socket_id());
 				if (req == NULL)
 					break;
 				if (format_domain(domain, req->req_domain, domain_len) == 0) {
@@ -110,7 +121,7 @@ static void packet_construct_task(void)
 				if (ret < 0)
 					rte_free(req);
 			} else if (strcmp(pch, "PTR") == 0) {
-				req = rte_malloc_socket(NULL, sizeof(sizeof(request_data_t) + domain_len), 0, rte_socket_id());
+				req = rte_malloc_socket(NULL, sizeof(struct request_data) + domain_len, 0, rte_socket_id());
 				if (req == NULL)
 					break;
 				if (format_domain(domain, req->req_domain, domain_len) == 0) {
@@ -152,18 +163,18 @@ static void packet_send_task(void)
 		return;
 	}
 
-	snprintf(pool_name, "tx_pool%u", rte_lcore_id());
+	snprintf(pool_name, 64, "tx_pool%u", rte_lcore_id());
 	tx_pool = rte_pktmbuf_pool_create(pool_name, NB_TX_POOL, 32, 0, 
 		RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
 	if (tx_pool == NULL) {
-		printf("%s %d\n");
+		printf("%s %d\n", __func__, __LINE__);
 	}
 
 	while (1) {
 		mtable.length = 0;		
-		pkts = mtable.mb;
-		while (count != NB_BURST && (rte_ring_dequeue(ring, (void**)&req) == 0)) {
-			if (rte_mempool_get(tx_pool, &mb) < 0)
+		pkts = mtable.mbuf;
+		while (mtable.length != NB_BURST && (rte_ring_dequeue(ring, (void**)&req) == 0)) {
+			if (rte_mempool_get(tx_pool, (void**)&mb) < 0)
 				break;
 			total_len = 0;
 			p = rte_pktmbuf_adj(mb, sizeof(struct ether_addr) + sizeof(struct ipv4_hdr) + sizeof(struct udp_hdr));
@@ -183,9 +194,9 @@ static void packet_send_task(void)
 				default_proto_param.dst_addr, default_proto_param.src_addr, rte_rand() & 0xffff, 
 				IPPROTO_UDP, dns_len + sizeof(struct udp_hdr) + sizeof(struct ipv4_hdr), 1);
 			total_len += ret;
-			p = (struct ipv4_hdr*)rte_pktmbuf_adj(mb, sizeof(struct ipv4_hdr));
+			p = rte_pktmbuf_adj(mb, sizeof(struct ipv4_hdr));
 			ret = udp_construct((struct udp_hdr *)p, 
-				default_proto_param.dport, default_proto_param.sport, dns_len + sizeof(struct udp_hdr), iphdr);
+				default_proto_param.dst_port, default_proto_param.src_port, dns_len + sizeof(struct udp_hdr), iphdr);
 			total_len += ret;
 
 			rte_pktmbuf_prepend(mb, sizeof(struct ipv4_hdr) + sizeof(struct ether_hdr));
@@ -193,11 +204,11 @@ static void packet_send_task(void)
 			mb->data_len = total_len;
 			mb->ol_flags |= PKT_TX_IP_CKSUM;
 
-			mtable.mb[mtable.length++] = mb;
+			mtable.mbuf[mtable.length++] = mb;
 		}
 		
 		while (mtable.length) {
-			ret = rte_eth_tx_burst(uint8_t port_id,uint16_t queue_id, pkts, mtable.length));
+			ret = rte_eth_tx_burst(1, 1, pkts, mtable.length);
 			pkts += ret;
 			mtable.length -= ret;
 		}
@@ -300,7 +311,7 @@ static int parse_cmdline(int argc, char** argv)
 						} else {
 							n = strtoul(pch2, NULL, 10);
 							if (n >= RTE_MAX_LCORE) {
-								printf("invalid core %l\n", n);
+								printf("invalid core %ld\n", n);
 								return -1;
 							}
 							if (request_file[n]) {
@@ -327,7 +338,7 @@ static int request_ring_init(void)
 
 	for (i = 0; i < RTE_MAX_NUMA_NODES; i++) {
 		if (reqest_ring_per_socket[i] == NULL) {
-			snprintf(ring_name, "req_ring%d", i);
+			snprintf(ring_name, 64, "req_ring%d", i);
 			reqest_ring_per_socket[i] = 
 				rte_ring_create(ring_name, NB_ELEM_PER_RING, i, 0);
 		}
@@ -339,6 +350,7 @@ int main(int argc, char** argv)
 {
 	uint8_t port, nb_ports;
 	int ret;
+    unsigned lcore_id;
 
 	ret = rte_eal_init(argc, argv);
 	if (ret < 0)

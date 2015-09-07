@@ -87,7 +87,7 @@ static inline int ipv4_construct(struct ipv4_hdr *hdr, uint32_t dst_addr, uint32
 	return sizeof(struct ipv4_hdr);
 }
 
-static line int udp_construct(struct udp_hdr *hdr, uint16_t dport, uint16_t sport, 
+static inline int udp_construct(struct udp_hdr *hdr, uint16_t dport, uint16_t sport, 
 	uint16_t length, const struct ipv4_hdr *ipv4_hdr)
 {
 	hdr->src_port = rte_cpu_to_be_16(sport);
@@ -112,8 +112,6 @@ static inline int dns_request_construct(struct dns_hdr *hdr, char *domain, uint1
 	hdr->qr = 0;
 	hdr->rcode = 0;
 	hdr->z = 0;
-	hdr->ad = 0;
-	hdr->cd = 0;
 	hdr->ra = 0;
 	hdr->qdcount = rte_cpu_to_be_16(1);
 	hdr->ancount = rte_cpu_to_be_16(0);
@@ -125,21 +123,21 @@ static inline int dns_request_construct(struct dns_hdr *hdr, char *domain, uint1
 
 	data = (char *)(hdr + 1);
 	strcpy(data, domain); data += strlen(domain) + 1;	
-	*((u16*)data) = rte_cpu_to_be_16(type); data += 2;//type
-	*((u16*)data) = rte_cpu_to_be_16(class); data += 2;//class
+	*((uint16_t*)data) = rte_cpu_to_be_16(type); data += 2;//type
+	*((uint16_t*)data) = rte_cpu_to_be_16(class); data += 2;//class
 
 	//addition edns-client-subnet
 	if (client) {
 		optlen = 7;
 		rdlen = optlen + 4;	
 		*data = '\0'; data += 1; //name
-		*((u16*)data) = rte_cpu_to_be_16(0x29); data += 2;//type
-		*((u16*)data) = rte_cpu_to_be_16(4096); data += 2;//class
-		*((u32*)data) = rte_cpu_to_be_16(0); data += 4;//ttl 
-		*((u16*)data) = rte_cpu_to_be_16(rdlen); data += 2;//rdlength
-		*((u16*)data) = rte_cpu_to_be_16(0x0008); data += 2;//opt code	
-		*((u16*)data) = rte_cpu_to_be_16(optlen); data += 2;//opt length
-		*((u16*)data) = rte_cpu_to_be_16(1); data += 2;//family		
+		*((uint16_t*)data) = rte_cpu_to_be_16(0x29); data += 2;//type
+		*((uint16_t*)data) = rte_cpu_to_be_16(4096); data += 2;//class
+		*((uint32_t*)data) = rte_cpu_to_be_16(0); data += 4;//ttl 
+		*((uint16_t*)data) = rte_cpu_to_be_16(rdlen); data += 2;//rdlength
+		*((uint16_t*)data) = rte_cpu_to_be_16(0x0008); data += 2;//opt code	
+		*((uint16_t*)data) = rte_cpu_to_be_16(optlen); data += 2;//opt length
+		*((uint16_t*)data) = rte_cpu_to_be_16(1); data += 2;//family		
 		*data = 24; data++;//source-netmask
 		*data = 0; data++;//scope-netmask
 		for (i = 3; i != 0; i--)
