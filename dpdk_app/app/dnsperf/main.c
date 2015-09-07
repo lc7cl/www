@@ -9,6 +9,8 @@
 #include <rte_lcore.h>
 #include <rte_mbuf.h>
 #include <rte_timer.h>
+#include <rte_cycles.h>
+#include <rte_malloc.h>
 
 #include "packet_construct.h"
 
@@ -349,8 +351,8 @@ static int request_ring_init(void)
 
 static struct rte_timer statistic_timer;
 static struct statistic {
-	rte_eth_stats port_stats;
-	rte_eth_stats rate_stats;
+	struct rte_eth_stats port_stats;
+	struct rte_eth_stats rate_stats;
 } dnsperf_stats[RTE_MAX_ETHPORTS];
 static inline print_dnsperf_stats(uint8_t port)
 {
