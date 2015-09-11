@@ -1,17 +1,15 @@
 #include "client.h"
 
 static struct rte_hash *dns_client_hash;
-static struct rte_rwlock_t hash_rwlock = RTE_RWLOCK_INITIALIZER;
+static rte_rwlock_t hash_rwlock = RTE_RWLOCK_INITIALIZER;
 
 struct dns_client* dns_client_alloc(struct dns_mempool *mm_pool, uint32_t addr, uint16_t port)
 {
 	struct dns_client *client, *new, *retval;
 
-	if (rte_mempool_get(mm_pool->client_pool, &new) < 0)
+	if (rte_mempool_get(mm_pool->client_pool, (void**)&new) < 0)
 	 	return NULL;
-	new->key = port << 32 + addr;
-	new->addr = addr;
-	new->port = port;
+	new->key.key_0 = port << 32 + addr;
 	rte_rwlock_init(&new->rwlock);
 	TAILQ_INIT(&client->querylist);
 	client->mm_pool = mm_pool;

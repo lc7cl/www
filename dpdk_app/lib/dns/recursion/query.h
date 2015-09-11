@@ -3,6 +3,7 @@
 
 #include <rte_rwlock.h>
 #include <common/dns.h>
+#include <common/dns_memory.h>
 
 enum dns_query_state {
 	DNS_QUERY_STATE_NONE,
@@ -41,10 +42,10 @@ struct dns_query_hash {
 	struct dns_query_slot *slot;
 };
 
-struct dns_query* dns_query_alloc(struct rte_mempool *pool, 
+struct dns_query* dns_query_alloc(struct dns_mempool *pool, 
 	struct dns_name *name, uint16_t type, uint16_t class);
-struct dns_query* dns_query_free(struct dns_query* query);
-struct dns_query* dns_query_lookup(struct dns_name *name, uint16_t type, uint16_t class, int create);
+void dns_query_free(struct dns_query* query);
+struct dns_query* dns_query_lookup(struct dns_query_hash *hash, struct dns_name *name, uint16_t type, uint16_t class, int create);
 int dns_query_hash_init(int shift);
 
 static inline uint32_t __attribute__((always_inline)) 

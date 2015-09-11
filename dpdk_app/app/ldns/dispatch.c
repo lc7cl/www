@@ -1,3 +1,6 @@
+#include <common/dns_memory.h>
+#include <common/message.h>
+
 #include "client.h"
 #include "dispatch.h"
 
@@ -11,16 +14,16 @@ void process_client_request(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
 	struct dns_message *msg;
 	int ret;
 
-	client = dns_client_alloc(mempool->client_pool, addr, port);
+	client = dns_client_alloc(mempool, addr, port);
 	if (client == NULL) 
 		return;
 
-	if (rte_mempool_get(mempool->query_pool, &query) < 0) {
+	if (rte_mempool_get(mempool->query_pool, (void**)&query) < 0) {
 		dns_client_put(client);
 		return;
 	}
 
-	if (rte_mempool_get(mempool->message_pool, &msg) < 0) { 
+	if (rte_mempool_get(mempool->message_pool, (void**)&msg) < 0) { 
 		dns_query_put(query);
 		dns_client_put(client);
 	}

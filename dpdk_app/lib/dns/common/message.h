@@ -1,7 +1,6 @@
 #ifndef _MESSAGE_H_
 #define _MESSAGE_H_
 
-#include <common/dns.h>
 #include <common/dns_memory.h>
 
 struct dns_message {

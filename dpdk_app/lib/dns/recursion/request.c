@@ -1,3 +1,4 @@
+#include <rte_hash.h>
 #include "request.h"
 
 int generate_dns_request_key(struct dns_request_key *key)

@@ -1,3 +1,6 @@
+#include <rte_malloc.h>
+#include <rte_cycles.h>
+
 #include "srvaddr.h"
 
 struct srvaddr* srvaddr_alloc(uint32_t addr, int permanent)

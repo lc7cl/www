@@ -14,7 +14,7 @@ O = $(shell pwd)/dist
 export
 
 DIRS-y += lib
-DIRS-y += tests
 DIRS-y += app
+DIRS-y += tests
 
 include $(RTE_SDK)/mk/rte.extsubdir.mk

@@ -32,10 +32,10 @@ SRCS-y += common/message.c
 SRCS-y += common/name.c
 
 SRCS-$(CONFIG_DNS_RECURSION) += recursion/recursion.c
-SRCS-$(CONFIG_DNS_RECURSION) += recursion/request.c
-SRCS-$(CONFIG_DNS_RECURSION) += recursion/nameserver.c
+#SRCS-$(CONFIG_DNS_RECURSION) += recursion/request.c
+#SRCS-$(CONFIG_DNS_RECURSION) += recursion/nameserver.c
 SRCS-$(CONFIG_DNS_RECURSION) += recursion/query.c
-SRCS-$(CONFIG_DNS_RECURSION) += recursion/arvaddr.c
+SRCS-$(CONFIG_DNS_RECURSION) += recursion/srvaddr.c
 
 
 # install this header file

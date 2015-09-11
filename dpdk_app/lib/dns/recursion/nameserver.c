@@ -1,3 +1,4 @@
+#include <sys/queue.h>
 
 #include "nameserver.h"
 

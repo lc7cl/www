@@ -4,7 +4,7 @@
 #include <rte_rwlock.h>
 
 #include <common/dns.h>
-#include <srvaddr.h>
+#include <recursion/srvaddr.h>
 
 struct tld {
 	char name[NAME_LENGTH_MAX];

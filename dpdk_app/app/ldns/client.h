@@ -2,7 +2,8 @@
 #define _DNS_CLIENT_H_
 
 #include <rte_rwlock.h>
-#include <common/dns.h>
+#include <common/dns_memory.h>
+#include <recursion/query.h>
 
 struct dns_message_queue;
 struct dns_client {
@@ -19,6 +20,13 @@ struct dns_client {
 	struct dns_mempool *mm_pool;
 };
 
+struct dns_client* dns_client_alloc(struct dns_mempool *mm_pool, uint32_t addr, uint16_t port);
+void dns_client_free(struct dns_client *client);
+struct dns_client* dns_client_lookup(uint32_t addr, uint16_t port, int noref);
+
+int dns_client_add_query(struct dns_client *client, struct dns_query *query);
+int dns_client_delete_query(struct dns_client *client, struct dns_query *query);
+
 static inline void __attribute__((always_inline))
 dns_client_get(struct dns_client *client)
 {
@@ -32,12 +40,5 @@ dns_client_put(struct dns_client *client)
 		dns_client_free(client);
 	}
 }
-
-struct dns_client* dns_client_alloc(struct rte_mempool *mm_pool, uint32_t addr, uint16_t port);
-void dns_client_free(struct dns_client *client);
-struct dns_client* dns_client_lookup(uint32_t addr, uint16_t port, int noref);
-
-int dns_client_add_query(struct dns_client *client, struct dns_query *query);
-int dns_client_delete_query(struct dns_client *client, struct dns_query *query);
 
 #endif

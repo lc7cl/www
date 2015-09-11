@@ -21,6 +21,7 @@ struct dns_request {
 };
 TAILQ_HEAD(dns_request_queue, dns_request);
 
+int generate_dns_request_key(struct dns_request_key *key);
 struct dns_request* dns_request_alloc(struct dns_question *question);
 void dns_request_free(struct dns_request *request);
 struct dns_request* dns_request_lookup(struct dns_request_key *key);
