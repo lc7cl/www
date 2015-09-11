@@ -8,6 +8,7 @@
 #include <rte_ethdev.h>
 #include <rte_lcore.h>
 #include <rte_mbuf.h>
+#include <rte_timer.h>
 
 #include "packet_construct.h"
 
@@ -346,11 +347,50 @@ static int request_ring_init(void)
 	return 0;	
 }
 
+static struct rte_timer statistic_timer;
+static struct statistic {
+	rte_eth_stats port_stats;
+	rte_eth_stats rate_stats;
+} dnsperf_stats[RTE_MAX_ETHPORTS];
+static inline print_dnsperf_stats(uint8_t port)
+{
+#define PRINT_BUF_SIZE 2048
+	char buf[PRINT_BUF_SIZE];
+	int length;
+
+	length = 0;
+	length += snprintf(buf + length, PRINT_BUF_SIZE - length, 
+		"-----------port %u statistic---------\n", port);
+	length += snprintf(buf + length, PRINT_BUF_SIZE - length, 
+		"tx qps : %lu ;;; tx MBps %lu \n", 
+		dnsperf_stats[port].rate_stats.opackets, 
+		dnsperf_stats[port].rate_stats.obytes / (1024 * 1024));
+	printf("%s\n", buf);
+}
+
+static void statistic_timer_callback(__rte_unused struct rte_timer *timer, 
+	__rte_unused void* arg)
+{
+	uint8_t port;
+	struct rte_eth_stats stat;
+
+	for (port = 0; port < rte_eth_dev_count(); port++) {
+		rte_eth_stats_get(port, &stat);
+
+		dnsperf_stats[port].rate_stats.opackets = stat.opackets - dnsperf_stats[port].port_stats.opackets;
+		dnsperf_stats[port].rate_stats.obytes = stat.obytes - dnsperf_stats[port].port_stats.obytes;		
+
+		*(struct rte_eth_stats *)&dnsperf_stats[port].port_stats = *(struct rte_eth_stats *)&stat;
+		print_dnsperf_stats(port);
+	}
+}
+
 int main(int argc, char** argv)
 {
 	uint8_t port, nb_ports;
 	int ret;
     unsigned lcore_id;
+	uint64_t hz;
 
 	ret = rte_eal_init(argc, argv);
 	if (ret < 0)
@@ -358,21 +398,25 @@ int main(int argc, char** argv)
 	argc -= ret;
 	argv += ret;
 
+	/*parse application cmdline*/
 	ret = parse_cmdline(argc, argv);
 	if (ret < 0) {
 		return -1;
 	}	
 
+	/*initialize request data ring*/
 	ret = request_ring_init();
 	if (ret < 0)
 		return -1;
-	
+
+	/*create rx pool*/
 	rxpool = rte_pktmbuf_pool_create("rx_pool", 128, 32, 0, RTE_MBUF_DEFAULT_BUF_SIZE, rte_socket_id());
 	if (rxpool == NULL) {
 		printf("create rxpool error\n");
 		return -1;
 	}
 
+	/*config nic*/
 	nb_ports = rte_eth_dev_count();
 	if (nb_ports == 0) {
 		printf("no available port\n");
@@ -385,7 +429,14 @@ int main(int argc, char** argv)
 			return -1;
 		}			
 	}
-	
+
+	/*statistic timer*/
+	rte_timer_init(&statistic_timer);
+	hz = rte_get_timer_hz();
+	rte_timer_reset(&statistic_timer, hz, PERIODICAL, 
+		rte_get_master_lcore(), statistic_timer_callback, NULL);
+
+	/*respawn worker thread*/
     rte_eal_mp_remote_launch(packet_launch_one_lcore, NULL, SKIP_MASTER);
     RTE_LCORE_FOREACH_SLAVE(lcore_id) {
         if (rte_eal_wait_lcore(lcore_id) < 0)
