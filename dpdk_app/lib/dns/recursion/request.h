@@ -1,7 +1,7 @@
 #ifndef _REQUEST_H_
 #define _REQUEST_H_
 
-#include <query.h>
+#include <recursion/query.h>
 
 struct dns_request_key {
 	uint16_t dnsid;	

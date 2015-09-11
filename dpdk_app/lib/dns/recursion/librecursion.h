@@ -1,7 +1,7 @@
 #ifndef _LIBRECURSION_H_
 #define _LIBRECURSION_H_
 
-#include <query.h>
+#include <recursion/query.h>
 
 enum RET_RECURSION {
 	RET_R_OK = 0,

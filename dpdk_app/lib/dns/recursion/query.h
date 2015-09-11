@@ -54,7 +54,7 @@ dns_query_get_hash(struct dns_query_hash *hash,
 	uint32_t hval;
 	uint32_t val;
 
-	val = type << 16 + class & 0xFFFF;
+	val = (type << 16) + (class & 0xFFFF);
 	hval = hash->hash(name->data, name->name_len, val);
 	return hval;
 }

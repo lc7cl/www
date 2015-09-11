@@ -1,19 +1,19 @@
 #include <string.h>
 #include "name.h"
 
-int dns_name_equal(struct dns_name *name1, struct *name2)
+int dns_name_equal(struct dns_name *name1, struct dns_name *name2)
 {
 	if (name1->name_len != name2->name_len
 		|| name1->nb_label != name2->nb_label)
 		return 0;
 	
-	if (memcmp(name1->data, name2->data, name1))
+	if (memcmp(name1->data, name2->data, name1->name_len))
 		return 0;
 
 	return 1;
 }
 
-int dns_name_is_zone(struct dns_name *maybe_zone, struct *maybe_subzone)
+int dns_name_is_zone(struct dns_name *maybe_zone, struct dns_name *maybe_subzone)
 {
 	if (maybe_zone->name_len > maybe_subzone->name_len
 		|| maybe_zone->nb_label > maybe_subzone->nb_label)

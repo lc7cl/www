@@ -2,6 +2,7 @@
 #define _MESSAGE_H_
 
 #include <common/dns.h>
+#include <common/dns_memory.h>
 
 struct dns_message {
 	struct dns_question *question;

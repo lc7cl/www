@@ -1,7 +1,8 @@
 #include "librecursion.h"
 
-int start_recursion(struct dns_query *query)
+int start_recursion(__rte_unused struct dns_query *query)
 {
+#if 0
 	struct dns_question *question;
 	
 	if (query == NULL)
@@ -14,5 +15,7 @@ int start_recursion(struct dns_query *query)
 		|| question->qtype != DNS_QTYPE_A 
 		|| question->qtype != DNS_QTYPE_CNAME)
 		return RET_R_UNSUPPORT;
+#endif
+    return 0;
 }
 
