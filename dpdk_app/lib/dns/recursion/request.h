@@ -4,12 +4,12 @@
 #include <query.h>
 
 struct dns_request_key {
-	uint16_t dnsid;		
-	uint32_t src_addr;
+	uint16_t dnsid;	
 	uint16_t sport;
 	uint32_t dst_addr;
-	uint16_t dport;
-};
+	//uint32_t src_addr;	
+	//uint16_t dport;
+} __attribute__((__packed__));
 
 struct dns_request {
 	struct dns_request_key key;
@@ -24,6 +24,6 @@ TAILQ_HEAD(dns_request_queue, dns_request);
 struct dns_request* dns_request_alloc(struct dns_question *question);
 void dns_request_free(struct dns_request *request);
 struct dns_request* dns_request_lookup(struct dns_request_key *key);
-struct dns_request* dns_request_lookup2(struct dns_question *question);
+struct dns_request* dns_request_lookup2(struct dns_name *name, uint16_t qtype, uint16_t qclass);
 
 #endif
