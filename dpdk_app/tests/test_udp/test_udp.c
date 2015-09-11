@@ -11,6 +11,9 @@
 #include <common/dns.h>
 #include <common/utils.h>
 #include <common/dns_memory.h>
+#include <common/message.h>
+#include <common/name.h>
+#include <recursion/query.h>
 
 #define NB_MBUF 1024
 #define RTE_LOGTYPE_TEST_UDP (RTE_LOGTYPE_TEST+2)
@@ -42,7 +45,7 @@ static struct queue_conf {
 
 static FILE *f[RTE_MAX_LCORE];
 
-static dns_mempool mempool;
+static struct dns_mempool mempool;
 
 static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port) 
 {
@@ -66,11 +69,11 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	rte_hexdump(f[rte_lcore_id()] , NULL, (char*)dns_hdr, sizeof *dns_hdr);
 	if (dns_hdr->qr == 0) {
-		if (rte_mempool_get(mempool.message_pool, &msg) < 0)
+		if (rte_mempool_get(mempool.message_pool, (void**)&msg) < 0)
 			return;
 		rc = message_retrieve(m, msg, &mempool);
 		if (rc == ESUCCESS && qsize == 1) {
-			name = msg->question.name;
+			name = msg->question->name;
 			if (print_dns_name(domain, 256, name)) 
 				printf("question : %s len:%d %s\n", name->data, name->name_len, domain);
 		}
@@ -144,17 +147,7 @@ int main(int argc, char ** argv)
 	}
 
 	/*init dns mempool*/
-	mempool.client_pool = rte_mempool_create("client_pool",
-		128,
-		sizeof(struct dns_client),
-		0,
-	    0,
-	    NULL,
-		NULL,
-		NULL,
-		NULL,
-		0,
-		0);	
+	mempool.client_pool = NULL;	
 	mempool.message_pool = rte_mempool_create("message_pool",
 		128,
 		sizeof(struct dns_message),

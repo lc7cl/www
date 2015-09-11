@@ -1,6 +1,7 @@
 #ifndef _QUERY_H_
 #define _QUERY_H_
 
+#include <rte_rwlock.h>
 #include <common/dns.h>
 
 enum dns_query_state {
@@ -29,7 +30,7 @@ TAILQ_HEAD(dns_query_queue, dns_query);
 
 struct dns_query_slot {
 	int nb;
-	struct rte_rwlock_t rwlock;	
+	rte_rwlock_t rwlock;	
 	struct dns_query_queue head;
 };
 
