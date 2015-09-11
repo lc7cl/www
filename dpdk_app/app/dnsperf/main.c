@@ -21,6 +21,7 @@ static struct rte_ring *reqest_ring_per_socket[RTE_MAX_NUMA_NODES];
 #define NB_ELEM_PER_RING 4096
 #define NB_BURST 32
 #define NB_TX_POOL 4096
+#define NB_QID_PER_LCORE 1
 
 static char* request_file[RTE_MAX_LCORE];
 static char* request_file_share;
@@ -55,6 +56,15 @@ static struct rte_eth_conf default_port_conf = {
 		.mq_mode = ETH_MQ_TX_NONE,
 	},
 }; 
+
+static struct tx_queue_conf {
+	struct {
+		uint32_t qid;
+		uint32_t pid;
+	} info[NB_QID_PER_LCORE];
+	int nb;
+	int next;
+} queue_conf[RTE_MAX_LCORE];
 
 static int format_domain(char* orig, char* out, int size); 
 
@@ -159,6 +169,7 @@ static void packet_send_task(void)
 	int ret, dns_len, total_len;
 	struct rte_mbuf **pkts;
 	struct ipv4_hdr *iphdr;
+	struct tx_queue_conf *qconf;
 
 	ring = reqest_ring_per_socket[rte_socket_id()];
 	if (ring == NULL) {
@@ -172,6 +183,7 @@ static void packet_send_task(void)
 	if (tx_pool == NULL) {
 		printf("%s %d\n", __func__, __LINE__);
 	}
+	qconf = &queue_conf[rte_lcore_id()];
 
 	while (1) {
 		mtable.length = 0;		
@@ -211,9 +223,12 @@ static void packet_send_task(void)
 		}
 		
 		while (mtable.length) {
-			ret = rte_eth_tx_burst(1, 1, pkts, mtable.length);
+			ret = rte_eth_tx_burst(qconf->info[qconf->next].pid, qconf->info[qconf->next].qid, pkts, mtable.length);
 			pkts += ret;
 			mtable.length -= ret;
+			if (mtable.length == 0) {
+				qconf->next = (qconf->next + 1) % qconf->num;
+			}
 		}
 	}
 }
@@ -263,16 +278,23 @@ static int config_port(uint32_t port)
 	unsigned lcore;
 	int ret;
 	uint16_t tx_queue_id;
+	struct tx_queue_conf *qconf;
 
 	ret = rte_eth_dev_configure(port, 1, nb_tx_queue, &default_port_conf);
 	if (ret < 0)
 		return ret;
 
-	tx_queue_id = 0;
-	for (lcore = 0; lcore < RTE_MAX_LCORE && tx_queue_id < nb_tx_queue; lcore++, tx_queue_id) {
+	
+	for (lcore = 0, tx_queue_id = 0; lcore < RTE_MAX_LCORE && tx_queue_id < nb_tx_queue; tx_queue_id++) {
 		ret = rte_eth_tx_queue_setup(port, tx_queue_id, nb_tx_desc, rte_eth_dev_socket_id(port), NULL);
 		if (ret < 0)
 			return ret;
+		qconf = &queue_conf[lcore];
+		qconf->info[qconf->nb].pid = port;
+		qconf->info[qconf->nb].qid = tx_queue_id;
+		qconf->nb++;
+		if (qconf->nb == NB_QID_PER_LCORE)
+			lcore++;
 	}
 	ret = rte_eth_rx_queue_setup(port, 0, 32, rte_eth_dev_socket_id(port), NULL, rxpool);
 	if (ret < 0) 
@@ -349,6 +371,9 @@ static int request_ring_init(void)
 	return 0;	
 }
 
+/**
+* statistic
+*/
 static struct rte_timer statistic_timer;
 static struct statistic {
 	struct rte_eth_stats port_stats;
