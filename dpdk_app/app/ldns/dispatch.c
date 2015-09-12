@@ -1,7 +1,6 @@
 #include <common/dns_memory.h>
 #include <common/message.h>
-
-#include "client.h"
+#include <recursion/client.h>
 #include "dispatch.h"
 
 static struct dns_mempool *mempool;

@@ -36,6 +36,7 @@ SRCS-$(CONFIG_DNS_RECURSION) += recursion/recursion.c
 #SRCS-$(CONFIG_DNS_RECURSION) += recursion/nameserver.c
 SRCS-$(CONFIG_DNS_RECURSION) += recursion/query.c
 SRCS-$(CONFIG_DNS_RECURSION) += recursion/srvaddr.c
+SRCS-$(CONFIG_DNS_RECURSION) += recursion/client.c
 
 
 # install this header file
@@ -51,6 +52,7 @@ SYMLINK-$(CONFIG_DNS_RECURSION)-include/dns/recursion += recursion/nameserver.h
 SYMLINK-$(CONFIG_DNS_RECURSION)-include/dns/recursion += recursion/query.h
 SYMLINK-$(CONFIG_DNS_RECURSION)-include/dns/recursion += recursion/request.h
 SYMLINK-$(CONFIG_DNS_RECURSION)-include/dns/recursion += recursion/srvaddr.h
+SYMLINK-$(CONFIG_DNS_RECURSION)-include/dns/recursion += recursion/client.h
 
 
 # this lib needs eal and ring

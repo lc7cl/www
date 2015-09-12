@@ -16,7 +16,6 @@ LDFLAGS += -lnetproto -ldns
 
 SRCS-y := ldns-main.c
 SRCS-y += dispatch.c
-SRCS-y += client.c
 SRCS-y += dns_conf.c
 
 DEPDIRS-y += net
