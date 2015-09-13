@@ -2,6 +2,7 @@
 #define _PORT_CFG_H_
 
 #include <rte_mempool.h>
+#include <rte_ether.h>
 
 enum port_mode {
 	PORT_MODE_SINGLE = 0,
@@ -38,7 +39,7 @@ struct range_pkt_info {
 
 struct port_conf {
 	int mode;
-	char *reqest_file;	
+	char *request_file;	
 	struct request_data *req_head;
 	struct request_data *req_tail;
 	struct rte_mempool *pool1;

@@ -12,5 +12,6 @@ APP = dnsperf
 CFLAGS += -O3 -g -DCONFIG_DNS 
 
 SRCS-y := main.c
+SRCS-y += port_cfg.c
 
 include $(RTE_SDK)/mk/rte.extapp.mk

@@ -1,3 +1,5 @@
+#include <string.h>
+#include <rte_malloc.h>
 
 #include "port_cfg.h"
 
@@ -19,12 +21,12 @@ int port_add_request_domain(struct port_conf *cfg, char *domain, int type)
 	strcpy(request->domain, domain);
 	request->type = type;
 	request->next = NULL;
-	if (cfg->req == NULL) {
-		request->req_head = request;
-		request->req_tail = request;
+	if (cfg->req_head == NULL) {
+		cfg->req_head = request;
+		cfg->req_tail = request;
 	} else {
-		request->req_tail->next = request;
-		request->req_tail = request;
+		cfg->req_tail->next = request;
+		cfg->req_tail = request;
 	}
 	return 0;		
 }
