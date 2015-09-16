@@ -66,6 +66,7 @@ enum DNS_SECTION {
 	SECTION_ANSWER,
 	SECTION_AUTHORITY,
 	SECTION_ADDITIONAL,
+	SECTION_MAX,
 };
 
 struct dns_hdr {
@@ -84,8 +85,7 @@ struct dns_hdr {
 	uint16_t arcount;			
 } __attribute((__packed__))__;
 
-struct dns_rr;
-TAILQ_HEAD(rrlist, dns_rr);
+struct dns_rr_queue;
 
 struct dns_name {
 	TAILQ_ENTRY(dns_name) list;
@@ -93,7 +93,7 @@ struct dns_name {
 	uint8_t pos[NAME_LENGTH_MAX];
 	uint8_t nb_label;
 	uint8_t name_len;
-	struct rrlist head;
+	struct dns_rr_queue head;
 };
 TAILQ_HEAD(dns_name_queue, dns_name);
 
@@ -112,9 +112,14 @@ struct dns_rr {
 	uint16_t class;
 	uint32_t ttl;
 	uint16_t rdlength;
-	char rdata[0];
+	char rdata[1];
 };
 TAILQ_HEAD(dns_rr_queue, dns_rr);
+
+struct dns_section {
+	struct dns_rr_queue rrset;
+	int nb_rr;
+};
 
 int retrieve_name(char *in, struct dns_name *name);
 int retrieve_question(char *in, struct dns_question *question, char **cur);

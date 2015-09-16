@@ -83,10 +83,51 @@ int retrieve_question(char *in, struct dns_question *question, char **cur)
 	return ESUCCESS;
 }
 
-int retrieve_rrset(char *in, struct dns_question *question, char **cur)
+/**
+* TODO:check if rr is valid 
+*/
+int retrieve_rr(char *in, struct dns_rr *rr, struct rte_mempool *name_pool, char **cur)
 {
 	int ret;
 	char *p;
+
+	p = in;
+
+	if (rte_mempool_get(name_pool, &rr->name) < 0)
+		return ENOMEMORY;
+	ret = retrieve_name(p, rr->name, &p);
+	if (ret != ESUCCESS) {
+		goto exit_release_name;
+	}
+
+	rr->type = get_uint16(p, &p);
+	rr->class = get_uint16(p, &p);
+	rr->ttl = get_uint32(p, &p);
+	rr->rdlength = get_uint16(p, &p);
+	rr->rdata = rte_malloc("RRDATA", rr->rdlength + 1, 0);
+	if (rr->rdata == NULL) {
+		ret = ENOMEMORY;
+		goto exit_release_name;
+	}
+	memcpy(rr->rdata, p, rr->rdlength);
+	rr->rdata[rr->rdlength] = '\0';
+
+	return ESUCCESS;
+exit_release_name:
+	rte_mempool_put(name_pool, rr->name);
+	return ret;
+}
+
+
+int retrieve_rrset(char *in, struct dns_section *section, int nb, char **cur)
+{
+	int ret;
+	char *p;
+
+	if (section >= SECTION_MAX)
+		return EERROR;
+	if (nb == 0)
+		return ESUCCESS;
 
 	p = in;
 	ret = retrieve_name(p, &question->name, &p);
@@ -98,7 +139,6 @@ int retrieve_rrset(char *in, struct dns_question *question, char **cur)
 		*cur = p;
 	return ESUCCESS;
 }
-
 
 int dns_pkt_parse(struct rte_mbuf *m, 
 	struct dns_question *question, __out int *qsize, 
