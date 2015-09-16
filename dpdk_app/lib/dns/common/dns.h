@@ -117,6 +117,7 @@ struct dns_rr {
 TAILQ_HEAD(dns_rr_queue, dns_rr);
 
 int retrieve_name(char *in, struct dns_name *name);
+int retrieve_question(char *in, struct dns_question *question, char **cur);
 int dns_pkt_parse(struct rte_mbuf *m, 
 	struct dns_question *question, __out int *qsize, 
 	struct dns_name_queue *res, __out int *size);

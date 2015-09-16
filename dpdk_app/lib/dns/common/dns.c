@@ -1,5 +1,7 @@
 #include <string.h>
 #include <rte_byteorder.h>
+
+#include "utils.h"
 #include "dns.h"
 
 #define DNS_COMPRESS_MASK 0xc0
@@ -10,7 +12,7 @@ static inline int valid_dns_character(char c)
 		|| (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ? 1 : 0;
 }
 
-int retrieve_name(char *in, struct dns_name *name)
+int retrieve_name(char *in, struct dns_name *name, char **cur)
 {
 	uint8_t len = 0, label_len = 0;
 	char *p;
@@ -54,6 +56,8 @@ int retrieve_name(char *in, struct dns_name *name)
 	memcpy(domain, in, len);
 	name->data = domain;
 	name->name_len = len;
+	if (cur)
+		*cur = p;
 
 	return ESUCCESS;
 	
@@ -62,6 +66,39 @@ invalid_fomat:
 		rte_free(domain);	
 	return EFORMAT;
 }
+
+int retrieve_question(char *in, struct dns_question *question, char **cur)
+{
+	int ret;
+	char *p;
+
+	p = in;
+	ret = retrieve_name(p, &question->name, &p);
+	if (ret != ESUCCESS) 
+		return ret;
+	question->qtype = get_uint16(p, &p);
+	question->qclass = get_uint16(p, &p);
+	if (cur)
+		*cur = p;
+	return ESUCCESS;
+}
+
+int retrieve_rrset(char *in, struct dns_question *question, char **cur)
+{
+	int ret;
+	char *p;
+
+	p = in;
+	ret = retrieve_name(p, &question->name, &p);
+	if (ret != ESUCCESS) 
+		return ret;
+	question->qtype = get_uint16(p, &p);
+	question->qclass = get_uint16(p, &p);
+	if (cur)
+		*cur = p;
+	return ESUCCESS;
+}
+
 
 int dns_pkt_parse(struct rte_mbuf *m, 
 	struct dns_question *question, __out int *qsize, 

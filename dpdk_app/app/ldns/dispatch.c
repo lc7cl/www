@@ -1,10 +1,17 @@
 #include "client.h"
 #include "dispatch.h"
 
+struct rte_mempool *dns_client_pool;
 /*process dns request from stub dns*/
-int process_client_request()
+void process_client_request(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
 {
-    return 0;
+	struct dns_client *client;
+
+	client = dns_client_create(dns_client_pool, addr, port);
+	if (client == NULL) 
+		return;
+	
+
 }
 
 /*process */
@@ -20,7 +27,7 @@ int dispatch_dns_pkt(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
     dnshdr = rte_pktmbuf_mtod(mbuf, struct dns_hdr*);
     if (dnshdr->qr == 0) {
         /*dns request*/
-        process_client_request();
+        process_client_request(mbuf, addr, port);
     } else {
         /*dns response*/
         process_server_response();
