@@ -227,7 +227,7 @@ static void packet_send_task(void)
 			pkts += ret;
 			mtable.length -= ret;
 			if (mtable.length == 0) {
-				qconf->next = (qconf->next + 1) % qconf->num;
+				qconf->next = (qconf->next + 1) % qconf->nb;
 			}
 		}
 	}
