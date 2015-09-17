@@ -86,30 +86,27 @@ int retrieve_question(char *in, struct dns_question *question, char **cur)
 /**
 * TODO:check if rr is valid 
 */
-int retrieve_rr(char *in, struct dns_rr *rr, struct rte_mempool *name_pool, char **cur)
+int retrieve_rr(struct dns_buf *buf, struct dns_rr *rr, struct rte_mempool *name_pool)
 {
 	int ret;
-	char *p;
-
-	p = in;
 
 	if (rte_mempool_get(name_pool, &rr->name) < 0)
 		return ENOMEMORY;
-	ret = retrieve_name(p, rr->name, &p);
+	ret = retrieve_name(buf, rr->name);
 	if (ret != ESUCCESS) {
 		goto exit_release_name;
 	}
 
-	rr->type = get_uint16(p, &p);
-	rr->class = get_uint16(p, &p);
-	rr->ttl = get_uint32(p, &p);
-	rr->rdlength = get_uint16(p, &p);
+	rr->type = get_uint16(buf);
+	rr->class = get_uint16(buf);
+	rr->ttl = get_uint32(buf);
+	rr->rdlength = get_uint16(buf);
 	rr->rdata = rte_malloc("RRDATA", rr->rdlength + 1, 0);
 	if (rr->rdata == NULL) {
 		ret = ENOMEMORY;
 		goto exit_release_name;
 	}
-	memcpy(rr->rdata, p, rr->rdlength);
+	buf_copy(rr->rdata, buf, rr->rdlength);
 	rr->rdata[rr->rdlength] = '\0';
 
 	return ESUCCESS;
@@ -119,25 +116,39 @@ exit_release_name:
 }
 
 
-int retrieve_rrset(char *in, struct dns_section *section, int nb, char **cur)
+int retrieve_rrset(struct dns_buf *buf, struct dns_section *section, int nb, struct rte_mempool *rr_pool, struct rte_mempool *name_pool)
 {
-	int ret;
+	int ret, i;
 	char *p;
+	struct dns_rr *last, *rr;
 
-	if (section >= SECTION_MAX)
-		return EERROR;
 	if (nb == 0)
 		return ESUCCESS;
 
-	p = in;
-	ret = retrieve_name(p, &question->name, &p);
-	if (ret != ESUCCESS) 
-		return ret;
-	question->qtype = get_uint16(p, &p);
-	question->qclass = get_uint16(p, &p);
-	if (cur)
-		*cur = p;
+	last = TAILQ_LAST(&section->rrset);
+	p = buf->cur;
+	for (i = 0; i < nb, i++) {
+		if (rte_mempool_get(rr_pool, &rr) < 0) {
+			ret = ENOMEMORY;
+			goto exit_clean_rr;
+		}
+			
+		ret = retrieve_rr(buf, rr, name_pool);
+		if (ret != ESUCCESS) {
+			goto exit_clean_rr;
+		}
+		TAILQ_INSERT_TAIL(&section->rrset, rr, list);
+	}
 	return ESUCCESS;
+
+exit_clean_rr:
+
+	for (i; i != 0; i--) {
+		rr = TAILQ_NEXT(last, list);
+		TAILQ_REMOVE(&section->rrset, rr, list);
+		rte_mempool_put(rr_pool, rr);
+	}
+	return ret;
 }
 
 int dns_pkt_parse(struct rte_mbuf *m, 

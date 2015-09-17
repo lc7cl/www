@@ -2,6 +2,10 @@
 #include "dispatch.h"
 
 struct rte_mempool *dns_client_pool;
+struct rte_mempool *dns_name_pool;
+struct rte_mempool *dns_question_pool;
+struct rte_mempool *dns_rr_pool;
+
 /*process dns request from stub dns*/
 void process_client_request(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
 {
@@ -10,6 +14,7 @@ void process_client_request(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
 	client = dns_client_create(dns_client_pool, addr, port);
 	if (client == NULL) 
 		return;
+	
 	
 
 }

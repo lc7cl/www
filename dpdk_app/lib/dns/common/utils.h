@@ -7,44 +7,56 @@ extern "C" {
 
 #include <common/dns.h>
 
+struct dns_buf {
+	char *last;
+	char *cur;
+};
 
-int print_dns_name(char *out, int size, struct dns_name *in);
-int format_domain(struct dns_name *out, char *in, int size, int dot_end);
-
-static inline uint16_t get_uint16(char *buf, char **cur)
+static inline uint16_t __attribute__((always_inline))
+get_uint16(struct dns_buf *buf)
 {
 	uint16_t val;
 
-	val = rte_be_to_cpu_16(*(uint16_t*)buf);
-	if (cur)
-		*cur = buf + 2;
+	val = rte_be_to_cpu_16(*(uint16_t*)buf->cur);
+	buf->last = buf->cur;
+	buf->cur += 2;
 	return val;
 }
 
-static inline uint32_t get_uint32(char *buf, char **cur)
+static inline uint32_t __attribute__((always_inline))
+get_uint32(struct dns_buf *buf)
 {
 	uint32_t val;
 
-	val = rte_be_to_cpu_32(*(uint32_t*)buf);
-	if (cur)
-		*cur = buf + 4;
+	val = rte_be_to_cpu_32(*(uint32_t*)buf->cur);
+	buf->last = buf->cur;
+	buf->cur += 4;
 	return val;
 }
 
-static inline void set_uint16(char *buf, uint16_t val, char **cur)
+static inline void __attribute__((always_inline)) 
+set_uint16(struct dns_buf *buf, uint16_t val)
 {
-	*(uint16_t*)buf = rte_cpu_to_be_16(val);
-	if (cur)
-		*cur = buf + 2;
+	*(uint16_t*)buf->cur = rte_cpu_to_be_16(val);	
+	buf->last = buf->cur;
+	buf->cur += 2;
 }
 
-static inline void set_uint32(char *buf, uint32_t val, char **cur)
+static inline void __attribute__((always_inline))
+set_uint32(struct dns_buf *buf, uint32_t val)
 {
-	*(uint32_t*)buf = rte_cpu_to_be_32(val);
-	if (cur)
-		*cur = buf + 4;
+	*(uint32_t*)buf->cur = rte_cpu_to_be_32(val);
+	buf->last = buf->cur;
+	buf->cur += 4;
 }
 
+static inline void __attribute__((always_inline))
+buf_copy(char *dst, struct dns_buf *buf, size_t size)
+{
+	memcpy(dst, buf->cur, size);
+	buf->last = buf->cur;
+	buf->cur += size;	
+}
 
 #ifdef __cplusplus
 }

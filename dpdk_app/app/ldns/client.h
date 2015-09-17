@@ -10,7 +10,7 @@ struct dns_client {
     uint16_t port;
     rte_atomic32_t refcnt;
     rte_rwlock_t rwlock;
-	struct dns_query_queue query_list;
+	struct dns_message_queue *msglist;
 };
 
 struct dns_client* dns_client_create(struct rte_mempool *mm_pool, uint32_t addr, uint16_t port);
