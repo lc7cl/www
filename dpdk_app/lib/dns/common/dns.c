@@ -136,7 +136,7 @@ int retrieve_rrset(struct dns_buf *buf, struct dns_section *section, int nb, str
 
 exit_clean_rr:
 
-	for (i; i != 0; i--) {
+	while (i != 0) {
 		rr = TAILQ_NEXT(last, list);
 		TAILQ_REMOVE(&section->rrset, rr, list);
 		rte_mempool_put(rr_pool, rr);
