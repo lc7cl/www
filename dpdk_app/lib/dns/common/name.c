@@ -81,3 +81,9 @@ int dns_name_format(struct dns_name *out, char *in, int size, int dot_end)
 	out->name_len = truesize;
 	return 0;	
 }
+
+void dns_name_free(struct dns_name *name)
+{
+	rte_mempool_put(name->name_pool, name);
+}
+

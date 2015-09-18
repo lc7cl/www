@@ -93,12 +93,14 @@ struct dns_name {
 	uint8_t pos[NAME_LENGTH_MAX];
 	uint8_t nb_label;
 	uint8_t name_len;
+	rte_atomic32_t refcnt;
+	struct rte_mempool *name_pool;
 	struct dns_rr_queue head;
 };
 TAILQ_HEAD(dns_name_queue, dns_name);
 
 struct dns_question {
-	struct dns_name name;
+	struct dns_name *name;
 	uint16_t qtype;
 	uint16_t qclass;
     TAILQ_ENTRY(dns_question) list;

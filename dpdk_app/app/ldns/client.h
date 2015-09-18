@@ -10,11 +10,27 @@ struct dns_client {
     uint16_t port;
     rte_atomic32_t refcnt;
     rte_rwlock_t rwlock;
-	struct dns_message_queue *msglist;
+	struct dns_query_queue querylist;
+	struct dns_mempool *mm_pool;
 };
 
-struct dns_client* dns_client_create(struct rte_mempool *mm_pool, uint32_t addr, uint16_t port);
-struct dns_client* client_lookup(uint32_t addr, uint16_t port, int create);
-int client_add_question(struct dns_question *question);
+static inline void __attribute__((always_inline))
+dns_client_get(struct dns_client *client)
+{
+	rte_atomic32_inc(&client->refcnt);
+}
+
+static inline void __attribute__((always_inline))
+dns_client_put(struct dns_client *client)
+{
+	if (rte_atomic32_dec_and_test(&client->refcnt)) {
+		dns_client_free(client);
+	}
+}
+
+struct dns_client* dns_client_alloc(struct rte_mempool *mm_pool, uint32_t addr, uint16_t port);
+void dns_client_free(struct dns_client *client);
+struct dns_client* dns_client_lookup(uint32_t addr, uint16_t port, int create);
+int dns_client_add_query(struct dns_client *client, struct dns_query *query);
 
 #endif
