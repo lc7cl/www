@@ -119,7 +119,7 @@ int retrieve_rrset(struct dns_buf *buf, struct dns_section *section, int nb, str
 	if (nb == 0)
 		return ESUCCESS;
 
-	last = TAILQ_LAST(&section->rrset, dns_rr);
+	last = TAILQ_LAST(&section->rrset, dns_rr_queue);
 	for (i = 0; i < nb; i++) {
 		if (rte_mempool_get(rr_pool, (void**)&rr) < 0) {
 			ret = ENOMEMORY;
