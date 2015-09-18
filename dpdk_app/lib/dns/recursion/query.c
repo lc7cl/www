@@ -96,5 +96,3 @@ int dns_query_hash_init(int shift)
 
 	return 0;	
 }
-
-

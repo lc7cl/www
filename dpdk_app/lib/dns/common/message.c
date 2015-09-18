@@ -1,6 +1,6 @@
 #include "message.h"
 
-int message_retrieve(struct rte_mbuf *mbuf, struct dns_message *msg)
+int message_retrieve(struct rte_mbuf *mbuf, struct dns_message *msg, struct dns_mempool *mm_pool)
 {
 	struct dns_hdr *dnshdr;
 	struct dns_question *question;
@@ -17,12 +17,12 @@ int message_retrieve(struct rte_mbuf *mbuf, struct dns_message *msg)
 
 	/*proccess question*/
 	if (dnshdr->qdcount == 1) {
-		if (rte_mempool_get(msg->question_pool, &question) < 0) {
+		if (rte_mempool_get(mm_pool->question_pool, &question) < 0) {
 			return ENOMEMORY;
 		}
 		ret = retrieve_question(buf, question);
 		if (ret != ESUCCESS) {
-			rte_mempool_put(msg->question_pool, question);
+			rte_mempool_put(mm_pool->question_pool, question);
 			return ret;
 		}		
 	} else if (dnshdr->qdcount > 1) {
@@ -31,17 +31,17 @@ int message_retrieve(struct rte_mbuf *mbuf, struct dns_message *msg)
 	msg->question = question;
 
 	/*process answer*/
-	ret = retrieve_rrset(&msg->section[SECTION_ANSWER], buf, msg->rr_pool, msg->name_pool);
+	ret = retrieve_rrset(&msg->section[SECTION_ANSWER], buf, msg->rr_pool, mm_pool->name_pool);
 	if (ret != ESUCCESS)
 		return ret;
 
 	/*process authorization*/	
-	ret = retrieve_rrset(&msg->section[SECTION_AUTHORITY], buf, msg->rr_pool, msg->name_pool);
+	ret = retrieve_rrset(&msg->section[SECTION_AUTHORITY], buf, msg->rr_pool, mm_pool->name_pool);
 	if (ret != ESUCCESS)
 		return ret;
 
 	/*process additional*/	
-	ret = retrieve_rrset(&msg->section[SECTION_ADDITIONAL], buf, msg->rr_pool, msg->name_pool);
+	ret = retrieve_rrset(&msg->section[SECTION_ADDITIONAL], buf, msg->rr_pool, mm_pool->name_pool);
 	if (ret != ESUCCESS)
 		return ret;
 	

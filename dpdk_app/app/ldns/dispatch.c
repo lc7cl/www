@@ -7,13 +7,31 @@ static struct dns_mempool *mempool;
 void process_client_request(struct rte_mbuf *mbuf, uint32_t addr, uint16_t port)
 {
 	struct dns_client *client;
+	struct dns_query *query;
+	struct dns_message *msg;
+	int ret;
 
-	client = dns_client_create(mempool->client_pool, addr, port);
+	client = dns_client_alloc(mempool->client_pool, addr, port);
 	if (client == NULL) 
 		return;
-	
-	
 
+	if (rte_mempool_get(mempool->query_pool, &query) < 0) {
+		dns_client_put(client);
+		return;
+	}
+
+	if (rte_mempool_get(mempool->message_pool, &msg) < 0) { 
+		dns_query_put(query);
+		dns_client_put(client);
+	}
+	msg->pool = mempool;	
+	ret = message_retrieve(mbuf, msg, mempool);
+	if (ret != ESUCCESS)
+		return;
+	
+	query->request = msg;
+	dns_client_add_query(client, query);
+	start_recursion(query);
 }
 
 /*process */

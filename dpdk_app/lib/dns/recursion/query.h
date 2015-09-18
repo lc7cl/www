@@ -22,7 +22,7 @@ struct dns_query {
 	int rcode;
 	uint32_t state;
 	rte_atomic32_t refcnt;
-	rte_mempool *query_pool;
+	struct dns_mempool *mm_pool;
 	TAILQ_ENTRY(dns_query) list;
 };
 TAILQ_HEAD(dns_query_queue, dns_query);

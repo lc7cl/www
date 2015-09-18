@@ -6,10 +6,15 @@
 
 struct dns_message_queue;
 struct dns_client {
-    uint32_t addr;
-    uint16_t port;
+	union {
+		uint64_t key_0;
+		struct {
+    		uint32_t addr;
+    		uint16_t port;
+		} key_1;
+	} key;
+    rte_rwlock_t rwlock;	
     rte_atomic32_t refcnt;
-    rte_rwlock_t rwlock;
 	struct dns_query_queue querylist;
 	struct dns_mempool *mm_pool;
 };
@@ -30,7 +35,9 @@ dns_client_put(struct dns_client *client)
 
 struct dns_client* dns_client_alloc(struct rte_mempool *mm_pool, uint32_t addr, uint16_t port);
 void dns_client_free(struct dns_client *client);
-struct dns_client* dns_client_lookup(uint32_t addr, uint16_t port, int create);
+struct dns_client* dns_client_lookup(uint32_t addr, uint16_t port, int noref);
+
 int dns_client_add_query(struct dns_client *client, struct dns_query *query);
+int dns_client_delete_query(struct dns_client *client, struct dns_query *query);
 
 #endif
