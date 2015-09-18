@@ -31,17 +31,17 @@ int message_retrieve(struct rte_mbuf *mbuf, struct dns_message *msg, struct dns_
 	msg->question = question;
 
 	/*process answer*/
-	ret = retrieve_rrset(&msg->section[SECTION_ANSWER], buf, msg->rr_pool, mm_pool->name_pool);
+	ret = retrieve_rrset(&msg->section[SECTION_ANSWER], buf, mm_pool->rr_pool, mm_pool->name_pool);
 	if (ret != ESUCCESS)
 		return ret;
 
 	/*process authorization*/	
-	ret = retrieve_rrset(&msg->section[SECTION_AUTHORITY], buf, msg->rr_pool, mm_pool->name_pool);
+	ret = retrieve_rrset(&msg->section[SECTION_AUTHORITY], buf, mm_pool->rr_pool, mm_pool->name_pool);
 	if (ret != ESUCCESS)
 		return ret;
 
 	/*process additional*/	
-	ret = retrieve_rrset(&msg->section[SECTION_ADDITIONAL], buf, msg->rr_pool, mm_pool->name_pool);
+	ret = retrieve_rrset(&msg->section[SECTION_ADDITIONAL], buf, mm_pool->rr_pool, mm_pool->name_pool);
 	if (ret != ESUCCESS)
 		return ret;
 	

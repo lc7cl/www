@@ -95,7 +95,7 @@ struct dns_name {
 	uint8_t name_len;
 	rte_atomic32_t refcnt;
 	struct rte_mempool *name_pool;
-	struct dns_rr_queue head;
+	//struct dns_rr_queue head;
 };
 TAILQ_HEAD(dns_name_queue, dns_name);
 
@@ -123,11 +123,11 @@ struct dns_section {
 	int nb_rr;
 };
 
-int retrieve_name(char *in, struct dns_name *name);
-int retrieve_question(char *in, struct dns_question *question, char **cur);
-int dns_pkt_parse(struct rte_mbuf *m, 
-	struct dns_question *question, __out int *qsize, 
-	struct dns_name_queue *res, __out int *size);
+int retrieve_name(struct dns_buf *buf, struct dns_name *name);
+int retrieve_question(struct dns_buf *buf, struct dns_question *question);
+int retrieve_rr(struct dns_buf *buf, struct dns_rr *rr, struct rte_mempool *name_pool);
+int retrieve_rrset(struct dns_buf *buf, struct dns_section *section, int nb, 
+	struct rte_mempool *rr_pool, struct rte_mempool *name_pool);
 
 #ifdef __cplusplus
 }
