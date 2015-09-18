@@ -117,7 +117,7 @@ struct dns_rr {
 	uint16_t class;
 	uint32_t ttl;
 	uint16_t rdlength;
-	char rdata[1];
+	char *rdata;
 };
 TAILQ_HEAD(dns_rr_queue, dns_rr);
 

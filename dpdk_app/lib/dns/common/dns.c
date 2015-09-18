@@ -71,7 +71,7 @@ int retrieve_question(struct dns_buf *buf, struct dns_question *question)
 {
 	int ret;
 	
-	ret = retrieve_name(buf, &question->name);
+	ret = retrieve_name(buf, question->name);
 	if (ret != ESUCCESS) 
 		return ret;
 	question->qtype = get_uint16(buf);
@@ -86,7 +86,7 @@ int retrieve_rr(struct dns_buf *buf, struct dns_rr *rr, struct rte_mempool *name
 {
 	int ret;
 
-	if (rte_mempool_get(name_pool, &rr->name) < 0)
+	if (rte_mempool_get(name_pool, (void**)&rr->name) < 0)
 		return ENOMEMORY;
 	ret = retrieve_name(buf, rr->name);
 	if (ret != ESUCCESS) {
@@ -114,16 +114,15 @@ exit_release_name:
 int retrieve_rrset(struct dns_buf *buf, struct dns_section *section, int nb, struct rte_mempool *rr_pool, struct rte_mempool *name_pool)
 {
 	int ret, i;
-	char *p;
 	struct dns_rr *last, *rr;
 
 	if (nb == 0)
 		return ESUCCESS;
 
-	last = TAILQ_LAST(&section->rrset);
+	last = TAILQ_LAST(&section->rrset, list);
 	p = buf->cur;
-	for (i = 0; i < nb, i++) {
-		if (rte_mempool_get(rr_pool, &rr) < 0) {
+	for (i = 0; i < nb; i++) {
+		if (rte_mempool_get(rr_pool, (vdoi**)&rr) < 0) {
 			ret = ENOMEMORY;
 			goto exit_clean_rr;
 		}
