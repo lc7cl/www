@@ -41,11 +41,14 @@ static struct queue_conf {
 
 static FILE *f[RTE_MAX_LCORE];
 
+static dns_mempool mempool;
+
 static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port) 
 {
 	struct dns_hdr *dns_hdr;
 	struct dns_rr *r;
 	int rc = EERROR, size = 0, qsize = 0;
+	struct dns_message *msg;
 	struct dns_name_queue res;
 	struct dns_name *name;
 	struct dns_question question;
@@ -62,9 +65,11 @@ static void process_udp(struct rte_mbuf *m, uint32_t src_addr, uint16_t src_port
 	dns_hdr = rte_pktmbuf_mtod(m, struct dns_hdr *);
 	rte_hexdump(f[rte_lcore_id()] , NULL, (char*)dns_hdr, sizeof *dns_hdr);
 	if (dns_hdr->qr == 0) {
-		rc = dns_pkt_parse(m, &question, &qsize, &res, &size);
+		if (rte_mempool_get(mempool.message_pool, &msg) < 0)
+			return;
+		rc = message_retrieve(m, msg, &mempool);
 		if (rc == ESUCCESS && qsize == 1) {
-			name = question.name;
+			name = msg->question.name;
 			if (print_dns_name(domain, 256, name)) 
 				printf("question : %s len:%d %s\n", name->data, name->name_len, domain);
 		}
@@ -136,6 +141,74 @@ int main(int argc, char ** argv)
 		else
 			rte_exit(EXIT_FAILURE, "invalid arguments\n");
 	}
+
+	/*init dns mempool*/
+	mempool.client_pool = rte_mempool_create("client_pool",
+		128,
+		sizeof(struct dns_client),
+		0,
+	    0,
+	    NULL,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0);	
+	mempool.message_pool = rte_mempool_create("message_pool",
+		128,
+		sizeof(struct dns_message),
+		0,
+	    0,
+	    NULL,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0);	
+	mempool.query_pool = rte_mempool_create("query_pool",
+		128,
+		sizeof(struct dns_query),
+		0,
+	    0,
+	    NULL,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0);
+	mempool.rr_pool = rte_mempool_create("rr_pool",
+		128,
+		sizeof(struct dns_rr),
+		0,
+	    0,
+	    NULL,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0);	
+	mempool.question_pool = rte_mempool_create("q_pool",
+		128,
+		sizeof(struct dns_question),
+		0,
+	    0,
+	    NULL,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0);	
+	mempool.name_pool = rte_mempool_create("name_pool",
+		128,
+		sizeof(struct dns_name),
+		0,
+	    0,
+	    NULL,
+		NULL,
+		NULL,
+		NULL,
+		0,
+		0);
 
 	/*init proto stack*/
 	ret = inet_init();
