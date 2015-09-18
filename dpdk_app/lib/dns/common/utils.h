@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <common/dns.h>
-
 #ifdef __cplusplus
 }
 #endif
