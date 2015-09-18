@@ -18,7 +18,7 @@ int retrieve_name(struct dns_buf *buf, struct dns_name *name)
 	char *p;
 	char *domain = NULL;
 	
-	if (in == NULL || name == NULL)
+	if (buf == NULL || name == NULL)
 		return EERROR;
 
 	p = buf->cur;
