@@ -10,6 +10,7 @@
 #include <common/common.h>
 #include <common/dns.h>
 #include <common/utils.h>
+#include <common/dns_memory.h>
 
 #define NB_MBUF 1024
 #define RTE_LOGTYPE_TEST_UDP (RTE_LOGTYPE_TEST+2)
