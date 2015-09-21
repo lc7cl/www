@@ -9,6 +9,7 @@ extern "C" {
 #include <rte_common.h>
 #include <rte_malloc.h>
 #include <rte_mbuf.h>
+#include <rte_byteorder.h>
 
 typedef uint32_t be32;
 
