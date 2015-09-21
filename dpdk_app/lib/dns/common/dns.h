@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include <sys/queue.h>
+#include <string.h>
 #include <rte_common.h>
 #include <rte_malloc.h>
 #include <rte_mbuf.h>
