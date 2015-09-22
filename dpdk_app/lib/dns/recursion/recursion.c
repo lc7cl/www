@@ -2,6 +2,11 @@
 
 int start_recursion(__rte_unused struct dns_query *query)
 {
+#ifdef CONFIG_DNS_CACHE
+
+#else
+	
+#endif
     return 0;
 }
 
