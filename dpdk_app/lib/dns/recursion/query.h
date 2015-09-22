@@ -4,6 +4,9 @@
 #include <rte_rwlock.h>
 #include <common/dns.h>
 #include <common/dns_memory.h>
+#ifdef CONFIG_DNS_CACHE
+#include <cache/dns_cache.h>
+#endif
 
 enum dns_query_state {
 	DNS_QUERY_STATE_NONE,
@@ -25,7 +28,11 @@ struct dns_query {
 	uint32_t state;
 	rte_atomic32_t refcnt;
 	struct dns_mempool *mm_pool;
+	struct dns_name_queue stack;
 	TAILQ_ENTRY(dns_query) list;
+#ifdef CONFIG_DNS_CACHE
+	struct dns_cache *cache;
+#endif
 };
 TAILQ_HEAD(dns_query_queue, dns_query);
 
@@ -42,8 +49,13 @@ struct dns_query_hash {
 	struct dns_query_slot *slot;
 };
 
+#ifdef CONFIG_DNS_CACHE
+struct dns_query* dns_query_alloc(struct dns_mempool *pool, 
+	struct dns_name *name, uint16_t type, uint16_t class, struct dns_cache *cache);
+#else
 struct dns_query* dns_query_alloc(struct dns_mempool *pool, 
 	struct dns_name *name, uint16_t type, uint16_t class);
+#endif
 void dns_query_free(struct dns_query* query);
 struct dns_query* dns_query_lookup(struct dns_query_hash *hash, struct dns_name *name, uint16_t type, uint16_t class, int create);
 int dns_query_hash_init(int shift);

@@ -10,8 +10,13 @@ void dns_query_free(struct dns_query* query)
 	rte_mempool_put(query->mm_pool->query_pool, query);
 }
 
+#ifdef CONFIG_DNS_CACHE
+struct dns_query* dns_query_alloc(struct dns_mempool *pool, 
+	struct dns_name *name, uint16_t type, uint16_t class, struct dns_cache *cache)
+#else
 struct dns_query* dns_query_alloc(struct dns_mempool *pool, 
 	struct dns_name *name, uint16_t type, uint16_t class)
+#endif
 {
 	struct dns_query *query, *new, *retval;
 	struct dns_query_slot* slot;
@@ -31,7 +36,10 @@ struct dns_query* dns_query_alloc(struct dns_mempool *pool,
 	new->client_addr = 0;
 	new->rcode = 0;
 	new->mm_pool = pool;
-	new->state = DNS_QUERY_STATE_NONE;
+	new->state = DNS_QUERY_STATE_NONE;	
+#ifdef CONFIG_DNS_CACHE
+	new->cache = cache;
+#endif
 
 	/*check if query with <name, type, class> exits?if exists, free new and return the existing one*/
 	slot = dns_query_get_slot(query_hash, dns_query_get_hash(query_hash, name, type, class));
