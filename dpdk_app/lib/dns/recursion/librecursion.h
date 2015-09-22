@@ -12,5 +12,6 @@ enum RET_RECURSION {
 };
 
 int start_recursion(struct dns_query *query);
+int resume_recursion(__rte_unused struct dns_query *query);
 
 #endif
