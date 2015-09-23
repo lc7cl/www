@@ -15,21 +15,37 @@ enum dns_query_state {
 	DNS_QUERY_STATE_DELETED,
 };
 
-struct dns_query {
+struct addr_entry {
+	struct srvaddr *addr;
+	TAILQ_ENTRY(addr_entry) list;
+};
+TAILQ_HEAD(addr_entry_list, addr_entry);
+
+struct dns_query {	
+	uint32_t state;
 	uint32_t hval;
+	
+	/*origin question info*/
 	struct dns_name *name;
 	uint16_t type;
 	uint16_t class;
 	uint32_t client_addr;
 	struct dns_message *request;
+	
+	/*final response*/
 	struct dns_message *response;
-	struct dns_client *client;
 	int rcode;
-	uint32_t state;
-	rte_atomic32_t refcnt;
+
+	/*recursion context info*/
+	struct dns_name_queue name_stack;
+	struct dns_message_queue msg_stack;
+	struct addr_entry_list addr_list;	
+	rte_rwlock_t rwlock;
+
+	rte_atomic32_t refcnt;	
 	struct dns_mempool *mm_pool;
-	struct dns_name_queue stack;
-	TAILQ_ENTRY(dns_query) list;
+	TAILQ_ENTRY(dns_query) list;	
+	struct dns_client *client;
 #ifdef CONFIG_DNS_CACHE
 	struct dns_cache *cache;
 #endif
