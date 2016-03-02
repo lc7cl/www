@@ -32,10 +32,11 @@ int main(int argc, char** argv)
     }
 
     vector<string>& s = sessions;
-    logdb *db = new logdb(500);
-
+    logdb *db = logdb::getInstance();
     if (db == NULL)
         return -1;
+    db->set_flush_threshold(500);
+    db->set_db_server("127.0.0.1:8080");
 
     logwatcher *watcher = logwatcher::getInstance();
     watcher->set_watchdir(LOG_DIR);

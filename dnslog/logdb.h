@@ -2,25 +2,39 @@
 #define _LOGDB_H_
 
 #include <vector>
+#include <iostream>
+#include <istream>
+#include <ostream>
+#include <string>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+
+using boost::asio::ip::tcp;
 
 #include "logdns.h"
 
-class logdb {
-
+class logdb 
+{
 public:
+    static logdb* getInstance();
     int put(struct dns_item* item);
-    static logdb* getInstanc();
     void destroyInstance();
-    int set_server(const string&, int);
-    void set_threshold(int threshold);
+    void set_db_server(const string&);
+    void set_flush_threshold(int threshold);
+    int connect();
 
 private:
+    int flush();
+
+    static logdb* m_instance;
     int m_threshold;
     string m_server_addr;
     int m_server_port;
     vector<dns_item> m_pool;
-
-    int flush();
+    tcp::resolver resolver_;
+    tcp::socket socket_;
+    boost::asio::streambuf request_;
+    boost::asio::streambuf response_;
 
 protected:
     logdb() {};

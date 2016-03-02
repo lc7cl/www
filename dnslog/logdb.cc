@@ -11,7 +11,7 @@ logdb* logdb::getInstance()
     return m_instance;
 }
 
-void logdb:destroyInstance()
+void logdb::destroyInstance()
 {
     if (m_instance)
         delete m_instance;
@@ -22,13 +22,12 @@ void logdb::set_flush_threshold(int threshold)
     this->m_threshold = threshold;
 }
 
-void logdb::set_db_server(const string& addr, int port)
+void logdb::set_db_server(const string& server)
 {
-    this->m_server_addr = addr;
-    this->m_server_port = port;
+    this->m_server = server;
 }
 
-int logdb::connection()
+int logdb::connect()
 {
     return 1;
 }
