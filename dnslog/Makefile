@@ -1,16 +1,17 @@
 CC = g++ 
-CFLAGS = -g -O0
+CFLAGS = -g -O0 
+LDFLAGS = -lboost_filesystem -lboost_system -lboost_thread
 RM = rm 
 
-OBJS = logdir.o test.o
+OBJS = logdir.o logwatcher.o logstream.o logdb.o logtask.o main.o
 BIN = test
 
 .PHONY = clean
 
 default:${OBJS}
-	@${CC} ${CFLAGS} -o ${BIN} $^
+	@${CC} ${CFLAGS} ${LDFLAGS} -o ${BIN} $^
 
-%o:%c
+%o:%cc
 	@${CC} -c ${CFLAGS} -o $@ $<
 
 clean:
