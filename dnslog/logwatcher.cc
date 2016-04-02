@@ -28,7 +28,7 @@ void logwatcher::set_watchdir(const string& dir)
 
 int logwatcher::watch(const string& name, boost::lockfree::queue<string*> *filelist)
 {
-    if (this->m_objs.count(name) == 0)
+    if (this->m_objs.count(name) != 0)
         return -1;
 
     this->m_objs.insert(pair<string, boost::lockfree::queue<string*>*  >(name, filelist));
@@ -56,20 +56,32 @@ void logwatcher::start()
             {
                 vector<string> vStr;
                 boost::split(vStr, *itor, boost::is_any_of("."), boost::token_compress_on);
-                if (vStr.size() != 6) 
-                {
-                    std::cout << "format of filename %s error" << *itor << endl;
-                    continue;
-                }
-                map<string, boost::lockfree::queue<string*>* >::iterator it = this->m_objs.find(vStr[1] + vStr[2]);
+                //if (vStr.size() != 6) 
+                //{
+                //    std::cout << "format of filename %s error" << *itor << endl;
+                //    continue;
+                //}
+                string name;
+                for (int i = 1; i < vStr.size() - 4; i++) 
+		{
+	            if (name == "")
+		    {
+			name += vStr[i];
+		    }
+		    else
+		    {
+		        name += "." + vStr[i];
+	            }
+		}
+                map<string, boost::lockfree::queue<string*>* >::iterator it = this->m_objs.find(name);
                 if (it == this->m_objs.end())
                 {
-                    std::cout << "cannot find %s" << vStr[1] + vStr[2] << endl;
+                    std::cout << "cannot find :" <<name << "(" << *itor << ")" << endl;
                     continue;            
                 }
                 if (it->second == NULL) 
                 {
-                    std::cout << "cannot find %s" << vStr[1] + vStr[2] << endl;
+                    std::cout << "cannot find value :" << name << "(" << *itor << ")" << endl;
                     continue;            
                 }
                 string *fname = new string(*itor);
@@ -78,6 +90,6 @@ void logwatcher::start()
             delete(list);
         }
 
-        sleep(6);
+        //sleep(6);
     }
 }

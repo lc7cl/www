@@ -17,16 +17,23 @@ logtask::logtask(const string& task_name, const vector<string>& snames, logdb *d
             delete stream;
         }
     }
+
+    logwatcher *watcher = logwatcher::getInstance();
+    vector<logstream>::iterator it1;
+    for (it1 = this->m_streams.begin(); it1 != this->m_streams.end(); it1++)
+    {
+	it1->bind_watcher(*watcher);
+    }
 }
 
 void logtask::doAction()
 {
     struct dns_item *item;
-    vector<logstream>::iterator s_itor = this->m_streams.begin();
-    vector<logstream>::iterator s_end = this->m_streams.end();
 
     while (1) 
     {
+	vector<logstream>::iterator s_itor = this->m_streams.begin();
+        vector<logstream>::iterator s_end = this->m_streams.end();
         for (s_itor; s_itor != s_end; s_itor++) 
         {
             item = s_itor->read();
@@ -34,6 +41,6 @@ void logtask::doAction()
                 this->m_db->put(item);
             }
         }
-        sleep(6);
+        //sleep(6);
     }
 }

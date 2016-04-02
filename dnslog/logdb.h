@@ -15,7 +15,8 @@ using boost::asio::ip::tcp;
 
 struct statistics {
     time_t lasttime;
-    unsigned long long count;
+    string sip;
+    int count;
 };
 
 typedef char* (*ACL_FUNC)(unsigned int);
@@ -35,7 +36,8 @@ public:
 
 private:
     int flush(pair<string, struct statistics>);
-    string make_json(vector<pair<string, struct statistics> >&);
+    string make_one_json(string&, struct statistics &);
+    string make_jsons(vector<pair<string, struct statistics> >&);
     int insert_db(const string&);
     string get_line(const string&);
 
@@ -44,6 +46,8 @@ private:
     ACL_FUNC m_func;
     int m_threshold;
     string m_server;
+    string m_addr;
+    unsigned short m_port;
     string m_uri;
     int m_server_port;
     map<string, struct statistics> m_statics;

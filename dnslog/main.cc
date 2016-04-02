@@ -8,7 +8,7 @@ using namespace std;
 #include "logdb.h"
 #include "logtask.h"
 
-#define LOG_DIR "/home/lee/code/www/dnslog/misc"
+#define LOG_DIR "/home/dns/misc"
 
 static const string log_file_names[] = {
     "shpbs01-sec-sec113004.shpbs01.ksyun.com.task_0",
@@ -31,11 +31,10 @@ int main(int argc, char** argv)
         i++;
     }
 
-    vector<string>& s = sessions;
     logdb *db = logdb::getInstance();
     if (db == NULL)
         return -1;
-    db->set_flush_threshold(500);
+    db->set_flush_threshold(1);
     db->set_db_server("10.16.49.12:4242");
     db->set_db_uri("/api/put");
     db->set_acllib("acl/dnsacl.so");
@@ -44,7 +43,7 @@ int main(int argc, char** argv)
     logwatcher *watcher = logwatcher::getInstance();
     watcher->set_watchdir(LOG_DIR);
 
-    logtask worker = logtask("dnslog1", s, db);
+    logtask worker = logtask("dnslog1", sessions, db);
 
     boost::thread guarder_thrd(boost::bind(&logwatcher::start, watcher));
     boost::thread worker_thrd(boost::bind(&logtask::doAction, &worker));

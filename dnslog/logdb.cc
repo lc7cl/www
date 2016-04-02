@@ -1,29 +1,51 @@
 #include <dlfcn.h>
+#include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
 using boost::property_tree::ptree;
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/format.hpp>     
+#include <boost/tokenizer.hpp>     
+#include <boost/algorithm/string.hpp> 
 
+#include "jansson.h"
 #include "logdb.h"
 
-string logdb::make_json(vector<pair<string, struct statistics> >& pool)
+string logdb::make_one_json(string& name, struct statistics& statics)
 {
-    ptree pt;
+    json_t *tags;
+    tags = json_pack("{s:s}", "country", "China");
+    if (tags == NULL)
+	return string("");
+    json_t *j;
+    j = json_pack("{s:s, s:i, s:i, s:O}", 
+		"metric", name.c_str(),
+		"timestamp", boost::lexical_cast<int>(statics.lasttime),
+		"value", statics.count,
+		"tags", tags);
+    if (j == NULL)
+	return string("");
+    return string(json_dumps(j, 0));
+}
+
+string logdb::make_jsons(vector<pair<string, struct statistics> >& pool)
+{
+    string json = string("");
     vector<pair<string, struct statistics> >::iterator it = pool.begin();
+
+    if (pool.size() == 1)
+        return make_one_json(pool[0].first, pool[0].second);
     for (it; it != pool.end(); it++)
     {
-        ptree record, tags;
-        record.put("metric", it->first);
-        record.put("timestamp", it->second.lasttime);
-        record.put("value", it->second.count);
-        tags.put("country", get_line(it->first));
-        record.add_child("tags", tags);
-
-        pt.push_back(make_pair("", record));
+	if (json == "") 
+	{
+	    json += make_one_json(it->first, it->second);
+	}
+	else
+	{
+	    json += ", " + make_one_json(it->first, it->second);
+	}
     }
-    std::ostringstream buf; 
-    write_json(buf, pt, false);
-    std::string json = buf.str(); 
-    return json;
+    return "[" + json + "]";
 }
 
 
@@ -52,6 +74,13 @@ void logdb::set_flush_threshold(int threshold)
 void logdb::set_db_server(const string& server)
 {
     this->m_server = server;
+    vector<string> v;
+    boost::split(v, server, boost::is_any_of(":"));
+    if (v.size() == 2)
+    {
+	this->m_addr = v[0];
+	this->m_port = boost::lexical_cast<unsigned short>(v[1]);
+    }
 }
 
 void logdb::set_db_uri(const string& uri)
@@ -113,7 +142,7 @@ int logdb::flush(pair<string, struct statistics> statics)
 {
     if (this->m_threshold > 0 && this->m_pool.size() == this->m_threshold)
     {
-        string str = make_json(this->m_pool);
+        string str = make_jsons(this->m_pool);
         insert_db(str);
         vector<pair<string, struct statistics> >().swap(this->m_pool);
     }
@@ -137,41 +166,42 @@ int logdb::put(struct dns_item* item)
             return 1;
         new_statics->lasttime = tm;
         new_statics->count = 0;
+        new_statics->sip = "";
         this->m_statics.insert(make_pair(dname, *new_statics));
         return 0;
     }
-    if (itor->second.lasttime - tm > 1800) 
+    if (tm - itor->second.lasttime> 10) 
     {
         flush(*itor);
         itor->second.lasttime = tm;
+        itor->second.count = 0;
     }
-    else
-    {
-        itor->second.count++;
-    }
+    itor->second.sip = item->sip;
+    itor->second.count++;
     return 0;
 }
 
 int logdb::insert_db(const string& data)
 {
     // Get a list of endpoints corresponding to the server name.
-    tcp::resolver resolver(io_service);
-    tcp::resolver::query query(this->m_server, "http");
-    tcp::resolver::iterator endpoint_iterator = resolver.resolve(query);
+    boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::address::from_string(m_addr), m_port);
     
     // Try each endpoint until we successfully establish a connection.
     tcp::socket socket(io_service);
-    boost::asio::connect(socket, endpoint_iterator);
+    socket.connect(endpoint);
+    //boost::asio::connect(socket, endpoint);
     
     // Form the request. We specify the "Connection: close" header so that the
     // server will close the socket after transmitting the response. This will
     // allow us to treat all data up until the EOF as the content.
     boost::asio::streambuf request;
     std::ostream request_stream(&request);
-    request_stream << "POST " << this->m_server + this->m_uri << " HTTP/1.0\r\n";
-    request_stream << "Host: " << data << "\r\n";
+    request_stream << "POST " << this->m_uri << " HTTP/1.0\r\n";
+    request_stream << "Host: " << "\r\n";
     request_stream << "Accept:*/*\r\n";
+    request_stream << "Content-Length: " << data.length() << "\r\n";
     request_stream << "Connection: close\r\n\r\n";
+    request_stream << data;
     
     // Send the request.
     boost::asio::write(socket, request);

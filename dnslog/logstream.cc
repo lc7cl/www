@@ -1,5 +1,3 @@
-#include <iostream>
-#include <fstream>
 #include <string>
 #include <vector>
 #include <boost/tokenizer.hpp>
@@ -15,6 +13,7 @@ logstream::logstream(const string& name)
     : m_name(name)
 {
     this->m_files = new boost::lockfree::queue<string*>(256);
+    this->m_in = new ifstream();
 }
 
 struct dns_item* logstream::read()
@@ -23,22 +22,23 @@ struct dns_item* logstream::read()
     vector<string> tmp;
     string line;
 
-    ifstream in;
-    in.open(this->m_curr->c_str());
-
-    if (in.eof())
+    if (m_in == NULL || m_in->is_open() == false || m_in->eof())
     {
-        in.close();
-        delete this->m_curr;
+	if (m_in && m_in->is_open())
+	{
+            m_in->close();
+            delete this->m_curr;
+	}
         this->m_curr = NULL;
         if (this->m_files->pop(this->m_curr) == 0)
         {
             return NULL;
         }
-        in.open(this->m_curr->c_str());
+        m_in->open(this->m_curr->c_str());
     }
     
-    getline(in, line);
+    getline(*m_in, line);
+	cout << line << endl;
     // timestamp
     // req/resps:sip|sport|dip|dport|dnsid|dnsname|dnsclass|dnstype|ECSaddr|rcode
     char_separator<char> sep("  :|");
@@ -49,10 +49,10 @@ struct dns_item* logstream::read()
     } 
     if (tmp.size() < 10) 
     {
-        std::cout << "line %s may be trunct" << line << endl;  
+        std::cout << "(" << this->m_name << ")" << "line %s may be trunct " << line << " (size" << tmp.size() << ")" << endl;  
         return NULL;
     }
-    ret.timestamp = lexical_cast<unsigned long long>(tmp[0]);
+    ret.timestamp = tmp[0];
     if (tmp[1] == "req") 
     {
         ret.item_type = 1;
@@ -63,7 +63,7 @@ struct dns_item* logstream::read()
     } 
     else 
     {
-        std::cout << "line %s format error" << line << endl;
+        std::cout << "(" << this->m_name << ")" << "line %s format error" << line << endl;
         return NULL;
     }
     ret.sip = tmp[2];
@@ -81,7 +81,7 @@ struct dns_item* logstream::read()
             ret.ecs_addr = tmp[10].substr(3);
             if (tmp.size() != 11)
             {
-                std::cout << "line %s may be trunct" << line << endl;  
+                std::cout << "( << this->m_name << )" << "line may be trunct:" << line << endl;  
                 return NULL;
             }
             ret.dns_rcode = lexical_cast<int>(tmp[11]);
@@ -89,17 +89,15 @@ struct dns_item* logstream::read()
     } 
     else 
     {
-        if (tmp.size() != 10)
+        if (tmp.size() != 11)
         {
-            std::cout << "line %s may be error" << line << endl;  
+            std::cout << "( << this->m_name << )" << "line may be error:" << line << endl;  
             return NULL;
         }
-        ret.dns_type = lexical_cast<int>(tmp[10]);
+        ret.dns_rcode = lexical_cast<int>(tmp[10]);
     }
-    in.close();
 
-    struct dns_item *p = (struct dns_item*) operator new(sizeof(struct dns_item));
-    *p = ret;
+    dns_item *p = new dns_item(ret);
 
     return p;
 }

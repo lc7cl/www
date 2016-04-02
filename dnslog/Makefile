@@ -1,6 +1,6 @@
 CC = g++ 
 CFLAGS = -g -O0 
-LDFLAGS = -ldl -lpthread -lboost_filesystem -lboost_system -lboost_thread
+LDFLAGS = -L/usr/local/lib -L/usr/lib -ldl -lpthread -ljansson -lboost_filesystem  -lboost_system -lboost_thread
 RM = rm 
 
 OBJS = logdir.o logwatcher.o logstream.o logdb.o logtask.o main.o
@@ -12,7 +12,7 @@ default:${OBJS}
 	@${CC} ${CFLAGS} ${LDFLAGS} -o ${BIN} $^
 
 %o:%cc
-	@${CC} -c ${CFLAGS} -o $@ $<
+	@${CC} -c ${CFLAGS} -o $@ $^
 
 clean:
 	@${RM} -rf ${OBJS} ${BIN}
