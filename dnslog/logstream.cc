@@ -11,8 +11,10 @@ using boost::tokenizer;
 #include "logwatcher.h"
 #include "logstream.h"
 
-logstream::logstream(const string& name) : m_name(name)
+logstream::logstream(const string& name) 
+    : m_name(name)
 {
+    this->m_files = new boost::lockfree::queue<string*>(256);
 }
 
 struct dns_item* logstream::read()
@@ -22,14 +24,18 @@ struct dns_item* logstream::read()
     string line;
 
     ifstream in;
-    in.open(this->m_curr.c_str());
+    in.open(this->m_curr->c_str());
 
     if (in.eof())
     {
         in.close();
-        this->m_curr = this->m_files.front();
-        this->m_files.erase(this->m_files.begin());
-        in.open(this->m_curr.c_str());
+        delete this->m_curr;
+        this->m_curr = NULL;
+        if (this->m_files->pop(this->m_curr) == 0)
+        {
+            return NULL;
+        }
+        in.open(this->m_curr->c_str());
     }
     
     getline(in, line);
@@ -100,6 +106,6 @@ struct dns_item* logstream::read()
 
 int logstream::bind_watcher(logwatcher& w)
 {
-    w.watch(this->m_name, &this->m_files);
+    w.watch(this->m_name, this->m_files);
     return 1;
 }

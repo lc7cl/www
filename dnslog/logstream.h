@@ -15,11 +15,11 @@ public:
     ~logstream() {};
     int bind_watcher(logwatcher&);
     struct dns_item* read();
+    boost::lockfree::queue<string*> *m_files;
 
 private:
-    vector<string> m_files;
     int m_state;
-    string m_curr;
+    string *m_curr;
     string m_name;
 };
 

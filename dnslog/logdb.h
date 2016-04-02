@@ -13,6 +13,13 @@ using boost::asio::ip::tcp;
 
 #include "logdns.h"
 
+struct statistics {
+    time_t lasttime;
+    unsigned long long count;
+};
+
+typedef char* (*ACL_FUNC)(unsigned int);
+
 class logdb 
 {
 public:
@@ -20,21 +27,33 @@ public:
     int put(struct dns_item* item);
     void destroyInstance();
     void set_db_server(const string&);
+    void set_db_uri(const string&);
     void set_flush_threshold(int threshold);
     int connect();
+    int set_acllib(const string&);
+    int load_acl(const string&);
 
 private:
-    int flush();
+    int flush(pair<string, struct statistics>);
+    string make_json(vector<pair<string, struct statistics> >&);
+    int insert_db(const string&);
+    string get_line(const string&);
 
     static logdb* m_instance;
+    void* m_handle;
+    ACL_FUNC m_func;
     int m_threshold;
-    string m_server_addr;
+    string m_server;
+    string m_uri;
     int m_server_port;
-    vector<dns_item> m_pool;
-    tcp::resolver resolver_;
-    tcp::socket socket_;
-    boost::asio::streambuf request_;
-    boost::asio::streambuf response_;
+    map<string, struct statistics> m_statics;
+    vector<pair<string, struct statistics> > m_pool;
+    //tcp::resolver resolver_;
+    //tcp::socket socket_;
+    //boost::asio::streambuf request_;
+    //boost::asio::streambuf response_;
+    boost::asio::io_service io_service;
+
 
 protected:
     logdb() {};

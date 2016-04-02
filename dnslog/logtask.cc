@@ -25,12 +25,15 @@ void logtask::doAction()
     vector<logstream>::iterator s_itor = this->m_streams.begin();
     vector<logstream>::iterator s_end = this->m_streams.end();
 
-    for (s_itor; s_itor != s_end; s_itor++) 
+    while (1) 
     {
-        item = s_itor->read();
-        while (item != NULL) {
-            //insert db
-            this->m_db->put(item);
+        for (s_itor; s_itor != s_end; s_itor++) 
+        {
+            item = s_itor->read();
+            while (item != NULL) {
+                this->m_db->put(item);
+            }
         }
+        sleep(6);
     }
 }

@@ -1,6 +1,6 @@
 CC = g++ 
 CFLAGS = -g -O0 
-LDFLAGS = -lboost_filesystem -lboost_system -lboost_thread
+LDFLAGS = -ldl -lpthread -lboost_filesystem -lboost_system -lboost_thread
 RM = rm 
 
 OBJS = logdir.o logwatcher.o logstream.o logdb.o logtask.o main.o
