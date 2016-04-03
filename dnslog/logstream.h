@@ -25,7 +25,7 @@ public:
 private:
     int m_state;
     string *m_curr;
-    boost::uint64_t m_curr_utc;
+    int64_t m_curr_utc;
     string m_name;
     string m_frag;
     ifstream *m_in;

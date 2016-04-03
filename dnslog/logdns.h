@@ -26,7 +26,7 @@ public:
     }
 
 
-    string timestamp;
+    int64_t timestamp;
     int item_type;
     string sip;
     unsigned short sport;
@@ -58,8 +58,8 @@ public:
 
 class statistics {
 public:
-    statistics() : lasttime(0), count(0) {};
-    time_t lasttime;
+    statistics() : utc(0), count(0) {};
+    int64_t utc;
     int count;
 };
 

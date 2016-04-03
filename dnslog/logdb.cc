@@ -21,7 +21,7 @@ string logdb::make_one_json(statis_key& name, struct statistics& statics)
     cout << "count:" << statics.count << endl;
     j = json_pack("{s:s, s:i, s:i, s:O}", 
 		"metric", "dns-hour",
-		"timestamp", boost::lexical_cast<int>(statics.lasttime),
+		"timestamp", statics.utc,
 		"value", statics.count,
 		"tags", tags);
     if (j == NULL)
@@ -172,17 +172,17 @@ int logdb::put(struct dns_item* item)
         statistics *new_statics = new statistics();
         if (new_statics == NULL)
             return 1;
-        new_statics->lasttime = tm;
+        new_statics->utc = item->timestamp;
         new_statics->count = 0;
         this->m_statics.insert(make_pair(statis_key(dname, geo), *new_statics));
 	itor = this->m_statics.find(statis_key(dname, geo));
     }
     itor->second.count++;
-    //if (tm - itor->second.lasttime> 10) 
+    //if (tm - itor->second.utc> 10) 
     {
         if(flush(*itor))
 	{
-            itor->second.lasttime = tm;
+            itor->second.utc = item->timestamp;
             itor->second.count = 0;
 	}
     }

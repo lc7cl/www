@@ -12,6 +12,10 @@ using boost::char_separator;
 using boost::tokenizer;
 using namespace boost::posix_time;
 
+#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem/operations.hpp>
+namespace fs = boost::filesystem;
 #include "logwatcher.h"
 #include "logstream.h"
 
@@ -40,18 +44,20 @@ dns_item* logstream::read()
         {
             return NULL;
         }
+	string fname = fs::path(*this->m_curr).filename().string();
 	vector<string> vStr;
-	boost::split(vStr, *this->m_curr, boost::is_any_of("."), boost::token_compress_on);
+	boost::split(vStr, fname, boost::is_any_of("."), boost::token_compress_on);
         if (vStr.size() < 2)
 	    return NULL; 
         int y = lexical_cast<int>(vStr[0].substr(0, 4));
         int m = lexical_cast<int>(vStr[0].substr(4, 2));
         int d = lexical_cast<int>(vStr[0].substr(6, 2));
         int h = lexical_cast<int>(vStr[0].substr(8, 2));
-	ptime p(boost::gregorian::date(y, m, d),hours(h));
-	static ptime time_t_begin(boost::gregorian::date(1970,1,1)); 
+	ptime p(boost::gregorian::date(y, m, d), hours(h));
+	static ptime time_t_begin(boost::gregorian::date(1970,1,1), hours(8)); 
 	time_duration diff = p - time_t_begin;
-        m_curr_utc = diff.seconds();
+	cout << "*****************" << p << "+++" << diff.total_seconds() <<endl;
+        m_curr_utc = diff.total_seconds();
         m_in->open(this->m_curr->c_str());
     }
     
