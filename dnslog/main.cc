@@ -16,6 +16,11 @@ static const string log_file_names[] = {
     "shpbs01-sec-sec113004.shpbs01.ksyun.com.task_2",
     "shpbs01-sec-sec113004.shpbs01.ksyun.com.task_3",
     "shpbs01-sec-sec113004.shpbs01.ksyun.com.task_4",
+    "bjzjm01-sec-sec029008.bjzjm01.ksyun.com.task_0",
+    "bjzjm01-sec-sec029008.bjzjm01.ksyun.com.task_1",
+    "bjzjm01-sec-sec029008.bjzjm01.ksyun.com.task_2",
+    "bjzjm01-sec-sec029008.bjzjm01.ksyun.com.task_3",
+    "bjzjm01-sec-sec029008.bjzjm01.ksyun.com.task_4",
     ""
 };
 

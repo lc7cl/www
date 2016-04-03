@@ -10,15 +10,17 @@ using boost::property_tree::ptree;
 #include "jansson.h"
 #include "logdb.h"
 
-string logdb::make_one_json(string& name, struct statistics& statics)
+string logdb::make_one_json(statis_key& name, struct statistics& statics)
 {
     json_t *tags;
-    tags = json_pack("{s:s}", "country", "China");
+    tags = json_pack("{s:s}", "geo", name.geo_.c_str());
+    tags = json_pack("{s:s}", "name", name.dns_name_.c_str());
     if (tags == NULL)
 	return string("");
     json_t *j;
+    cout << "count:" << statics.count << endl;
     j = json_pack("{s:s, s:i, s:i, s:O}", 
-		"metric", name.c_str(),
+		"metric", "dns-hour",
 		"timestamp", boost::lexical_cast<int>(statics.lasttime),
 		"value", statics.count,
 		"tags", tags);
@@ -27,10 +29,10 @@ string logdb::make_one_json(string& name, struct statistics& statics)
     return string(json_dumps(j, 0));
 }
 
-string logdb::make_jsons(vector<pair<string, struct statistics> >& pool)
+string logdb::make_jsons(vector<pair<statis_key, struct statistics> >& pool)
 {
     string json = string("");
-    vector<pair<string, struct statistics> >::iterator it = pool.begin();
+    vector<pair<statis_key, struct statistics> >::iterator it = pool.begin();
 
     if (pool.size() == 1)
         return make_one_json(pool[0].first, pool[0].second);
@@ -138,19 +140,18 @@ string logdb::get_line(const string& ip)
     return str;
 }
 
-int logdb::flush(pair<string, struct statistics> statics)
+int logdb::flush(pair<statis_key, struct statistics> statics)
 {
-    if (this->m_threshold > 0 && this->m_pool.size() == this->m_threshold)
+    int ret = 0;
+    this->m_pool.push_back(statics);
+    if (this->m_threshold > 0 && this->m_pool.size() >= this->m_threshold)
     {
         string str = make_jsons(this->m_pool);
         insert_db(str);
-        vector<pair<string, struct statistics> >().swap(this->m_pool);
+        vector<pair<statis_key, struct statistics> >().swap(this->m_pool);
+        ret = 1;
     }
-    else
-    {
-        this->m_pool.push_back(statics);
-    }
-    return 1;
+    return ret;
 }
 
 int logdb::put(struct dns_item* item)
@@ -158,26 +159,33 @@ int logdb::put(struct dns_item* item)
     time_t tm;
     time(&tm);
     string& dname = item->dns_name;
-    map<string, struct statistics>::iterator itor = this->m_statics.find(dname);
+    string geo;
+    if (item->ecs_addr == "")
+        geo = get_line(item->sip);
+    else
+	geo = get_line(item->ecs_addr);
+    if (geo == "")
+	geo = "default";
+    map<statis_key, struct statistics>::iterator itor = this->m_statics.find(statis_key(dname, geo));
     if (itor == this->m_statics.end())
     {
-        struct statistics *new_statics = (struct statistics*)operator new(sizeof(struct statistics));
+        statistics *new_statics = new statistics();
         if (new_statics == NULL)
             return 1;
         new_statics->lasttime = tm;
         new_statics->count = 0;
-        new_statics->sip = "";
-        this->m_statics.insert(make_pair(dname, *new_statics));
-        return 0;
+        this->m_statics.insert(make_pair(statis_key(dname, geo), *new_statics));
+	itor = this->m_statics.find(statis_key(dname, geo));
     }
-    if (tm - itor->second.lasttime> 10) 
-    {
-        flush(*itor);
-        itor->second.lasttime = tm;
-        itor->second.count = 0;
-    }
-    itor->second.sip = item->sip;
     itor->second.count++;
+    //if (tm - itor->second.lasttime> 10) 
+    {
+        if(flush(*itor))
+	{
+            itor->second.lasttime = tm;
+            itor->second.count = 0;
+	}
+    }
     return 0;
 }
 

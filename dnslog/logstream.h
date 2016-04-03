@@ -18,12 +18,14 @@ public:
     logstream(const string& name);
     ~logstream() {};
     int bind_watcher(logwatcher&);
-    struct dns_item* read();
+    dns_item* read();
     boost::lockfree::queue<string*> *m_files;
+    const string& get_name() {return m_name;};
 
 private:
     int m_state;
     string *m_curr;
+    boost::uint64_t m_curr_utc;
     string m_name;
     string m_frag;
     ifstream *m_in;

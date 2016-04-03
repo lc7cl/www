@@ -28,7 +28,7 @@ logtask::logtask(const string& task_name, const vector<string>& snames, logdb *d
 
 void logtask::doAction()
 {
-    struct dns_item *item;
+    dns_item *item;
 
     while (1) 
     {
@@ -39,6 +39,8 @@ void logtask::doAction()
             item = s_itor->read();
             while (item != NULL) {
                 this->m_db->put(item);
+		delete item;
+                item = s_itor->read();
             }
         }
         //sleep(6);
