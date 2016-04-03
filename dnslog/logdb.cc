@@ -20,7 +20,7 @@ string logdb::make_one_json(statis_key& name, struct statistics& statics)
     json_t *j;
     cout << "count:" << statics.count << endl;
     j = json_pack("{s:s, s:i, s:i, s:O}", 
-		"metric", "dns-hour",
+		"metric", "dns_hour",
 		"timestamp", statics.utc,
 		"value", statics.count,
 		"tags", tags);
