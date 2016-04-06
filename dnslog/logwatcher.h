@@ -13,7 +13,7 @@ using namespace std;
 class logwatcher {
 
 public:
-    int watch(const string& name, boost::lockfree::queue<string*> *filelist);
+    int watch(const string& name, boost::lockfree::queue<logfile*> *filelist);
     int unwatch(const string& name);
     void start();
     static logwatcher* getInstance();
@@ -21,7 +21,7 @@ public:
     void set_watchdir(const string&);
 
 private:
-    map<string, boost::lockfree::queue<string*>* > m_objs;
+    map<string, boost::lockfree::queue<logfile*>* > m_objs;
     logdir m_dir;
     static logwatcher * m_instance;
 

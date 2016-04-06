@@ -2,6 +2,7 @@
 #define _LOGDNS_H_
 
 #include <string>
+#include <stdint.h>
 
 using namespace std;
 

@@ -9,18 +9,19 @@ namespace fs = boost::filesystem;
 
 using namespace std;
 
+#include "logfile.h"
+
 class logdir {
 
 public:
     logdir() {};
     logdir(const string& path);
     ~logdir() {};
-    vector<string>* scan(bool recursive);
-    vector<string>& rescan(bool recursive);
+    void scan(vector<logfile>& flist, bool recursive);
 
 private:
     fs::path m_path;
-    time_t m_timestamp;
+    int64_t m_timestamp;
 };
 
 #endif

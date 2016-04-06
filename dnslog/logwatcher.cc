@@ -26,12 +26,12 @@ void logwatcher::set_watchdir(const string& dir)
     this->m_dir = logdir(dir);
 }
 
-int logwatcher::watch(const string& name, boost::lockfree::queue<string*> *filelist)
+int logwatcher::watch(const string& name, boost::lockfree::queue<logfile*> *filelist)
 {
     if (this->m_objs.count(name) != 0)
         return -1;
 
-    this->m_objs.insert(pair<string, boost::lockfree::queue<string*>*  >(name, filelist));
+    this->m_objs.insert(pair<string, boost::lockfree::queue<logfile*>*  >(name, filelist));
     return 0;
 }
 
@@ -45,51 +45,30 @@ int logwatcher::unwatch(const string& name)
 
 void logwatcher::start()
 {
-    vector<string>* list;
+    vector<logfile> flist;
     while (1) 
     {
-        list = this->m_dir.scan(false);
-        if (list) {
-            vector<string>::iterator itor = list->begin();
-            vector<string>::iterator end = list->end();
+        this->m_dir.scan(flist, false);
+        if (flist.size() > 0) {
+            vector<logfile>::iterator itor = flist.begin();
+            vector<logfile>::iterator end = flist.end();
             for (itor; itor != end; itor++)
             {
-                vector<string> vStr;
-                boost::split(vStr, *itor, boost::is_any_of("."), boost::token_compress_on);
-                //if (vStr.size() != 6) 
-                //{
-                //    std::cout << "format of filename %s error" << *itor << endl;
-                //    continue;
-                //}
-                string name;
-                for (int i = 1; i < vStr.size() - 4; i++) 
-		{
-	            if (name == "")
-		    {
-			name += vStr[i];
-		    }
-		    else
-		    {
-		        name += "." + vStr[i];
-	            }
-		}
-                map<string, boost::lockfree::queue<string*>* >::iterator it = this->m_objs.find(name);
+                map<string, boost::lockfree::queue<logfile*>* >::iterator it = this->m_objs.find(itor->f_session);
                 if (it == this->m_objs.end())
                 {
-                    std::cout << "cannot find :" <<name << "(" << *itor << ")" << endl;
+                    std::cout << "cannot find :" << itor->f_session << "(" << itor->f_path << ")" << endl;
                     continue;            
                 }
                 if (it->second == NULL) 
                 {
-                    std::cout << "cannot find value :" << name << "(" << *itor << ")" << endl;
+                    std::cout << "cannot find value :" << itor->f_session << "(" << itor->f_path << ")" << endl;
                     continue;            
                 }
-                string *fname = new string(*itor);
-                it->second->push(fname);
+                logfile *log = new logfile(*itor);
+                it->second->push(log);
             }
-            delete(list);
         }
-
-        //sleep(6);
+        sleep(6);
     }
 }

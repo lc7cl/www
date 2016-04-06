@@ -15,7 +15,7 @@ string db::make_one_query_json(const string& metric, int64_t start_tm, int64_t e
         else if (it->first == "dname")
             dname = it->second;
     }
-    tags_json = json_pack("s:s, s:s",
+    tags_json = json_pack("{s:s, s:s}",
             "dname", dname.c_str(),
             "geo", geo.c_str());
     if (tags_json == NULL)
@@ -54,12 +54,12 @@ string db::make_one_put_json(const string& metric, int64_t tm, int value, vector
         else if (it->first == "dname")
             dname = it->second;
     }
-    tags_json = json_pack("s:s, s:s",
+    tags_json = json_pack("{s:s, s:s}",
             "dname", dname.c_str(),
             "geo", geo.c_str());
     if (tags_json == NULL)
         return "";
-    put = json_pack("s:s, s:i, s:i, s:O",
+    put = json_pack("{s:s, s:i, s:i, s:O}",
             "metric", metric.c_str(),
             "timestamp", tm,
             "value", value,
@@ -217,7 +217,7 @@ int db::send(const string& uri, const string& data, const string& fname)
     {
         ofstream out;
 
-	out.open(fname.c_str(), ios::out);
+	    out.open(fname.c_str(), ios::out);
          
         boost::asio::read_until(socket, response, "\r\n\r\n");
         std::string header;

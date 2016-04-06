@@ -7,16 +7,12 @@
 class logtask {
 
 public:
-    logtask(const string&, const vector<string>&, logdb *db);
     ~logtask() {};
     void doAction();
+    logtask(const string& path): m_path(path) { };
 
 private:
-    vector<string> m_session_names;
-    const string m_task_name;
-    logdb *m_db;
-    vector<logstream> m_streams;
-
+    string m_path;
 };
 
 #endif

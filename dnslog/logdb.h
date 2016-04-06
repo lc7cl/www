@@ -19,7 +19,7 @@ class logdb
 {
 public:
     static logdb* getInstance();
-    int put(struct dns_item* item);
+    int put(dns_item& item);
     void destroyInstance();
     void set_db_server(const string&);
     void set_db_uri(const string&);
@@ -27,11 +27,13 @@ public:
     int connect();
     int set_acllib(const string&);
     int load_acl(const string&);
+    void flush();
+    void flush_all();
 
 private:
-    int flush(pair<statis_key, struct statistics>);
-    string make_one_json(statis_key&, struct statistics &);
-    string make_jsons(vector<pair<statis_key, struct statistics> >&);
+    int save(pair<statis_key, statistics>);
+    string make_one_json(string&,const statis_key&, statistics &);
+    string make_jsons(string&, vector<pair<statis_key, statistics> >&);
     int insert_db(const string&);
     string get_line(const string&);
 
@@ -44,7 +46,10 @@ private:
     unsigned short m_port;
     string m_uri;
     int m_server_port;
-    map<statis_key, struct statistics> m_statics;
+    map<statis_key, statistics> m_statics;
+    int64_t m_utc;
+    map<string, statistics> m_all_statics;
+    int64_t m_all_utc;
     vector<pair<statis_key, struct statistics> > m_pool;
     //tcp::resolver resolver_;
     //tcp::socket socket_;
