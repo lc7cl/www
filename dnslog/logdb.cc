@@ -11,6 +11,8 @@ using boost::property_tree::ptree;
 #include "logdb.h"
 
 logdb* logdb::m_instance = NULL;
+string logdb::s1 = string("dns_hour");
+string logdb::s2 = string("dns_hour_all");
 
 logdb* logdb::getInstance()
 {
@@ -144,7 +146,7 @@ int logdb::save(pair<statis_key, statistics> statics)
     this->m_pool.push_back(statics);
     if (this->m_threshold > 0 && this->m_pool.size() >= this->m_threshold)
     {
-        string str = make_jsons(this->m_pool);
+        string str = make_jsons(s1, this->m_pool);
         insert_db(str);
         vector<pair<statis_key, statistics> >().swap(this->m_pool);
         ret = 1;
@@ -156,16 +158,16 @@ void logdb::flush()
 {
     string json = "";
     
-    map<pair<statis_key, statistics> >::iterator it = m_statics.begin();
+    map<statis_key, statistics >::iterator it = m_statics.begin();
     for (it; it != m_statics.end(); it++)
     {
         if (json == "") 
         {
-            json += make_one_json("dns_hour", it->first, it->second);
+            json += make_one_json(s1, it->first, it->second);
         }
         else
         {
-            json += ", " + make_one_json("dns_hour", it->first, it->second);
+            json += ", " + make_one_json(s1, it->first, it->second);
         }
     }    
     insert_db("[" + json + "]");
@@ -180,11 +182,11 @@ void logdb::flush_all()
     {
         if (json == "") 
         {
-            json += make_one_json("dns_hour_all", make_pair(it->first, string("all")), it->second);
+            json += make_one_json(s2, make_pair(it->first, string("all")), it->second);
         }
         else
         {
-            json += ", " + make_one_json("dns_hour_all", make_pair(it->first, string("all")), it->second);
+            json += ", " + make_one_json(s2, make_pair(it->first, string("all")), it->second);
         }
     }    
     insert_db("[" + json + "]");    

@@ -1,6 +1,7 @@
 #ifndef _LOGDNS_H_
 #define _LOGDNS_H_
 
+#include "stdint.h"
 #include <string>
 
 using namespace std;
@@ -62,6 +63,5 @@ public:
     int64_t utc;
     int count;
 };
-
 
 #endif
