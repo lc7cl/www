@@ -10,47 +10,6 @@ using boost::property_tree::ptree;
 #include "jansson.h"
 #include "logdb.h"
 
-string logdb::make_one_json(statis_key& name, struct statistics& statics)
-{
-    json_t *tags;
-    tags = json_pack("{s:s}", "geo", name.geo_.c_str());
-    tags = json_pack("{s:s}", "name", name.dns_name_.c_str());
-    if (tags == NULL)
-	return string("");
-    json_t *j;
-    cout << "count:" << statics.count << endl;
-    j = json_pack("{s:s, s:i, s:i, s:O}", 
-		"metric", "dns_hour",
-		"timestamp", statics.utc,
-		"value", statics.count,
-		"tags", tags);
-    if (j == NULL)
-	return string("");
-    return string(json_dumps(j, 0));
-}
-
-string logdb::make_jsons(vector<pair<statis_key, struct statistics> >& pool)
-{
-    string json = string("");
-    vector<pair<statis_key, struct statistics> >::iterator it = pool.begin();
-
-    if (pool.size() == 1)
-        return make_one_json(pool[0].first, pool[0].second);
-    for (it; it != pool.end(); it++)
-    {
-	if (json == "") 
-	{
-	    json += make_one_json(it->first, it->second);
-	}
-	else
-	{
-	    json += ", " + make_one_json(it->first, it->second);
-	}
-    }
-    return "[" + json + "]";
-}
-
-
 logdb* logdb::m_instance = NULL;
 
 logdb* logdb::getInstance()
@@ -80,8 +39,8 @@ void logdb::set_db_server(const string& server)
     boost::split(v, server, boost::is_any_of(":"));
     if (v.size() == 2)
     {
-	this->m_addr = v[0];
-	this->m_port = boost::lexical_cast<unsigned short>(v[1]);
+        this->m_addr = v[0];
+        this->m_port = boost::lexical_cast<unsigned short>(v[1]);
     }
 }
 
@@ -140,7 +99,46 @@ string logdb::get_line(const string& ip)
     return str;
 }
 
-int logdb::flush(pair<statis_key, struct statistics> statics)
+string logdb::make_one_json(const string& metric, statis_key& name, statistics& statics)
+{
+    json_t *tags;
+    tags = json_pack("{s:s}", "geo", name.geo_.c_str());
+    tags = json_pack("{s:s}", "name", name.dns_name_.c_str());
+    if (tags == NULL)
+	    return string("");
+    json_t *j;
+    j = json_pack("{s:s, s:i, s:i, s:O}", 
+		"metric", metric.c_str(),
+		"timestamp", statics.utc,
+		"value", statics.count,
+		"tags", tags);
+    if (j == NULL)
+	    return string("");
+    return string(json_dumps(j, 0));
+}
+
+string logdb::make_jsons(const string& metric, vector<pair<statis_key, statistics> >& pool)
+{
+    string json = string("");
+    vector<pair<statis_key, statistics> >::iterator it = pool.begin();
+
+    if (pool.size() == 1)
+        return make_one_json(metric, pool[0].first, pool[0].second);
+    for (it; it != pool.end(); it++)
+    {
+        if (json == "") 
+        {
+            json += make_one_json(metric, it->first, it->second);
+        }
+        else
+        {
+            json += ", " + make_one_json(metric, it->first, it->second);
+        }
+    }
+    return "[" + json + "]";
+}
+
+int logdb::save(pair<statis_key, statistics> statics)
 {
     int ret = 0;
     this->m_pool.push_back(statics);
@@ -148,44 +146,110 @@ int logdb::flush(pair<statis_key, struct statistics> statics)
     {
         string str = make_jsons(this->m_pool);
         insert_db(str);
-        vector<pair<statis_key, struct statistics> >().swap(this->m_pool);
+        vector<pair<statis_key, statistics> >().swap(this->m_pool);
         ret = 1;
     }
     return ret;
 }
 
-int logdb::put(struct dns_item* item)
+void logdb::flush()
+{
+    string json = "";
+    
+    map<pair<statis_key, statistics> >::iterator it = m_statics.begin();
+    for (it; it != m_statics.end(); it++)
+    {
+        if (json == "") 
+        {
+            json += make_one_json("dns_hour", it->first, it->second);
+        }
+        else
+        {
+            json += ", " + make_one_json("dns_hour", it->first, it->second);
+        }
+    }    
+    insert_db("[" + json + "]");
+}
+
+void logdb::flush_all()
+{
+    string json = "";
+    
+    map<string, statistics>::iterator it = m_all_statics.begin();
+    for (it; it != m_all_statics.end(); it++)
+    {
+        if (json == "") 
+        {
+            json += make_one_json("dns_hour_all", make_pair(it->first, string("all")), it->second);
+        }
+        else
+        {
+            json += ", " + make_one_json("dns_hour_all", make_pair(it->first, string("all")), it->second);
+        }
+    }    
+    insert_db("[" + json + "]");    
+}
+
+int logdb::put(struct dns_item& item)
 {
     time_t tm;
     time(&tm);
-    string& dname = item->dns_name;
+    string& dname = item.dns_name;
     string geo;
-    if (item->ecs_addr == "")
-        geo = get_line(item->sip);
-    else
-	geo = get_line(item->ecs_addr);
-    if (geo == "")
-	geo = "default";
-    map<statis_key, struct statistics>::iterator itor = this->m_statics.find(statis_key(dname, geo));
-    if (itor == this->m_statics.end())
+    
+    if (item.timestamp > m_utc)
     {
-        statistics *new_statics = new statistics();
+        flush();        
+    }
+    else 
+    if (item.timestamp > m_all_utc)
+    {
+        flush_all();        
+    }
+    if (item.ecs_addr == "")
+        geo = get_line(item.sip);
+    else
+	    geo = get_line(item.ecs_addr);
+    if (geo == "")
+	    geo = "default";
+        
+    statistics *new_statics = NULL;
+    map<statis_key, statistics>::iterator itor1 = this->m_statics.find(statis_key(dname, geo));
+    if (itor1 == this->m_statics.end())
+    {
+        new_statics = new statistics();
         if (new_statics == NULL)
             return 1;
-        new_statics->utc = item->timestamp;
+        new_statics->utc = item.timestamp;
         new_statics->count = 0;
         this->m_statics.insert(make_pair(statis_key(dname, geo), *new_statics));
-	itor = this->m_statics.find(statis_key(dname, geo));
+	    itor1 = this->m_statics.find(statis_key(dname, geo));
     }
-    itor->second.count++;
-    //if (tm - itor->second.utc> 10) 
+    itor1->second.count++;
+    
+    map<string, statistics>::iterator itor2 = this->m_all_statics.find(dname));
+    if (itor2 == this->m_all_statics.end())
     {
-        if(flush(*itor))
-	{
-            itor->second.utc = item->timestamp;
-            itor->second.count = 0;
-	}
+        new_statics = new statistics();
+        if (new_statics == NULL)
+            return 1;
+        new_statics->utc = item.timestamp;
+        new_statics->count = 0;
+        this->m_all_statics.insert(dname, *new_statics));
+	    itor2 = this->m_all_statics.find(dname);
     }
+    itor2->second.count++;
+    
+    if (item.timestamp > m_utc)
+    {
+        flush();        
+    }
+    if (item.timestamp > m_all_utc)
+    {
+        flush_all();        
+    }
+    m_utc = item.timestamp;
+    m_all_utc = item.timestamp;
     return 0;
 }
 

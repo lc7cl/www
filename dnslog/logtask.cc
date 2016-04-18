@@ -22,25 +22,25 @@ logtask::logtask(const string& task_name, const vector<string>& snames, logdb *d
     vector<logstream>::iterator it1;
     for (it1 = this->m_streams.begin(); it1 != this->m_streams.end(); it1++)
     {
-	it1->bind_watcher(*watcher);
+	    it1->bind_watcher(*watcher);
     }
 }
 
 void logtask::doAction()
 {
-    dns_item *item;
+    dns_item item;
+    enum stream_state ret;
 
     while (1) 
     {
-	vector<logstream>::iterator s_itor = this->m_streams.begin();
+	    vector<logstream>::iterator s_itor = this->m_streams.begin();
         vector<logstream>::iterator s_end = this->m_streams.end();
         for (s_itor; s_itor != s_end; s_itor++) 
         {
-            item = s_itor->read();
-            while (item != NULL) {
-                this->m_db->put(item);
-		delete item;
-                item = s_itor->read();
+            while ((ret = s_itor->read(item)) != STREAM_STATE_EOF)
+            {
+                if (ret == STREAM_STATE_OK)
+                    this->m_db->put(item);
             }
         }
         //sleep(6);

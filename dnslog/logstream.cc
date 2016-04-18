@@ -22,113 +22,129 @@ namespace fs = boost::filesystem;
 logstream::logstream(const string& name) 
     : m_name(name)
 {
-    this->m_files = new boost::lockfree::queue<string*>(256);
+    this->m_files = new boost::lockfree::queue<logfile*>(256);
     this->m_in = new ifstream();
 }
 
-dns_item* logstream::read()
+void logstream::parse_line(const string& line, vector<string>& vStr)
 {
-    struct dns_item ret;
+    typedef boost::tokenizer<boost::char_separator<char> >  tokenizer;
+    boost::char_separator<char> sep("  :|");
+    tokenizer tokens(line, sep);
+    vector<string>().swap(vStr);
+    //std::copy(tokens.begin(), tokens.end(), std::back_inserter(tmp));
+    for(tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)  
+    {  
+        vStr.push_back(*tok_iter);  
+    } 
+    
+    if (vStr.size() < 10) 
+    {
+        std::cout << "(" << this->m_curr_file->f_path << ")" 
+            << "line may be trunct " << line << " (size" << vStr.size() << ")" << endl;          
+    }    
+}
+
+enum stream_state logstream::read(dns_item& item)
+{
+    enum stream_state ret = STREAM_STATE_ERROR;
     string line;
 
     if (m_in == NULL || m_in->is_open() == false || m_in->eof())
     {
-	if (m_in && m_in->is_open())
-	{
-            m_in->close();
-            if (this->m_curr)
-                delete this->m_curr;
-	}
-        this->m_curr = NULL;
-        if (this->m_files->pop(this->m_curr) == 0)
+        if (m_in && m_in->is_open())
         {
-            return NULL;
+                m_in->close(); 
         }
-	string fname = fs::path(*this->m_curr).filename().string();
-	vector<string> vStr;
-	boost::split(vStr, fname, boost::is_any_of("."), boost::token_compress_on);
-        if (vStr.size() < 2)
-	    return NULL; 
-        int y = lexical_cast<int>(vStr[0].substr(0, 4));
-        int m = lexical_cast<int>(vStr[0].substr(4, 2));
-        int d = lexical_cast<int>(vStr[0].substr(6, 2));
-        int h = lexical_cast<int>(vStr[0].substr(8, 2));
-	ptime p(boost::gregorian::date(y, m, d), hours(h));
-	static ptime time_t_begin(boost::gregorian::date(1970,1,1), hours(8)); 
-	time_duration diff = p - time_t_begin;
-	cout << "*****************" << p << "+++" << diff.total_seconds() <<endl;
-        m_curr_utc = diff.total_seconds();
-        m_in->open(this->m_curr->c_str());
+        
+        if (this->m_curr_file)
+        {
+            fs::remove(fs::path(this->m_curr_file->f_path));
+            delete this->m_curr_file;
+            this->m_curr_file = NULL;
+        }
+                
+        if (this->m_files->pop(this->m_curr_file) == 0)
+        {
+            return STREAM_STATE_NOINPUT;
+        }        
+        
+        m_in->open(this->m_curr_file->f_path.c_str());
+        if (!m_in->good())
+        {
+            cout << "cannot open file " << m_curr_file->f_path << endl;
+            return STREAM_STATE_FILEERROR;
+        }
     }
     
-    if (!getline(*m_in, line))
-	return NULL;
-    // timestamp
-    // req/resps:sip|sport|dip|dport|dnsid|dnsname|dnsclass|dnstype|ECSaddr|rcode
-    vector<string> tmp;
-    typedef boost::tokenizer<boost::char_separator<char> >  tokenizer;
-    boost::char_separator<char> sep("  :|");
-    tokenizer tokens(line, sep);
-    cout << m_name << " : " << line << endl;
-    tmp.clear();
-    //std::copy(tokens.begin(), tokens.end(), std::back_inserter(tmp));
-    for(tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)  
-    {  
-        tmp.push_back(*tok_iter);  
-    } 
-    if (tmp.size() < 10) 
+    getline(*m_in, line);
+    if (!m_in->good() && !m_in->eof())
     {
-        std::cout << "(" << this->m_name << ")" << "line may be trunct " << line << " (size" << tmp.size() << ")" << endl;  
-        return NULL;
+        cout << "read file " << m_curr_file->f_path << " error" << endl;
+        return STREAM_STATE_ERROR;        
     }
-    ret.timestamp = m_curr_utc;
-    if (tmp[1] == "req") 
+    
+    // timestamp
+    // req/resp:sip|sport|dip|dport|dnsid|dnsname|dnsclass|dnstype|ECSaddr|rcode
+    vector<string> vStr;
+    
+    parse_line(line, vStr);
+    if (vStr.size() == 0)
     {
-        ret.item_type = 1;
+        return STREAM_STATE_ERROR;
+    }
+    
+    item.timestamp = this->m_curr_file->f_utc;
+    if (vStr[1] == "req") 
+    {
+        item.item_type = 1;
     } 
-    else if (tmp[1] == "resp")
+    else if (vStr[1] == "resp")
     {
-        ret.item_type = 0;
+        item.item_type = 0;
     } 
     else 
     {
-        std::cout << "(" << this->m_name << ")" << "line %s format error" << line << endl;
-        return NULL;
+        std::cout << "(" << this->m_curr_file->f_path << ")" << "line %s format error" << line << endl;
+        return STREAM_STATE_ERROR;
     }
-    ret.sip = tmp[2];
-    ret.sport = lexical_cast<unsigned short>(tmp[3]);
-    ret.dip = tmp[4];
-    ret.dport = lexical_cast<unsigned short>(tmp[5]);
-    ret.dns_id = lexical_cast<unsigned short>(tmp[6]);
-    ret.dns_name = tmp[7];
-    ret.dns_class = tmp[8];
-    ret.dns_type = tmp[9];
-    if (tmp[10].length() >= 3) 
+    item.sip = vStr[2];
+    item.sport = lexical_cast<unsigned short>(vStr[3]);
+    item.dip = vStr[4];
+    item.dport = lexical_cast<unsigned short>(vStr[5]);
+    item.dns_id = lexical_cast<unsigned short>(vStr[6]);
+    item.dns_name = vStr[7];
+    item.dns_class = vStr[8];
+    item.dns_type = vStr[9];
+    if (vStr[10].length() >= 3) 
     {
-        if (tmp[10].substr(0, 3) == "ECS")
+        if (vStr[10].substr(0, 3) == "ECS")
         {
-            ret.ecs_addr = tmp[10].substr(3);
-            if (tmp.size() != 11)
+            item.ecs_addr = vStr[10].substr(3);
+            if (vStr.size() != 11)
             {
                 std::cout << "( << this->m_name << )" << "line may be trunct:" << line << endl;  
-                return NULL;
+                return STREAM_STATE_ERROR;
             }
-            ret.dns_rcode = lexical_cast<int>(tmp[11]);
+            item.dns_rcode = lexical_cast<int>(vStr[11]);
         }
     } 
     else 
     {
-        if (tmp.size() != 11)
+        if (vStr.size() != 11)
         {
             std::cout << "( << this->m_name << )" << "line may be error:" << line << endl;  
-            return NULL;
+            return STREAM_STATE_ERROR;
         }
-        ret.dns_rcode = lexical_cast<int>(tmp[10]);
+        item.dns_rcode = lexical_cast<int>(vStr[10]);
     }
-
-    dns_item *p = new dns_item(ret);
-
-    return p;
+    
+    if (m_in->eof())
+    {
+        return STREAM_STATE_EOF;
+    }
+    
+    return STREAM_STATE_OK;
 }
 
 int logstream::bind_watcher(logwatcher& w)

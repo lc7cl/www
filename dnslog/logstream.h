@@ -5,30 +5,36 @@
 #include <fstream>
 #include "logdns.h"
 #include "logwatcher.h"
+#include "logfile.h"
 
 using namespace std;
 
-enum {
-    STREAM_STATE_0 = 0,
+enum stream_state 
+{
+    STREAM_STATE_OK = 0,
+    STREAM_STATE_ERROR = 1,
+    STREAM_STATE_EOF = 2,
+    STREAM_STATE_NOINPUT = 3,
+    STREAM_STATE_FILEERROR = 3,
 };
 
 class logstream {
-
 public:
     logstream(const string& name);
     ~logstream() {};
     int bind_watcher(logwatcher&);
-    dns_item* read();
-    boost::lockfree::queue<string*> *m_files;
-    const string& get_name() {return m_name;};
+    enum stream_state read(dns_item& item);
+    boost::lockfree::queue<logfile*> *m_files;
+    const string& get_name() { return m_name; };
 
 private:
+    void parse_line(const string& line, vector<string>& vStr);
+    
     int m_state;
-    string *m_curr;
-    int64_t m_curr_utc;
     string m_name;
     string m_frag;
     ifstream *m_in;
+    logfile *m_curr_file;
 };
 
 #endif
