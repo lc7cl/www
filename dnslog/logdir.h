@@ -21,7 +21,7 @@ public:
 
 private:
     fs::path m_path;
-    time_t m_timestamp;
+    int64_t m_timestamp;
 };
 
 #endif
