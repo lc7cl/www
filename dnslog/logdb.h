@@ -32,8 +32,8 @@ private:
     int save(pair<statis_key, statistics>);
     void flush();
     void flush_all();
-    string make_one_json(const string&, statis_key&, statistics &);
-    string make_jsons(const string&, vector<pair<statis_key, statistics> >&);
+    string make_one_json(string&,const statis_key&, statistics &);
+    string make_jsons(string&, vector<pair<statis_key, statistics> >&);
     int insert_db(const string&);
     string get_line(const string&);
 
@@ -56,8 +56,7 @@ private:
     //boost::asio::streambuf request_;
     //boost::asio::streambuf response_;
     boost::asio::io_service io_service;
-    static string s1;
-    static string s2;
+
 
 protected:
     logdb() {};

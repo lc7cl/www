@@ -25,6 +25,7 @@ void logdir::scan(vector<logfile>& flist, bool recursive)
     fs::directory_iterator itor(this->m_path), end_itor;
     for (itor; itor != end_itor; itor++)
     {
+        cout << "^^^" << fs::last_write_time(*itor) <<endl;
         set.insert(make_pair(fs::last_write_time(*itor), *itor));
     }
     map<time_t, fs::path>::iterator it = set.begin(), end = set.end();
@@ -38,12 +39,14 @@ void logdir::scan(vector<logfile>& flist, bool recursive)
         f.f_utc = 0;
         f.f_session = "";
         
+        cout << "******" << it->first << "   " << it->second.string() << endl;
+        
         if (it->first > this->m_timestamp)
         {
             f.f_path = it->second.string();         
             
             vector<string> vStr;
-            boost::split(vStr, f.f_path, boost::is_any_of("."), boost::token_compress_on);
+            boost::split(vStr, fs::path(f.f_path).filename().string(), boost::is_any_of("."), boost::token_compress_on);
             if (vStr.size() < 7) 
             {
                 std::cout << "skip invalid file \"" << f.f_path << "\"" << endl;

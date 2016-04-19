@@ -11,8 +11,6 @@ using boost::property_tree::ptree;
 #include "logdb.h"
 
 logdb* logdb::m_instance = NULL;
-string logdb::s1 = string("dns_hour");
-string logdb::s2 = string("dns_hour_all");
 
 logdb* logdb::getInstance()
 {
@@ -101,7 +99,7 @@ string logdb::get_line(const string& ip)
     return str;
 }
 
-string logdb::make_one_json(const string& metric, statis_key& name, statistics& statics)
+string logdb::make_one_json(string& metric,const statis_key& name, statistics& statics)
 {
     json_t *tags;
     tags = json_pack("{s:s}", "geo", name.geo_.c_str());
@@ -119,7 +117,7 @@ string logdb::make_one_json(const string& metric, statis_key& name, statistics& 
     return string(json_dumps(j, 0));
 }
 
-string logdb::make_jsons(const string& metric, vector<pair<statis_key, statistics> >& pool)
+string logdb::make_jsons(string& metric, vector<pair<statis_key, statistics> >& pool)
 {
     string json = string("");
     vector<pair<statis_key, statistics> >::iterator it = pool.begin();
@@ -146,7 +144,8 @@ int logdb::save(pair<statis_key, statistics> statics)
     this->m_pool.push_back(statics);
     if (this->m_threshold > 0 && this->m_pool.size() >= this->m_threshold)
     {
-        string str = make_jsons(s1, this->m_pool);
+        string metric = string("dns_hour");
+        string str = make_jsons(metric, this->m_pool);
         insert_db(str);
         vector<pair<statis_key, statistics> >().swap(this->m_pool);
         ret = 1;
@@ -158,16 +157,17 @@ void logdb::flush()
 {
     string json = "";
     
-    map<statis_key, statistics >::iterator it = m_statics.begin();
+    map<statis_key, statistics>::iterator it = m_statics.begin();
     for (it; it != m_statics.end(); it++)
     {
+        string metric = string("dns_hour");
         if (json == "") 
         {
-            json += make_one_json(s1, it->first, it->second);
+            json += make_one_json(metric, it->first, it->second);
         }
         else
         {
-            json += ", " + make_one_json(s1, it->first, it->second);
+            json += ", " + make_one_json(metric, it->first, it->second);
         }
     }    
     insert_db("[" + json + "]");
@@ -180,13 +180,14 @@ void logdb::flush_all()
     map<string, statistics>::iterator it = m_all_statics.begin();
     for (it; it != m_all_statics.end(); it++)
     {
+        string metric = string("dns_hour_all");
         if (json == "") 
         {
-            json += make_one_json(s2, make_pair(it->first, string("all")), it->second);
+            json += make_one_json(metric, statis_key(it->first, string("all")), it->second);
         }
         else
         {
-            json += ", " + make_one_json(s2, make_pair(it->first, string("all")), it->second);
+            json += ", " + make_one_json(metric, statis_key(it->first, string("all")), it->second);
         }
     }    
     insert_db("[" + json + "]");    
@@ -203,11 +204,11 @@ int logdb::put(struct dns_item& item)
     {
         flush();        
     }
-    else 
     if (item.timestamp > m_all_utc)
     {
         flush_all();        
     }
+
     if (item.ecs_addr == "")
         geo = get_line(item.sip);
     else
@@ -226,10 +227,11 @@ int logdb::put(struct dns_item& item)
         new_statics->count = 0;
         this->m_statics.insert(make_pair(statis_key(dname, geo), *new_statics));
 	    itor1 = this->m_statics.find(statis_key(dname, geo));
+        delete new_statics;
     }
     itor1->second.count++;
     
-    map<string, statistics>::iterator itor2 = this->m_all_statics.find(dname));
+    map<string, statistics>::iterator itor2 = this->m_all_statics.find(dname);
     if (itor2 == this->m_all_statics.end())
     {
         new_statics = new statistics();
@@ -237,8 +239,9 @@ int logdb::put(struct dns_item& item)
             return 1;
         new_statics->utc = item.timestamp;
         new_statics->count = 0;
-        this->m_all_statics.insert(dname, *new_statics));
+        this->m_all_statics.insert(make_pair(dname, *new_statics));
 	    itor2 = this->m_all_statics.find(dname);
+        delete new_statics;
     }
     itor2->second.count++;
     

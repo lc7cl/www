@@ -4,7 +4,6 @@
 #include <iostream>
 #include <fstream>
 #include "logdns.h"
-#include "logwatcher.h"
 #include "logfile.h"
 
 using namespace std;
@@ -12,29 +11,23 @@ using namespace std;
 enum stream_state 
 {
     STREAM_STATE_OK = 0,
-    STREAM_STATE_ERROR = 1,
-    STREAM_STATE_EOF = 2,
-    STREAM_STATE_NOINPUT = 3,
-    STREAM_STATE_FILEERROR = 3,
+    STREAM_STATE_ERROR,
+    STREAM_STATE_EOF,
+    STREAM_STATE_NOINPUT,
+    STREAM_STATE_FILEERROR,
 };
 
 class logstream {
 public:
-    logstream(const string& name);
-    ~logstream() {};
-    int bind_watcher(logwatcher&);
+    logstream(logfile&);
+    ~logstream();
     enum stream_state read(dns_item& item);
-    boost::lockfree::queue<logfile*> *m_files;
-    const string& get_name() { return m_name; };
 
 private:
     void parse_line(const string& line, vector<string>& vStr);
     
-    int m_state;
-    string m_name;
-    string m_frag;
-    ifstream *m_in;
-    logfile *m_curr_file;
+    ifstream m_in;
+    logfile m_curr_file;
 };
 
 #endif
