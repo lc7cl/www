@@ -61,7 +61,7 @@ enum stream_state logstream::read(dns_item& item)
         return STREAM_STATE_EOF;
     
     getline(m_in, line);
-    if (!m_in.good())
+    if (!m_in.good() && !m_in.eof())
     {
         cout << "read file " << m_curr_file.f_path << " error" << endl;
         return STREAM_STATE_ERROR;        

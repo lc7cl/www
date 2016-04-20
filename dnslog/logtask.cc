@@ -41,6 +41,8 @@ void logtask::doAction()
                 cout << "!!!!! " << it->f_path << endl;
             }
         }
+        logdb::getInstance()->flush();
+        logdb::getInstance()->flush_all();
         sleep(6);
     }
 }

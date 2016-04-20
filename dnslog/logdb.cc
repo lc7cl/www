@@ -158,6 +158,8 @@ void logdb::flush()
     string json = "";
     
     map<statis_key, statistics>::iterator it = m_statics.begin();
+    if (m_statics.size() == 0)
+        return;
     for (it; it != m_statics.end(); it++)
     {
         string metric = string("dns_hour");
@@ -171,6 +173,7 @@ void logdb::flush()
         }
     }    
     insert_db("[" + json + "]");
+    m_statics.clear();
 }
 
 void logdb::flush_all()
@@ -178,6 +181,8 @@ void logdb::flush_all()
     string json = "";
     
     map<string, statistics>::iterator it = m_all_statics.begin();
+    if (m_all_statics.size() < 0)
+        return;
     for (it; it != m_all_statics.end(); it++)
     {
         string metric = string("dns_hour_all");
@@ -191,6 +196,7 @@ void logdb::flush_all()
         }
     }    
     insert_db("[" + json + "]");    
+    m_all_statics.clear();
 }
 
 int logdb::put(struct dns_item& item)

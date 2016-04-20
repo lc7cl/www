@@ -7,7 +7,7 @@ using namespace std;
 #include "logdb.h"
 #include "logtask.h"
 
-#define LOG_DIR "/home/dns/misc"
+#define LOG_DIR "/data/dns/misc"
 
 static const string log_file_names[] = {
     "shpbs01-sec-sec113004.shpbs01.ksyun.com.task_0",
