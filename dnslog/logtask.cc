@@ -1,5 +1,3 @@
-
-
 #include "logdir.h"
 #include "logdb.h"
 #include "logtask.h"
@@ -22,6 +20,7 @@ void logtask::doAction()
         {
             line_nb = 0;
             logstream stream(*it);
+            const boost::posix_time::ptime now1 = boost::posix_time::microsec_clock::local_time();  
             cout << "+++++ " << it->f_path << endl;
             ret = stream.read(item);
             while (ret != STREAM_STATE_EOF && ret != STREAM_STATE_FILEERROR)
@@ -30,7 +29,8 @@ void logtask::doAction()
                 {
                     line_nb++;
                     logdb::getInstance()->put(item);
-                }                    
+                }  
+                ret = stream.read(item);                  
             }  
             if (ret == STREAM_STATE_EOF)    
             {
@@ -40,6 +40,10 @@ void logtask::doAction()
             {
                 cout << "!!!!! " << it->f_path << endl;
             }
+            const boost::posix_time::ptime now2 = boost::posix_time::microsec_clock::local_time(); 
+            const boost::posix_time::time_duration td = now2 - now1;
+            cout << "total time :" << td.total_milliseconds() << " (ms)" << endl;    
+            fs::remove(it->f_path);                                                              
         }
         logdb::getInstance()->flush();
         logdb::getInstance()->flush_all();

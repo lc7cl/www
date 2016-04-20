@@ -102,8 +102,9 @@ string logdb::get_line(const string& ip)
 string logdb::make_one_json(string& metric,const statis_key& name, statistics& statics)
 {
     json_t *tags;
-    tags = json_pack("{s:s}", "geo", name.geo_.c_str());
-    tags = json_pack("{s:s}", "name", name.dns_name_.c_str());
+    tags = json_pack("{s:s , s:s}", 
+                        "geo", name.geo_.c_str(),
+                        "dname", name.dns_name_.c_str());
     if (tags == NULL)
 	    return string("");
     json_t *j;
@@ -181,7 +182,7 @@ void logdb::flush_all()
     string json = "";
     
     map<string, statistics>::iterator it = m_all_statics.begin();
-    if (m_all_statics.size() < 0)
+    if (m_all_statics.size() == 0)
         return;
     for (it; it != m_all_statics.end(); it++)
     {
@@ -208,11 +209,11 @@ int logdb::put(struct dns_item& item)
     
     if (item.timestamp > m_utc)
     {
-        flush();        
+        //flush();        
     }
     if (item.timestamp > m_all_utc)
     {
-        flush_all();        
+        //flush_all();        
     }
 
     if (item.ecs_addr == "")
@@ -253,11 +254,11 @@ int logdb::put(struct dns_item& item)
     
     if (item.timestamp > m_utc)
     {
-        flush();        
+        //flush();        
     }
     if (item.timestamp > m_all_utc)
     {
-        flush_all();        
+        //flush_all();        
     }
     m_utc = item.timestamp;
     m_all_utc = item.timestamp;

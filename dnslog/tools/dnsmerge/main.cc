@@ -72,21 +72,27 @@ int main(int argc, char** argv)
     int64_t starttm = diff.total_seconds();
     int64_t endtm = starttm;
     db mydb("10.16.49.12", 4242);
-    string query_metric, put_metric;
+    string query_metric, put_metric, query_metric_all, put_metric_all;
     if (type == "day")
     {
         query_metric = "dns_hour";
         put_metric = "dns_day";
+        query_metric_all = "dns_hour_all";
+        put_metric_all = "dns_day_all";
     }
     else if (type == "week")
     {
         query_metric = "dns_day";
         put_metric = "dns_week";
+        query_metric_all = "dns_day_all";
+        put_metric_all = "dns_week_all";
     }
     else if (type == "month")
     {
         query_metric = "dns_day";
         put_metric = "dns_month";
+        query_metric_all = "dns_day_all";
+        put_metric_all = "dns_month_all";
     }
     endtm += get_duration(type, y, m);
     vector<pair<string, string> > q_v;
@@ -101,6 +107,8 @@ int main(int argc, char** argv)
         q_v.push_back(make_pair("geo", "*"));
     map<pair<string, string>, int> maap;
     maap = mydb.query(query_metric, starttm, endtm, q_v);
+    map<pair<string, string>, int> maap_all;
+    maap_all = mydb.query(query_metric_all, starttm, endtm, q_v);
     map<pair<string, string>, int>::iterator it;
 
     for (it = maap.begin(); it != maap.end(); it++)
@@ -112,5 +120,16 @@ int main(int argc, char** argv)
     {
         mydb.insert(put_metric, starttm, maap);
     }
+    
+    for (it = maap_all.begin(); it != maap_all.end(); it++)
+    {
+        cout<<"("<<it->first.first<<" , "<<it->first.second<<")="<<it->second<<endl;
+    }
+    
+    if (maap_all.size() > 0)
+    {
+        mydb.insert(put_metric_all, starttm, maap_all);
+    }
+        
     return 0;
 }
