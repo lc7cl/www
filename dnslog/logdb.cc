@@ -102,7 +102,7 @@ string logdb::get_line(const string& ip)
 string logdb::make_one_json(string& metric,const statis_key& name, statistics& statics)
 {
     json_t *tags;
-    tags = json_pack("{s:s , s:s}", 
+    tags = json_pack("{s:s , s:s}",  
                         "geo", name.geo_.c_str(),
                         "dname", name.dns_name_.c_str());
     if (tags == NULL)

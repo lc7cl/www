@@ -205,8 +205,10 @@ int db::send(const string& uri, const string& data, const string& fname)
     response_stream >> http_version;
     unsigned int status_code;
     response_stream >> status_code;
+    cout << "send httpcode:"  << status_code <<endl;
     std::string status_message;
     std::getline(response_stream, status_message);
+    cout << "send mesg: " << endl;
     if (!response_stream || http_version.substr(0, 5) != "HTTP/")
     {
         std::cout << "Invalid response\n";

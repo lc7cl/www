@@ -13,8 +13,12 @@ void logtask::doAction()
     while (1)
     {
         vector<logfile>().swap(files);
-        
-        dir.scan(files, false);
+        const boost::posix_time::ptime now = boost::posix_time::microsec_clock::local_time(); 
+        if (now.time_of_day().minutes() >= 20)
+        {
+            dir.scan(files, false);
+        }
+                
         vector<logfile>::iterator it = files.begin();
         for (it; it != files.end(); it++)
         {
