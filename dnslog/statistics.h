@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 namespace statistics {
+  
+using DomainStatisticsPtr = std::shared_ptr<DomainStatistics>;
     
 class DomainStatistics {
  public:
@@ -17,7 +19,9 @@ class DomainStatistics {
   int64_t counts_;
 }; 
 
-DomainStatistics& GetStatistics(const string &name);
+DomainStatisticsPtr GetStatistics(const string &name);
+void DeleteStatistice(const string &name);
+DomainStatisticsPtr NewStatistics(const string &name);
    
 }
 
