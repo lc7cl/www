@@ -34,7 +34,10 @@ DomainStatisticsPtr GetStatistics(const string &name);
 void DeleteStatistice(const string &name);
 DomainStatisticsPtr NewStatistics(const string &name);
 
-time_period Calculate_Period(ptime start, time_duration duration, ptime timestamp) {
+time_period Calculate_Period(
+    ptime start, 
+    time_duration duration, 
+    ptime timestamp) {
   time_duration diff = timestamp - start;
   return time_period(start, diff / duration);
 };

@@ -1,33 +1,30 @@
-#ifndef _LOG_STREAM_H_
-#define _LOG_STREAM_H_
+#ifndef LOGSTREAM_H_
+#define LOGSTREAM_H_
 
-#include <iostream>
-#include <fstream>
-#include "logdns.h"
-#include "logfile.h"
+#include <queue>
 
-using namespace std;
-
-enum stream_state 
-{
-    STREAM_STATE_OK = 0,
-    STREAM_STATE_ERROR,
-    STREAM_STATE_EOF,
-    STREAM_STATE_NOINPUT,
-    STREAM_STATE_FILEERROR,
+enum {
+  STREAM_STATE_EOF,
 };
 
-class logstream {
-public:
-    logstream(logfile&);
-    ~logstream();
-    enum stream_state read(dns_item& item);
-
-private:
-    void parse_line(const string& line, vector<string>& vStr);
-    
-    ifstream m_in;
-    logfile m_curr_file;
+class LogStream {
+ public:
+  LogStream(const string &name);
+  int Read(dns_item &item);
+  
+ private:
+  ParseLine(const string& line, vector<string>& vStr);
+  
+  string stream_name_;
+  std::queue<logfile> filelist_;
+  string buf_;
+  ifstream in_;
+  bool is_first_line_;
+  string file_;
 };
+
+shared_ptr<LogStream> GetStream(const string &name);
+void DeleteStream(const string &name);
+shared_ptr<LogStream> CreateStream(const string &name);
 
 #endif

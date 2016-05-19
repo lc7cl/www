@@ -3,7 +3,7 @@
 
 class loglog {
  public:
-  static loglog GetLog() {
+  static loglog& GetLog() {
     static loglog log_;
     return log_;
   };

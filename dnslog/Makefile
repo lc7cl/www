@@ -4,7 +4,7 @@ LDFLAGS = -L/usr/local/lib -L/usr/lib -ldl -lpthread -ljansson -lboost_filesyste
 RM = rm 
 
 OBJS = logdns.o logdir.o logstream.o logdb.o logtask.o main.o
-BIN = test
+BIN = jnlanalyse
 
 .PHONY = clean
 

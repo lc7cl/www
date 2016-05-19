@@ -5,7 +5,7 @@ using namespace std;
 
 #include "logstream.h"
 #include "logdb.h"
-#include "logtask.h"
+#include "journal_worker.h"
 
 #define LOG_DIR "/data/dns/misc"
 
@@ -33,10 +33,35 @@ int main(int argc, char** argv)
     db->set_db_uri("/api/put");
     db->set_acllib("acl/dnsacl.so");
     db->load_acl("acl/ksacl");
-    logtask worker = logtask(LOG_DIR);
+    
+    FileScanner::GetInstance().SetPath();
+    
+    
+    vector<string> v;
+    v.clear();
+    v.push_back(log_file_names[0]);
+    v.push_back(log_file_names[1]);
+    v.push_back(log_file_names[2]);
+    v.push_back(log_file_names[3]);
+    JournalWorker jnl_worker1 = JournalWorker();
+    jnl_worker1.BindStream(v);
+    
+    v.clear();
+    v.push_back(log_file_names[4]);
+    v.push_back(log_file_names[5]);
+    v.push_back(log_file_names[6]);
+    v.push_back(log_file_names[7]);
+    JournalWorker jnl_worker2 = JournalWorker();
+    jnl_worker2.BindStream(v);
 
-    boost::thread worker_thrd(boost::bind(&logtask::doAction, &worker));
-    worker_thrd.join();
+    boost::thread jnl_worker_thrd1(
+        boost::bind(&JournalWorker::Work, 
+        &jnl_worker1));
+    boost::thread jnl_worker_thrd2(
+        boost::bind(&JournalWorker::Work, 
+        &jnl_worker2));
+    jnl_worker_thrd1.join();
+    jnl_worker_thrd2.join();
     cout << "exit..." << endl;
 
     return 0;

@@ -6,7 +6,12 @@
 
 using fs = boost::filesystem;
 
-void FileScanner::Scan(shared_ptr<vector<logfile>> filelist_ptr, int64_t timestamp) {
+void FileScanner::SetPath(const string &path) {
+  this->dir_path_ = path;
+}
+
+void FileScanner::Scan(shared_ptr<vector<logfile>> filelist_ptr, 
+                       const string &name, int64_t timestamp) {
   fs::path path(this->dir_path_);
   fs::directory_iterator itor(path), end_itor;
   logfile f;
@@ -22,7 +27,8 @@ void FileScanner::Scan(shared_ptr<vector<logfile>> filelist_ptr, int64_t timesta
     
     f.f_path = itor->path().string();
         
-    boost::split(temp_vec, itor->path().filename().string(), boost::is_any_of("."), boost::token_compress_on);
+    boost::split(temp_vec, itor->path().filename().string(), 
+                 boost::is_any_of("."), boost::token_compress_on);
     if (temp_vec.size() < 7) {
       std::cout << "skip invalid file \"" << f.f_path << "\"" << endl;
       continue; 
@@ -41,7 +47,8 @@ void FileScanner::Scan(shared_ptr<vector<logfile>> filelist_ptr, int64_t timesta
       time_duration diff = p - time_t_begin;
       f.f_utc = diff.total_seconds();
     } catch(boost::bad_lexical_cast const& e) {
-      std::cout << "Invalid file name" << f.f_path << "Error: " << e.what() << "\n";
+      std::cout << "Invalid file name" << f.f_path << 
+                   "Error: " << e.what() << "\n";
       continue;
     }
     
@@ -51,6 +58,10 @@ void FileScanner::Scan(shared_ptr<vector<logfile>> filelist_ptr, int64_t timesta
       } else {
         f.f_session += "." + temp_vec[i];
       }
+    }
+    
+    if (f.f_session != name) {
+      continue;
     }
     
     map<int64_t, vector<logfile> >::iterator it = set.find(f.f_utc);
@@ -65,6 +76,7 @@ void FileScanner::Scan(shared_ptr<vector<logfile>> filelist_ptr, int64_t timesta
   
   map<int64_t, vector<logfile> >::iterator it = set.begin();
   for (it; it != set.end(); it++) {
-    filelist_ptr->insert(filelist_ptr->end(), it->second.begin(), it->second.end());
+    filelist_ptr->insert(filelist_ptr->end(), 
+                         it->second.begin(), it->second.end());
   }  
 }
