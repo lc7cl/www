@@ -2,10 +2,10 @@
 #define LOGRECORD_H_
 
 class LogRecord {
-public:
+ public:
   LogRecord(const string &str) : data_(str), timestamp_(0) {};
 
-private:
+ private:
   string data_;
   ptime timestamp_;
 };

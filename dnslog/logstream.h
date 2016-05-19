@@ -13,7 +13,8 @@ class LogStream {
   int Read(dns_item &item);
   
  private:
-  ParseLine(const string& line, vector<string>& vStr);
+  void ParseLine(const string& line, vector<string>& vStr);
+  int GetLines(int count, vector<string> &res);
   
   string stream_name_;
   std::queue<logfile> filelist_;
@@ -21,7 +22,7 @@ class LogStream {
   ifstream in_;
   bool is_first_line_;
   string file_;
-  vector<string> cache_;
+  std::queue<string> cache_;
 };
 
 shared_ptr<LogStream> GetStream(const string &name);

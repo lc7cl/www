@@ -15,6 +15,11 @@ void LogStream::ParseLine(const string& line, vector<string>& vStr)
     } 
 }
 
+int GetLines(int count, vector<string> &res) {
+  
+}
+
+
 int LogStream::Read(dns_item &item) {
   logfile file;
   while (!this->in_.is_open() || this->in_.eof()) {
