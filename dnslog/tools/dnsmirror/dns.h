@@ -118,7 +118,9 @@ struct decompress_ctx {
 int dns_get_qname(struct dnshdr* hdr, buffer_type* data, char* out);
 u_int16_t dns_get_qtype(struct dnshdr* hdr, buffer_type* buffer);
 u_int16_t dns_get_qklass(struct dnshdr* hdr, buffer_type* buffer);
-int get_record(buffer_type *buffer, struct rr *record);
+int get_record(buffer_type *buffer, 
+               struct decompress_ctx * decompress, 
+               struct rr *record);
 
 static inline void decompress_ctx_init(struct decompress_ctx *ctx) 
 {
