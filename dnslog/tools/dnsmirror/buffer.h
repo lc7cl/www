@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "stddef.h"
+#include "string.h"
 #include "sys/types.h"
 
 typedef struct buffer buffer_type;
