@@ -22,7 +22,7 @@ static int dns_name_from_wire(buffer_type* data,
     while (label_len != 0 
             && length < NAME_MAX_LENGTH) {
         if (label_len & 0xc0 == 0xc0) {
-            buffer_set_position(buffer_position(data) - 1);
+            buffer_set_position(data, buffer_position(data) - 1);
             label_len = buffer_read_u16(data);
             off = label_len & ~0xc0;
             if (off >= buffer_limit(data) /*|| decompress->pos[off] != off*/)
