@@ -101,6 +101,12 @@ enum dns_rcode {
     BADVERS = 16       /* 16: EDNS version not implemented (RFC2671)*/
 };
 
+struct rr {
+    char name[256];
+    enum dns_type type;
+    char rdata[256]; 
+};
+
 #define ID(hdr) (((struct dnshdr*)hdr)->id)
 #define QR(hdr) (((struct dnshdr*)hdr)->qr)
 #define RCODE(hdr) (((struct dnshdr*)hdr)->rcode)
@@ -108,6 +114,7 @@ enum dns_rcode {
 int dns_get_qname(struct dnshdr* hdr, buffer_type* data, char* out);
 u_int16_t dns_get_qtype(struct dnshdr* hdr, buffer_type* buffer);
 u_int16_t dns_get_qklass(struct dnshdr* hdr, buffer_type* buffer);
+int get_record(buffer_type *buffer, struct rr *record);
 
 #ifdef __cplusplus
 }

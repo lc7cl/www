@@ -8,6 +8,13 @@ extern "C" {
 #include <netinet/in.h>
 #include "dns.h"
 
+#define NIPQUAD(addr) \
+	((const unsigned char *)&addr)[0], \
+	((const unsigned char *)&addr)[1], \
+	((const unsigned char *)&addr)[2], \
+	((const unsigned char *)&addr)[3]
+#define NIPQUAD_FMT "%u.%u.%u.%u"
+
 typedef struct dissect_ctx {
 
     FILE *dump_file;
@@ -39,6 +46,9 @@ typedef struct dissect_ctx {
             int mask2;
             struct in_addr addr;
         } ecs;
+        
+        struct rr answers[64];
+        int answers_nb;
 
     } packet_info;
 

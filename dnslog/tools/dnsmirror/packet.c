@@ -114,12 +114,20 @@ static int dissect_dns(dissect_ctx_t* ctx)
     ctx->packet_info.qklass = ret;
 
     /*skip answer section*/
+    if (ctx->packet_info.qr && ntohs(dnshdr->ancount) > 64) {
+        log_msg("too many answers... ");
+    }
     for (i = 0; i < ntohs(dnshdr->ancount); i++) {
-        skip_record(&buffer);
+        if (!ctx->packet_info.qr) {
+            skip_record(&buffer);
+            continue;
+        }        
+        if (get_record(&buffer, &ctx->packet_info.answers[i]) == 0) 
+            ctx->packet_info.answers_nb++;        
     }
     /*skip authority section*/
     for (i = 0; i < ntohs(dnshdr->nscount); i++) {
-        skip_record(&buffer);
+        skip_record(&buffer);          
     }
 
     for (i = 0; i < ntohs(dnshdr->arcount); i++) {
@@ -242,6 +250,32 @@ void dissect_ctx_dumpf(FILE *file, dissect_ctx_t *ctx)
     fprintf(file, "%u|", ctx->packet_info.qklass);
     if (ctx->packet_info.ecs.mask1 && ctx->packet_info.qr == 0) {
         fprintf(file, "ECS%s|", inet_ntoa(ctx->packet_info.ecs.addr));
+    }
+    if (ctx->packet_info.qr) {
+        fprintf(file, "[");
+        int i;
+        struct rr *record;
+        for (i = 0; i < ctx->packet_info.answers_nb; i++) {
+            record = &ctx->packet_info.answers[i];
+            fprintf(file, "(%s,", record->name);
+            switch (record->type) {
+            case TYPE_A:
+                fprintf(file, "%s,", "A");
+                fprintf(file, NIPQUAD_FMT")", (uint32_t*)record->rdata);
+                break;
+            case TYPE_CNAME:
+                fprintf(file, "%s,", "CNAME");
+                fprintf(file, "%s)", record->rdata);
+                break;
+            default:
+                fprintf(file, "%s,", "N/A");
+                fprintf(file, "%s)", "N/A");
+                break;
+            }
+            if (i != ctx->packet_info.answers_nb - 1)
+                fprintf(file, ",");
+        }
+        fprintf(file, "]|");
     }
     fprintf(file, "%d\n", ctx->packet_info.rcode);
     fflush(file);

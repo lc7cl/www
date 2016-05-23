@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <pcap.h>
 #include <pthread.h>
@@ -118,18 +119,18 @@ static void useage()
     printf("-h help \n");
 }
 
-static const char* cfg_file = NULL;
+static char* cfg_file = NULL;
 static int parse_cmd(int argc, char** argv)
 {
     char ch;
     int ret;
 
     ret = 0;
-    while ((ch = getopt(argc, argv, "c")) != -1) {
+    while ((ch = getopt(argc, argv, "c:")) != -1) {
     
         switch (ch) {
             case 'c':
-                cfg_file = optarg;
+                cfg_file = strdup(optarg);
                 break;
                 
             case 'h':
@@ -202,6 +203,9 @@ int main(int argc, char *argv[])
     }
 
     deamon();
+
+    if (cfg_file)
+        free(cfg_file);
 
     close_log();
     fini_pcap(pcap);
