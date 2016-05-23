@@ -18,10 +18,14 @@ static int dns_name_from_wire(buffer_type* data,
 
     length = 0;
     label_len = buffer_read_u8(data);
+    if (label_len == 0) {
+        *q = '.';
+        q++;
+    }
 
     while (label_len != 0 
             && length < NAME_MAX_LENGTH) {
-        if (label_len & 0xc0 == 0xc0) {
+        if ((label_len & 0xc0) == 0xc0) {
             buffer_set_position(data, buffer_position(data) - 1);
             label_len = buffer_read_u16(data);
             off = label_len & ~0xc0;
@@ -43,22 +47,21 @@ static int dns_name_from_wire(buffer_type* data,
             memcpy(q, p, label_len);
             buffer_skip(data, label_len);
             q += label_len;
+            *q = '.';
+            q++;
             label_len = buffer_read_u8(data);
         }
 
     }
     
-    if (label_len == 0) {
-        *q = '.';
-        q++;
-        
+    if (label_len == 0) { 
+        *q = '\0';       
         if (saved > -1)
             buffer_set_position(data, saved);
     } else {
+        log_msg("dns:domain not ends with \\0\n");
         return -1;
-    }
-
-    *q = '\0';
+    }  
 
     return 0;
 }
@@ -145,7 +148,8 @@ int get_record(buffer_type *buffer,
     if (!buffer_available(buffer, 2 * sizeof(u_int16_t)))
         return -1;
     record->type = buffer_read_u16(buffer);
-    buffer_skip(buffer, sizeof(u_int16_t));
+    buffer_skip(buffer, 
+                sizeof(u_int16_t) + sizeof(u_int32_t) + sizeof(u_int16_t));
     switch (record->type) {
     case TYPE_A:
         if (!buffer_available(buffer, sizeof(u_int32_t)))

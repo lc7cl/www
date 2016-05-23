@@ -87,19 +87,18 @@ static int dissect_udp(dissect_ctx_t* ctx)
 static int dissect_dns(dissect_ctx_t* ctx)
 {
     struct dnshdr *dnshdr;
-    char *data, *p;
+    char *p;
     int ret, i;
     buffer_type buffer;
     size_t position;
 
+    buffer_create_from(&buffer, (void*)ctx->data, ctx->length);
+    
     dnshdr = (struct dnshdr*)ctx->data;
-    data = (char *)(dnshdr + 1);
-
     ctx->packet_info.id = ntohs(ID(dnshdr));
     ctx->packet_info.qr = QR(dnshdr);
-    ctx->packet_info.rcode = RCODE(dnshdr);
-
-    buffer_create_from(&buffer, data, ctx->length - sizeof(struct dnshdr));
+    ctx->packet_info.rcode = RCODE(dnshdr);    
+    buffer_set_position(&buffer, sizeof(struct dnshdr));
 
     ret = dns_get_qname(dnshdr, 
                         &buffer, 
@@ -116,7 +115,6 @@ static int dissect_dns(dissect_ctx_t* ctx)
         return -1;
     ctx->packet_info.qklass = ret;
 
-    /*skip answer section*/
     if (ctx->packet_info.qr && ntohs(dnshdr->ancount) > 64) {
         log_msg("too many answers... ");
     }
@@ -124,9 +122,13 @@ static int dissect_dns(dissect_ctx_t* ctx)
         if (!ctx->packet_info.qr) {
             skip_record(&buffer);
             continue;
-        }        
-        if (get_record(&buffer, &ctx->decompress, &ctx->packet_info.answers[i])     == 0) 
-            ctx->packet_info.answers_nb++;        
+        }
+        ret = 
+            get_record(&buffer, &ctx->decompress, &ctx->packet_info.answers[i]);        
+        if (ret == 0) 
+            ctx->packet_info.answers_nb++;   
+        else
+            return -1;     
     }
     /*skip authority section*/
     for (i = 0; i < ntohs(dnshdr->nscount); i++) {
@@ -306,8 +308,8 @@ void dissect_packet(u_char * arg, const struct pcap_pkthdr * pkthdr, const u_cha
         //log_msg("not udp?\n");
         goto error;
 
-    if (dissect_udp(ctx) == -1 || ctx->packet_info.dport != 53) {
-        log_msg("not 53 port? %u\n", ctx->packet_info.dport);
+    if (dissect_udp(ctx) == -1) {
+        log_msg("invalid udp length\n");
         goto error;
     }
 
