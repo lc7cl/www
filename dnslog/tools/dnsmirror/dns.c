@@ -63,7 +63,8 @@ static int dns_name_from_wire(buffer_type* data,
     return 0;
 }
 
-int dns_get_qname(struct dnshdr* hdr, buffer_type* data, 
+int dns_get_qname(struct dnshdr* hdr, 
+                  buffer_type* data, 
                   struct decompress_ctx *decompress, 
                   char* out)
 {

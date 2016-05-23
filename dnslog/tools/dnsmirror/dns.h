@@ -115,7 +115,10 @@ struct decompress_ctx {
 #define QR(hdr) (((struct dnshdr*)hdr)->qr)
 #define RCODE(hdr) (((struct dnshdr*)hdr)->rcode)
 
-int dns_get_qname(struct dnshdr* hdr, buffer_type* data, char* out);
+int dns_get_qname(struct dnshdr* hdr, 
+                  buffer_type* data, 
+                  struct decompress_ctx *decompress, 
+                  char* out);
 u_int16_t dns_get_qtype(struct dnshdr* hdr, buffer_type* buffer);
 u_int16_t dns_get_qklass(struct dnshdr* hdr, buffer_type* buffer);
 int get_record(buffer_type *buffer, 
