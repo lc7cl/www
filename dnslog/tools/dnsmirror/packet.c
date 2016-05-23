@@ -261,7 +261,7 @@ void dissect_ctx_dumpf(FILE *file, dissect_ctx_t *ctx)
             switch (record->type) {
             case TYPE_A:
                 fprintf(file, "%s,", "A");
-                fprintf(file, NIPQUAD_FMT")", (uint32_t*)record->rdata);
+                fprintf(file, NIPQUAD_FMT")", (u_int32_t*)record->rdata);
                 break;
             case TYPE_CNAME:
                 fprintf(file, "%s,", "CNAME");
