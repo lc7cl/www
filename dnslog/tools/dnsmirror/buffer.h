@@ -139,6 +139,19 @@ read_uint32(const void *src)
 #endif
 }
 
+static inline void
+buffer_read_at(buffer_type *buffer, size_t at, void *data, size_t count)
+{
+	memcpy(data, buffer->_data + at, count);
+}
+
+static inline void
+buffer_read(buffer_type *buffer, void *data, size_t count)
+{
+	buffer_read_at(buffer, buffer->_position, data, count);
+	buffer->_position += count;
+}
+
 static inline u_int8_t
 buffer_read_u8_at(buffer_type *buffer, size_t at)
 {
