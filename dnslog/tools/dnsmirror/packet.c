@@ -122,7 +122,7 @@ static int dissect_dns(dissect_ctx_t* ctx)
             skip_record(&buffer);
             continue;
         }        
-        if (get_record(&buffer, &ctx->packet_info.answers[i]) == 0) 
+        if (get_record(&buffer, &ctx->decompress, &ctx->packet_info.answers[i])     == 0) 
             ctx->packet_info.answers_nb++;        
     }
     /*skip authority section*/

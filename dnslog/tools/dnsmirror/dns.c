@@ -130,13 +130,15 @@ int skip_record(buffer_type *buffer)
     return -1;
 }
 
-int get_record(buffer_type *buffer, struct rr *record)
+int get_record(buffer_type *buffer,
+               struct decompress_ctx * decompress, 
+               struct rr *record)
 {
     int ret;
     
     if (buffer == NULL || record == NULL)
         return -1;
-    ret = dns_name_from_wire(buffer, record->name);
+    ret = dns_name_from_wire(buffer, decompress, record->name);
     if (ret == -1)
         return -1;
     if (!buffer_available(buffer, 2 * sizeof(u_int16_t)))
@@ -150,7 +152,7 @@ int get_record(buffer_type *buffer, struct rr *record)
         buffer_read(buffer, record->rdata, 4);
         break;
     case TYPE_CNAME:
-        ret = dns_name_from_wire(buffer, record->rdata);
+        ret = dns_name_from_wire(buffer, decompress, record->rdata);
         if (ret == -1)
             return ret;
         break;
