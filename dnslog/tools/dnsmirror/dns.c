@@ -106,18 +106,20 @@ int skip_record(buffer_type *buffer)
 
 int get_record(buffer_type *buffer, struct rr *record)
 {
+    int ret;
+    
     if (buffer == NULL || record == NULL)
         return -1;
     ret = dns_name_from_wire(buffer, record->name);
     if (ret == -1)
         return -1;
-    if (!buffer_available(buffer, 2 * sizeof(uint16_t)))
+    if (!buffer_available(buffer, 2 * sizeof(u_int16_t)))
         return -1;
     record->type = buffer_read_u16(buffer);
-    buffer_skip(buffer, sizeof(uint16_t));
+    buffer_skip(buffer, sizeof(u_int16_t));
     switch (record->type) {
     case TYPE_A:
-        if (!buffer_available(buffer, sizeof(uint32_t)))
+        if (!buffer_available(buffer, sizeof(u_int32_t)))
             return -1;
         buffer_read(buffer, record->rdata, 4);
         break;
