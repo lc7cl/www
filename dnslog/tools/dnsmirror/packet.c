@@ -217,6 +217,7 @@ void dissect_ctx_cleanup(dissect_ctx_t *ctx)
     ctx->pkthdr = NULL;
     ctx->packet = NULL;
     memset(&ctx->packet_info, 0, sizeof(ctx->packet_info));
+    decompress_ctx_init(&ctx->decompress);
 }
 
 void dissect_ctx_dumpf(FILE *file, dissect_ctx_t *ctx)

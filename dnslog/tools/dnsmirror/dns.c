@@ -2,13 +2,15 @@
 
 #include "dns.h"
 
-static int dns_name_from_wire(buffer_type* data, char* text_name)
+static int dns_name_from_wire(buffer_type* data, 
+                              struct decompress_ctx *decompress, 
+                              char* text_name)
 {
     char *q;
     u_int8_t *p, label_len;
-    int length;
+    int length, off, saved = -1, i;
 
-    if (data == NULL || text_name == NULL)
+    if (data == NULL || text_name == NULL || decompress == NULL)
         return -1;
 
     p = buffer_current(data);
@@ -16,22 +18,44 @@ static int dns_name_from_wire(buffer_type* data, char* text_name)
 
     length = 0;
     label_len = buffer_read_u8(data);
+
+    while (label_len != 0 
+            && length < NAME_MAX_LENGTH) {
+        if (label_len & 0xc0 == 0xc0) {
+            buffer_set_position(buffer_position(data) - 1);
+            label_len = buffer_read_u16(data);
+            off = label_len & ~0xc0;
+            if (off >= buffer_limit(data) /*|| decompress->pos[off] != off*/)
+                return -1;
+            if (saved == -1)
+                saved = buffer_position(data);
+            buffer_set_position(data, off);
+            label_len = buffer_read_u8(data);            
+        } else {
+            if (!buffer_available(data, label_len))
+                return -1;
+            for (i = 0; i < label_len; i++) {
+                if (decompress->pos[i] == -1)
+                    decompress->pos[i] = buffer_position(data);
+            }
+            length += label_len;
+            p = buffer_current(data);
+            memcpy(q, p, label_len);
+            buffer_skip(data, label_len);
+            q += label_len;
+            label_len = buffer_read_u8(data);
+        }
+
+    }
+    
     if (label_len == 0) {
         *q = '.';
         q++;
-    }
-
-    while (label_len != 0 
-            && length < NAME_MAX_LENGTH
-            && buffer_available(data, label_len)) {
-        length += label_len;
-        p = buffer_current(data);
-        memcpy(q, p, label_len);
-        buffer_skip(data, label_len);
-        q += label_len;
-        *q = '.';
-        q++;
-        label_len = buffer_read_u8(data);
+        
+        if (saved > -1)
+            buffer_set_position(data, saved);
+    } else {
+        return -1;
     }
 
     *q = '\0';
@@ -39,13 +63,15 @@ static int dns_name_from_wire(buffer_type* data, char* text_name)
     return 0;
 }
 
-int dns_get_qname(struct dnshdr* hdr, buffer_type* data, char* out)
+int dns_get_qname(struct dnshdr* hdr, buffer_type* data, 
+                  struct decompress_ctx *decompress, 
+                  char* out)
 {
     int ret;
 
     if (ntohs(hdr->qdcount) != 1)
         return -1;
-    ret = dns_name_from_wire(data, out);
+    ret = dns_name_from_wire(data, decompress, out);
     if (ret == -1)
         return -1;
     return ret;

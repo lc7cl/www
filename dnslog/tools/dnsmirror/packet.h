@@ -49,8 +49,9 @@ typedef struct dissect_ctx {
         
         struct rr answers[64];
         int answers_nb;
-
     } packet_info;
+    
+    struct decompress_ctx decompress;
 
 } dissect_ctx_t;
 
