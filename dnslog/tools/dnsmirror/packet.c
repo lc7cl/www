@@ -101,7 +101,10 @@ static int dissect_dns(dissect_ctx_t* ctx)
 
     buffer_create_from(&buffer, data, ctx->length - sizeof(struct dnshdr));
 
-    ret = dns_get_qname(dnshdr, &buffer, ctx->packet_info.qname);
+    ret = dns_get_qname(dnshdr, 
+                        &buffer, 
+                        &ctx->decompress, 
+                        ctx->packet_info.qname);
     if (ret == -1)
         return -1;
     ret = dns_get_qtype(dnshdr, &buffer);
