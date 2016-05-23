@@ -253,6 +253,7 @@ void dissect_ctx_dumpf(FILE *file, dissect_ctx_t *ctx)
     }
     if (ctx->packet_info.qr) {
         fprintf(file, "[");
+        u_int32_t ip;
         int i;
         struct rr *record;
         for (i = 0; i < ctx->packet_info.answers_nb; i++) {
@@ -261,7 +262,8 @@ void dissect_ctx_dumpf(FILE *file, dissect_ctx_t *ctx)
             switch (record->type) {
             case TYPE_A:
                 fprintf(file, "%s,", "A");
-                fprintf(file, NIPQUAD_FMT")", (u_int32_t*)record->rdata);
+                ip = *((u_int32_t*)record->rdata);
+                fprintf(file, NIPQUAD_FMT")", NIPQUAD(ip));
                 break;
             case TYPE_CNAME:
                 fprintf(file, "%s,", "CNAME");
