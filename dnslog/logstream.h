@@ -21,6 +21,7 @@ class LogStream {
   ifstream in_;
   bool is_first_line_;
   string file_;
+  vector<string> cache_;
 };
 
 shared_ptr<LogStream> GetStream(const string &name);
