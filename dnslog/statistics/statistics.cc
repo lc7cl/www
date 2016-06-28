@@ -46,7 +46,7 @@ DomainStatisticsPtr NewStatistics(const string &name) {
 
 DomainStatistics::DomainStatistics(const string &name)
     : domain_name_(name), 
-      duration_(0, 30, 0, 0),
+      duration_(config::default_interval),
       counts_(0),
       isready_(false) {
 }  

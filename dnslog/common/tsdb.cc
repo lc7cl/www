@@ -1,3 +1,4 @@
+#include "tsdb.h"
 #include <dlfcn.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -8,7 +9,7 @@ using boost::property_tree::ptree;
 #include <boost/algorithm/string.hpp> 
 
 #include "jansson.h"
-#include "logdb.h"
+
 
 logdb* logdb::m_instance = NULL;
 

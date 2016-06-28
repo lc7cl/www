@@ -1,15 +1,15 @@
 #include "jourbal_worker.h"
 #include <memory>
-#include "statistics.h"
+#include "record_handler.h"
 
 using namespace std;
 
-JournalWorker::Work() {
-  dns_item item;
+void JournalWorker::Work() {
+  JournalRecord record;
   DomainStatisticsPtr stat_ptr;
   for (auto itor = streamlist_.begin(); itor != streamlist_.end(); itor++) {
-    while (itor->Read(item) != LogStream::STREAM_STATE_EOF) {
-      //
+    while (itor->Read(record) == JournalStream::STREAM_STATE_OK) {
+      HandleRecord(record);
       stat_ptr = GetStatistics(item.dns_name);
       if (stat_ptr == nullptr)
         stat_ptr = CreateStatistics(item.dns_name);

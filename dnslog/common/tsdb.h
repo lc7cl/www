@@ -1,5 +1,5 @@
-#ifndef _LOGDB_H_
-#define _LOGDB_H_
+#ifndef TSDB_H_
+#define TSDB_H_
 
 #include <vector>
 #include <iostream>
@@ -15,8 +15,7 @@ using boost::asio::ip::tcp;
 
 typedef char* (*ACL_FUNC)(unsigned int);
 
-class logdb 
-{
+namespace tsdb {
 public:
     static logdb* getInstance();
     int put(dns_item& item);
