@@ -9,7 +9,7 @@ class Service {
   int Close();
 
  private:
-  
+  io_service io_service_;
 };
 
 #endif
