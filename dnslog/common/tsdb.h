@@ -16,6 +16,7 @@ using boost::asio::ip::tcp;
 typedef char* (*ACL_FUNC)(unsigned int);
 
 namespace tsdb {
+    int Put(const string &metric, );
 public:
     static logdb* getInstance();
     int put(dns_item& item);
