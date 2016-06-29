@@ -16,7 +16,54 @@ using boost::asio::ip::tcp;
 typedef char* (*ACL_FUNC)(unsigned int);
 
 namespace tsdb {
-    int Put(const string &metric, );
+
+class TsdbData {
+ public:
+  TsdbData(const boost::posix_time::time_duration timestamp, 
+          const int value, 
+          const map<string, string> tags) :
+            timestamp_(timestamp), value_(value), tags_(tags) {};
+  int get_value() { return value_; };
+  boost::posix_time::time_duration get_timestamp() { return timestamp_; };
+  map<string, string> get_tags() { return tags_; };
+
+ private:
+  const boost::posix_time::time_duration timestamp_;
+  const int value_;
+  const map<string, string> tags_;
+};
+
+class TsdbResult {
+ public:
+  TsdbResult(const boost::posix_time::time_duration timestamp, 
+          const int value, 
+          const map<string, string> tags) :
+            timestamp_(timestamp), value_(value), tags_(tags) {};
+  int get_value() { return value_; };
+  boost::posix_time::time_duration get_timestamp() { return timestamp_; };
+  map<string, string> get_tags() { return tags_; };
+
+ private:
+  const boost::posix_time::time_duration timestamp_;
+  const int value_;
+  const map<string, string> tags_;
+};
+
+int SetParameters(const string &addr, 
+                  const string &port,
+                  const string &put_uri,
+                  const string &get_uri);
+int Put(const string &metric, const TsdbData &data);
+int Put(const string &metric, const vector<TsdbData> &datas);
+
+int Get(const string &metric,
+        const boost::posix_time::time_duration start,
+        const boost::posix_time::time_duration end,
+        const vector<TsdbData> &datas, 
+        TsdbResult &ret);
+        
+};
+
 public:
     static logdb* getInstance();
     int put(dns_item& item);

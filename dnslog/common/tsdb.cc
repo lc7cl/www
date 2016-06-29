@@ -1,4 +1,6 @@
 #include "tsdb.h"
+
+#include "service.h"
 #include <dlfcn.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -10,45 +12,85 @@ using boost::property_tree::ptree;
 
 #include "jansson.h"
 
+namespace tsdb {
 
-logdb* logdb::m_instance = NULL;
+Service tsdb_service;
+string default_addr = "";
+string default_port = "4242";
+string default_put_uri = "";
+string default_get_uri = "";
 
-logdb* logdb::getInstance()
-{
-    if (m_instance == NULL)
-    {
-        m_instance = new logdb();
+string make_one_json(const string &metric, const TsdbData &data) {
+    json_t *tags;
+    tags = json_pack("{s:s , s:s}",  
+                        "geo", name.geo_.c_str(),
+                        "dname", name.dns_name_.c_str());
+    if (tags == NULL)
+	    return string("");
+    json_t *j;
+    j = json_pack("{s:s, s:i, s:i, s:O}", 
+		"metric", metric.c_str(),
+		"timestamp", statics.utc,
+		"value", data.get_value(),
+		"tags", tags);
+    if (j == NULL)
+	    return string("");
+    return string(json_dumps(j, 0));
+}
+
+int SetParameters(const string &addr, const string &port,
+                const string &put_uri, const string &get_uri) {
+  default_addr = addr;
+  default_port = port;
+  default_put_uri = put_uri;
+  default_get_uri = get_uri;
+  return 0;
+}
+
+int Put(const string &metric, const TsdbData &data) {
+  int ret;
+  string json = string("");
+
+  json = make_one_json(metric, data);
+
+  ret = tsdb_service.Connect(default_addr, default_port);
+  if (ret < 0)
+    return -1;
+  ret = tsdb_service.HTTPSend(default_put_uri, json);
+  if (ret < 0)
+    return -1;
+  return 0;
+}
+
+int Put(const string &metric, const vector<TsdbData> &datas) {
+  int ret;
+  string json = string("");
+
+  if (datas.size() == 1) {
+    json = make_one_json(metric, datas[0]);
+  } else {
+    for (auto itor; itor != datas.end(); itor++) {
+        if (json == "") {
+            json += make_one_json(metric, *itor);
+        } else {
+            json += ", " + make_one_json(metric, *itor);
+        }
     }
-    return m_instance;
+    json = "[" + json + "]";
+  }
+
+  ret = tsdb_service.Connect(default_addr, default_port);
+  if (ret < 0)
+    return -1;
+  ret = tsdb_service.HTTPSend(default_put_uri, json);
+  if (ret < 0)
+    return -1;
+  return 0;
 }
 
-void logdb::destroyInstance()
-{
-    if (m_instance)
-        delete m_instance;
-}
+};
 
-void logdb::set_flush_threshold(int threshold)
-{
-    this->m_threshold = threshold;
-}
 
-void logdb::set_db_server(const string& server)
-{
-    this->m_server = server;
-    vector<string> v;
-    boost::split(v, server, boost::is_any_of(":"));
-    if (v.size() == 2)
-    {
-        this->m_addr = v[0];
-        this->m_port = boost::lexical_cast<unsigned short>(v[1]);
-    }
-}
-
-void logdb::set_db_uri(const string& uri)
-{
-    this->m_uri = uri;
-}
 
 int logdb::set_acllib(const string& path)
 {
@@ -100,24 +142,7 @@ string logdb::get_line(const string& ip)
     return str;
 }
 
-string logdb::make_one_json(string& metric,const statis_key& name, statistics& statics)
-{
-    json_t *tags;
-    tags = json_pack("{s:s , s:s}",  
-                        "geo", name.geo_.c_str(),
-                        "dname", name.dns_name_.c_str());
-    if (tags == NULL)
-	    return string("");
-    json_t *j;
-    j = json_pack("{s:s, s:i, s:i, s:O}", 
-		"metric", metric.c_str(),
-		"timestamp", statics.utc,
-		"value", statics.count,
-		"tags", tags);
-    if (j == NULL)
-	    return string("");
-    return string(json_dumps(j, 0));
-}
+
 
 string logdb::make_jsons(string& metric, vector<pair<statis_key, statistics> >& pool)
 {
